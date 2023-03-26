@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@+id/fileFragment">
+
+    <fragment android:id="@+id/fileFragment"
+        android:label="SplitLanzou"
+        android:name="com.lanzou.split.ui.FileFragment">
+        <action
+            android:id="@+id/action_webview"
+            app:destination="@id/webviewFragment"/>
+    </fragment>
+
+    <fragment android:id="@+id/webviewFragment"
+        android:name="com.lanzou.split.ui.WebViewFragment">
+        <argument android:name="url"
+            app:argType="string"/>
+    </fragment>
+
+</navigation>

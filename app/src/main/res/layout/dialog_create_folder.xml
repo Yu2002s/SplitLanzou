@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:inputType="text"
+        android:id="@+id/edit_name"
+        android:hint="请输入名称"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no" />
+
+    <EditText
+        android:inputType="textMultiLine"
+        android:id="@+id/edit_desc"
+        android:hint="请输入描述信息"
+        android:minLines="3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no" />
+
+</LinearLayout>

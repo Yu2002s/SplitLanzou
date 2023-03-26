@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+    <application
+        android:name=".LanzouApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:preserveLegacyExternalStorage="true"
+        android:requestLegacyExternalStorage="true"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SplitLanzou"
+        tools:targetApi="31">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.lanzou.split.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.web.WebActivity" />
+        <activity
+            android:name=".ui.folder.FolderSelectorActivity"
+            android:label="选择文件夹" />
+        <activity
+            android:name=".ui.transmission.TransmissionListActivity"
+            android:label="传输列表" />
+        <activity
+            android:name=".ui.upload.UploadInfoActivity"
+            android:label="上传信息" />
+        <activity
+            android:name=".ui.setting.SettingActivity"
+            android:label="设置" />
+        <activity android:name=".ui.question.QuestionActivity"
+            android:label="一些问题"/>
+        <activity android:name=".ui.download.DownloadInfoActivity"
+            android:label="下载信息"/>
+
+        <service android:name=".service.DownloadService" />
+        <service android:name=".service.UploadService" />
+    </application>
+
+</manifest>
