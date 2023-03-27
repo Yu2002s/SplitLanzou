@@ -275,6 +275,9 @@ public class Repository {
     public String getDownloadUrl(String url, @Nullable String pwd) {
         // 获取下载地址
         try {
+            if (!url.contains("/tp/")) {
+                url = url.replace(".com", ".com/tp");
+            }
             String html = getHtml(url);
             // 获取文件名
             // TODO: 2023/3/24

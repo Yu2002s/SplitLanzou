@@ -56,6 +56,8 @@
             android:label="一些问题"/>
         <activity android:name=".ui.download.DownloadInfoActivity"
             android:label="下载信息"/>
+        <activity android:name=".ui.resolve.ResolveFileActivity"
+            android:label="解析文件"/>
 
         <service android:name=".service.DownloadService" />
         <service android:name=".service.UploadService" />

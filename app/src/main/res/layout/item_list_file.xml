@@ -5,8 +5,7 @@
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="10dp">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/tv_name"
@@ -16,10 +15,11 @@
         tools:text="@string/app_name" />
 
     <TextView
+        android:layout_marginTop="4dp"
         android:id="@+id/tv_desc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
         tools:text="@string/app_name" />
 
 </LinearLayout>

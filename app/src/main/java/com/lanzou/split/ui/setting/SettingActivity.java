@@ -5,6 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -200,8 +204,12 @@ public class SettingActivity extends BaseActivity {
             tv.setLayoutParams(new ViewGroup.LayoutParams(-1, -2));
             tv.setTextSize(17);
             tv.setTextColor(color);
+            TypedArray typedArray = parent.getContext().getTheme()
+                    .obtainStyledAttributes(new int[]{androidx.appcompat.R.attr.selectableItemBackground});
+            tv.setBackground(typedArray.getDrawable(0));
+            typedArray.close();
             //tv.getPaint().setFakeBoldText(true);
-            tv.setPadding(52, 32, 52, 32);
+            tv.setPadding(52, 52, 52, 52);
             RecyclerView.ViewHolder viewHolder = new RecyclerView.ViewHolder(tv) {
                 @NonNull
                 @Override

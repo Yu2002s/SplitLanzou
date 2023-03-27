@@ -13,4 +13,7 @@
 
     <item android:id="@+id/transmission_list"
         android:title="传输列表"/>
+
+    <item android:id="@+id/resolve_file"
+        android:title="解析文件"/>
 </menu>

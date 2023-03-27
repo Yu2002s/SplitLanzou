@@ -48,6 +48,7 @@ import com.lanzou.split.network.Repository;
 import com.lanzou.split.service.DownloadService;
 import com.lanzou.split.service.UploadService;
 import com.lanzou.split.ui.folder.FolderSelectorActivity;
+import com.lanzou.split.ui.resolve.ResolveFileActivity;
 import com.lanzou.split.ui.setting.SettingActivity;
 import com.lanzou.split.ui.transmission.TransmissionListActivity;
 import com.lanzou.split.ui.web.WebActivity;
@@ -318,6 +319,8 @@ public class MainActivity extends BaseActivity implements ServiceConnection {
             return true;
         } else if (id == R.id.transmission_list) {
             startActivity(new Intent(this, TransmissionListActivity.class));
+        } else if (id == R.id.resolve_file) {
+            startActivity(new Intent(this, ResolveFileActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -333,30 +336,27 @@ public class MainActivity extends BaseActivity implements ServiceConnection {
         new AlertDialog.Builder(this)
                 .setTitle("新建文件夹")
                 .setView(folderBinding.getRoot())
-                .setPositiveButton("新建", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String name = folderBinding.editName.getText().toString();
-                        String desc = folderBinding.editDesc.getText().toString();
-                        new Thread(() -> {
-                            Long id = Repository.getInstance()
-                                    .createFolder(currentPage.getFolderId(), name, desc);
-                            runOnUiThread(() -> {
-                                if (id != null) {
-                                    LanzouFile lanzouFile = new LanzouFile();
-                                    lanzouFile.setName(name);
-                                    lanzouFile.setFolderId(id);
-                                    lanzouFiles.add(0, lanzouFile);
-                                    fileAdapter.notifyItemInserted(0);
-                                    binding.fileRecyclerView.scrollToPosition(0);
-                                    Toast.makeText(MainActivity.this, "文件夹已新建", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(MainActivity.this, "新建文件夹失败", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }).start();
+                .setPositiveButton("新建", (dialog, which) -> {
+                    String name = folderBinding.editName.getText().toString();
+                    String desc = folderBinding.editDesc.getText().toString();
+                    new Thread(() -> {
+                        Long id = Repository.getInstance()
+                                .createFolder(currentPage.getFolderId(), name, desc);
+                        runOnUiThread(() -> {
+                            if (id != null) {
+                                LanzouFile lanzouFile = new LanzouFile();
+                                lanzouFile.setName(name);
+                                lanzouFile.setFolderId(id);
+                                lanzouFiles.add(0, lanzouFile);
+                                fileAdapter.notifyItemInserted(0);
+                                binding.fileRecyclerView.scrollToPosition(0);
+                                Toast.makeText(MainActivity.this, "文件夹已新建", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(MainActivity.this, "新建文件夹失败", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }).start();
 
-                    }
                 })
                 .setNegativeButton("取消", null)
                 .show();

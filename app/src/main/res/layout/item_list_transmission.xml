@@ -3,8 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
     android:orientation="horizontal"
-    android:paddingVertical="10dp"
+    android:paddingVertical="14dp"
     android:paddingHorizontal="16dp">
 
     <LinearLayout
@@ -21,6 +22,8 @@
             tools:text="@string/app_name" />
 
         <TextView
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:layout_marginTop="5dp"
             android:id="@+id/tv_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
