@@ -72,16 +72,19 @@ public class UploadListFragment extends Fragment implements ServiceConnection, O
 
     @Override
     public void onUpload(Upload upload) {
-        /*switch (upload.getStatus()) {
-            case Upload.INSERT:
-                // 插入队列了
-                break;
-            case Upload.PREPARE:
-                break;
-        }*/
+        if (upload.isInsert()) {
+            uploadList.add(0, upload);
+            uploadAdapter.notifyItemInserted(0);
+            return;
+        }
         int index = uploadList.indexOf(upload);
-        uploadAdapter.notifyItemChanged(index, 1);
-        // Log.d("jdy", "upload: " + upload);
+        if (index != -1) {
+            uploadAdapter.notifyItemChanged(index, 1);
+        } else {
+            uploadList.add(0, upload);
+            uploadAdapter.notifyItemInserted(0);
+        }
+
     }
 
     @Override

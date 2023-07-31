@@ -6,8 +6,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultCallerLauncher;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,10 +29,11 @@ public class DownloadInfoActivity extends BaseActivity implements OnDownloadList
     private ActivityDownloadInfoBinding binding;
     private DownloadService downloadService;
 
-    public static void actionStart(Context context, Download download) {
+    public static void actionStart(Context context, ActivityResultLauncher<Intent> launcher, Download download, int position) {
         Intent intent = new Intent(context, DownloadInfoActivity.class);
         intent.putExtra("download", download);
-        context.startActivity(intent);
+        intent.putExtra("position", position);
+        launcher.launch(intent);
     }
 
     private Download download;
@@ -108,6 +114,23 @@ public class DownloadInfoActivity extends BaseActivity implements OnDownloadList
     public void onServiceConnected(ComponentName name, IBinder service) {
         downloadService = ((DownloadService.DownloadBinder)service).getService();
         downloadService.addDownloadListener(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, 0, 0, "删除文件");
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == 0) {
+            downloadService.removeDownload(download);
+            setResult(RESULT_OK, new Intent().putExtra("position", getIntent().getIntExtra("position", -1)));
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

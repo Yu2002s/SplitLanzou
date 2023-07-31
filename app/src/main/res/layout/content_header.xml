@@ -8,7 +8,6 @@
     app:elevation="0dp">
 
     <com.google.android.material.appbar.MaterialToolbar
-        app:layout_scrollFlags="scroll|enterAlways"
         android:id="@+id/toolBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize" />

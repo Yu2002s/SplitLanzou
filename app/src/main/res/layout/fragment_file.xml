@@ -1,14 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <Button
-        android:layout_gravity="center"
-        android:id="@+id/btn_login"
-        android:text="去登录"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:clipToPadding="false"
+            android:paddingHorizontal="8dp"
+            android:background="@color/white"
+            android:id="@+id/path_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-</FrameLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:clipToPadding="false"
+                android:padding="6dp"
+                android:id="@+id/fileRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ProgressBar
+                android:visibility="invisible"
+                android:id="@+id/progressBar"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:visibility="invisible"
+                android:id="@+id/btn_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="去登录" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <include
@@ -13,10 +14,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/folderRecycler"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/folderRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:padding="6dp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/add"
+                app:backgroundTint="?attr/colorSurface"
+                android:src="@drawable/baseline_add_24"
+                android:layout_gravity="end|bottom"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </FrameLayout>
+
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -2,13 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN"/>
+        </intent>
+    </queries>
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
     <application
         android:name=".LanzouApplication"
         android:allowBackup="true"
@@ -30,6 +38,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <meta-data android:name="com.lanzou.split.LanzouGlideModule"
+            android:value="AppGlideModule"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -58,6 +70,25 @@
             android:label="下载信息"/>
         <activity android:name=".ui.resolve.ResolveFileActivity"
             android:label="解析文件"/>
+        <activity android:name=".ui.selector.FileSelectorActivity"
+            android:label="上传文件" />
+
+        <activity android:name=".ui.upload.ExternalUploadActivity"
+            android:label="上传文件"
+            android:launchMode="singleTask"
+            android:exported="true"
+            android:parentActivityName=".MainActivity">
+            <intent-filter
+                tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE"/>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="*/*"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.selector.PhoneFileActivity"/>
 
         <service android:name=".service.DownloadService" />
         <service android:name=".service.UploadService" />

@@ -3,19 +3,27 @@ package com.lanzou.split.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.lanzou.split.R;
 import com.lanzou.split.data.LanzouFile;
 import com.lanzou.split.databinding.ItemListFileBinding;
 import com.lanzou.split.event.OnItemClickListener;
+import com.lanzou.split.event.OnItemLongClickListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder> {
+public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder> implements Filterable {
 
-    private final List<LanzouFile> lanzouFiles;
+    private final List<LanzouFile> sources;
+
+    private List<LanzouFile> lanzouFiles;
 
     private OnItemClickListener listener;
 
@@ -23,8 +31,15 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         this.listener = listener;
     }
 
+    private OnItemLongClickListener longClickListener;
+
+    public void setLongClickListener(OnItemLongClickListener longClickListener) {
+        this.longClickListener = longClickListener;
+    }
+
     public FileAdapter(List<LanzouFile> lanzouFiles) {
         this.lanzouFiles = lanzouFiles;
+        this.sources = lanzouFiles;
     }
 
     @NonNull
@@ -33,10 +48,13 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         ItemListFileBinding binding = ItemListFileBinding
                 .inflate(LayoutInflater.from(parent.getContext()), parent, false);
         FileViewHolder fileViewHolder = new FileViewHolder(binding);
-        binding.getRoot().setOnClickListener(new View.OnClickListener() {
+        binding.getRoot().setOnClickListener(v ->
+                listener.onItemClick(fileViewHolder.getAdapterPosition(), v));
+        binding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
-                listener.onItemClick(fileViewHolder.getAdapterPosition(), v);
+            public boolean onLongClick(View v) {
+                longClickListener.onItemLongClick(fileViewHolder.getAbsoluteAdapterPosition(), v);
+                return true;
             }
         });
         return fileViewHolder;
@@ -46,17 +64,74 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
     public void onBindViewHolder(@NonNull FileViewHolder holder, int position) {
         LanzouFile lanzouFile = lanzouFiles.get(position);
         ItemListFileBinding binding = holder.binding;
+        TextView name = binding.tvName;
         if (lanzouFile.isFolder()) {
             binding.tvDesc.setVisibility(View.GONE);
-            binding.tvName.setText(lanzouFile.getName());
+            name.setTextSize(16);
+            name.setText(lanzouFile.getName());
         } else {
-            binding.tvName.setText(lanzouFile.getName_all());
-            binding.tvDesc.setText(lanzouFile.getTime() + " - " + lanzouFile.getSize()
-                    + " - " + lanzouFile.getDownloadCount() + "次下载");
+            name.setTextSize(14);
+            name.setText(lanzouFile.getName_all());
+            String time = lanzouFile.getTime();
+            if (time.length() > 6) {
+                time = time.substring(2);
+            } else {
+                time = time.replace(" ", "");
+            }
+            binding.tvDesc.setText(String.format(name.getContext().getString(R.string.file_desc),
+                    time, lanzouFile.getSize().replace(" ", ""), lanzouFile.getDownloadCount()));
             binding.tvDesc.setVisibility(View.VISIBLE);
         }
 
+        int padding = lanzouFile.isFolder() ? 38 : 24;
+        binding.getRoot().setPadding(padding, padding, padding, padding);
 
+        binding.getRoot().setSelected(lanzouFile.isSelected());
+    }
+
+    private final Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+            if (constraint == null || "".equals(constraint.toString())) {
+                results.values = sources;
+            } else {
+                List<LanzouFile> filterList = new ArrayList<>();
+                for (LanzouFile source : sources) {
+                    if (source.getFileName().toLowerCase().contains(constraint.toString().toLowerCase())) {
+                        filterList.add(source);
+                    }
+                }
+                results.values = filterList;
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            lanzouFiles = (List<LanzouFile>) results.values;
+            notifyDataSetChanged();
+        }
+    };
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    public LanzouFile getItem(int position) {
+        return lanzouFiles.get(position);
+    }
+
+    public void deleteItem(int position) {
+        if (position == -1) {
+            return;
+        }
+        if (sources.size() != lanzouFiles.size()) {
+            lanzouFiles.remove(sources.get(position));
+        }
+        sources.remove(position);
+        notifyItemRemoved(position);
     }
 
     @Override

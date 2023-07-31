@@ -22,6 +22,8 @@ public class Upload implements Parcelable, Comparable<Upload> {
     public static final int COMPLETE = 4;
     public static final int STOP = 5;
 
+    private long id;
+
     /**
      * 当前上传区块
      */
@@ -223,6 +225,14 @@ public class Upload implements Parcelable, Comparable<Upload> {
         return index;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public void insert() {
         status = INSERT;
     }
@@ -245,6 +255,10 @@ public class Upload implements Parcelable, Comparable<Upload> {
 
     public void stop() {
         status = STOP;
+    }
+
+    public boolean isInsert() {
+        return status == INSERT;
     }
 
     public boolean isComplete() {

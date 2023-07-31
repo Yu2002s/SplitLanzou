@@ -1,10 +1,12 @@
-package com.lanzou.split;
+package com.lanzou.split.utils;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.lanzou.split.LanzouApplication;
 
 public class SpUtils {
 

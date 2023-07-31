@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card"
+    android:padding="8dp"
+    android:layout_margin="4dp">
+
+    <ImageView
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ic_launcher"
+        tools:src="@tools:sample/avatars"
+        android:id="@+id/icon_file"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+        android:id="@+id/tv_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="8dp"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toTopOf="@id/tv_desc"
+        app:layout_constraintEnd_toStartOf="@id/select"
+        app:layout_constraintStart_toEndOf="@id/icon_file"
+        app:layout_constraintTop_toTopOf="@id/icon_file"
+        tools:text="@string/app_name" />
+
+    <TextView
+        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:id="@+id/tv_desc"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/icon_file"
+        app:layout_constraintEnd_toStartOf="@id/select"
+        app:layout_constraintStart_toStartOf="@id/tv_name"
+        app:layout_constraintTop_toBottomOf="@id/tv_name"
+        tools:text="@string/app_name" />
+
+    <ImageButton
+        android:clickable="false"
+        android:src="@drawable/ic_select_icon"
+        android:background="@drawable/ic_select"
+        android:id="@+id/select"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="30dp"
+        android:layout_height="30dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.split.MainActivity;
 import com.lanzou.split.R;
 import com.lanzou.split.base.BaseActivity;
@@ -125,7 +126,7 @@ public class SettingActivity extends BaseActivity {
     }
 
     private void showAboutDialog() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("关于")
                 .setMessage("软件仅供学习交流，请勿用于其他用途。不会自动更新，如需获取其他信息请访问github主页，如有问题请提issue\n\n作者:jdy2002")
                 .setPositiveButton("关闭", null)
@@ -142,7 +143,7 @@ public class SettingActivity extends BaseActivity {
 
     private void showUploadDialog() {
         // 未选择上传目录
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("选择缓存位置")
                 .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处")
                 .setNegativeButton("先不选", null)
@@ -207,7 +208,8 @@ public class SettingActivity extends BaseActivity {
             TypedArray typedArray = parent.getContext().getTheme()
                     .obtainStyledAttributes(new int[]{androidx.appcompat.R.attr.selectableItemBackground});
             tv.setBackground(typedArray.getDrawable(0));
-            typedArray.close();
+            typedArray.recycle();
+
             //tv.getPaint().setFakeBoldText(true);
             tv.setPadding(52, 52, 52, 52);
             RecyclerView.ViewHolder viewHolder = new RecyclerView.ViewHolder(tv) {

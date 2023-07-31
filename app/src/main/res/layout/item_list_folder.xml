@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:text="@string/app_name"
     android:padding="16dp"
-    android:background="?attr/selectableItemBackground"
+    android:background="@drawable/bg_card"
+    android:layout_margin="4dp"
     android:textAppearance="@style/TextAppearance.Material3.TitleMedium">
 
 </com.google.android.material.textview.MaterialTextView>

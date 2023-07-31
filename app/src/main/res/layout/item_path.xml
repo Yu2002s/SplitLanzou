@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:text="@string/app_name"
+    android:textSize="17sp"
+    android:paddingHorizontal="4dp"
+    android:paddingVertical="8dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:drawableEndCompat="@drawable/baseline_chevron_right_24" />

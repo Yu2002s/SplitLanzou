@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
+    android:background="@drawable/bg_card"
     android:orientation="horizontal"
-    android:paddingVertical="14dp"
-    android:paddingHorizontal="16dp">
+    android:padding="8dp"
+    android:layout_margin="4dp">
 
     <LinearLayout
         android:orientation="vertical"

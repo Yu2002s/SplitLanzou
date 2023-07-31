@@ -1,12 +1,15 @@
 package com.lanzou.split.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.annotations.Since;
 
-public class LanzouFile {
+public class LanzouFile implements Parcelable {
 
     @SerializedName("id")
     private long fileId;
@@ -21,6 +24,50 @@ public class LanzouFile {
 
     @SerializedName("downs")
     private int downloadCount;
+
+    private boolean isSelected = false;
+
+    public LanzouFile() {}
+
+    protected LanzouFile(Parcel in) {
+        fileId = in.readLong();
+        folderId = in.readLong();
+        time = in.readString();
+        extension = in.readString();
+        downloadCount = in.readInt();
+        size = in.readString();
+        name = in.readString();
+        name_all = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(fileId);
+        dest.writeLong(folderId);
+        dest.writeString(time);
+        dest.writeString(extension);
+        dest.writeInt(downloadCount);
+        dest.writeString(size);
+        dest.writeString(name);
+        dest.writeString(name_all);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<LanzouFile> CREATOR = new Creator<LanzouFile>() {
+        @Override
+        public LanzouFile createFromParcel(Parcel in) {
+            return new LanzouFile(in);
+        }
+
+        @Override
+        public LanzouFile[] newArray(int size) {
+            return new LanzouFile[size];
+        }
+    };
 
     public String getExtension() {
         return extension;
@@ -93,6 +140,36 @@ public class LanzouFile {
 
     public void setName_all(String name_all) {
         this.name_all = name_all;
+    }
+
+    public String getFileName() {
+        return isFolder() ? name : name_all;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LanzouFile that = (LanzouFile) o;
+
+        if (isFolder() && folderId == that.folderId) return true;
+        return fileId != 0 && fileId == that.fileId;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (fileId ^ (fileId >>> 32));
+        result = 31 * result + (int) (folderId ^ (folderId >>> 32));
+        return result;
     }
 
     @NonNull

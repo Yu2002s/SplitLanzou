@@ -2,8 +2,10 @@ package com.lanzou.split.utils;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.FileUtils;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -62,7 +64,7 @@ public class UriUtils {
     }
 
     @Nullable
-    public static Cursor getCursor(Uri uri) throws Exception {
+    public static Cursor getCursor(Uri uri) {
         ContentResolver contentResolver = LanzouApplication.context.getContentResolver();
         Cursor cursor = contentResolver.query(uri, null, null, null, null);
         if (cursor != null && cursor.getCount() > 0) {
@@ -117,7 +119,15 @@ public class UriUtils {
             case "com.android.providers.downloads.documents":
                 /*DocumentFile documentFile = DocumentFile.fromSingleUri(LanzouApplication.context, uri);
                 Log.d("jdy", documentFile.getName());*/
-                path = getMediaPath(documentId[0], documentId[1]);
+                if (documentId.length == 1) {
+                    path = getDownloadPath(uri);
+                } else {
+                    if (documentId[0].equals("raw")) {
+                        path = documentId[1];
+                    } else {
+                        path = getMediaPath(documentId[0], documentId[1]);
+                    }
+                }
                 break;
         }
         return path;
@@ -125,7 +135,6 @@ public class UriUtils {
 
     @Nullable
     public static String getMediaPath(String type, String id) {
-        ContentResolver contentResolver = LanzouApplication.context.getContentResolver();
         Uri contentUri;
         switch (type) {
             case "image":
@@ -141,6 +150,12 @@ public class UriUtils {
                 contentUri = MediaStore.Files.getContentUri("external");
                 break;
         }
+        return queryPath(contentUri, id);
+    }
+
+    @Nullable
+    private static String queryPath(Uri contentUri, String id) {
+        ContentResolver contentResolver = LanzouApplication.context.getContentResolver();
         Cursor cursor = contentResolver.query(contentUri, null, "_id = ?", new String[]{id}, null);
         if (cursor.moveToFirst()) {
             String s = cursor.getString(cursor.getColumnIndexOrThrow("_data"));
@@ -149,5 +164,40 @@ public class UriUtils {
         }
         return null;
     }
+
+    private static String getDownloadPath(Uri uri) {
+        /*Uri uri = Uri.parse("content://downloads/my_downloads");
+        Uri contentUri = ContentUris.withAppendedId(uri, Long.parseLong(id));*/
+        final String id = DocumentsContract.getDocumentId(uri);
+        uri = ContentUris.withAppendedId(Uri.parse("content://downloads/all_downloads"), Long.parseLong(id));
+        Cursor cursor = LanzouApplication.context.getContentResolver()
+                .query(uri, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            String data = cursor.getString(cursor.getColumnIndexOrThrow("_data"));
+            Log.d("jdy", "path: " + data);
+            cursor.close();
+        }
+        return null;
+    }
+
+    private static String getDataColumn(Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {column};
+        try {
+            cursor = LanzouApplication.context.getContentResolver()
+                    .query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
 
 }

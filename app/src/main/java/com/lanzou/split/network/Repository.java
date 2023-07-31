@@ -1,7 +1,10 @@
 package com.lanzou.split.network;
 
 import android.content.ContentValues;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -10,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.WithHint;
 
 import com.google.gson.GsonBuilder;
+import com.lanzou.split.LanzouApplication;
 import com.lanzou.split.data.LanzouDownloadResponse;
 import com.lanzou.split.data.LanzouFile;
 import com.lanzou.split.data.LanzouFileResponse;
@@ -38,6 +42,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,11 +142,26 @@ public class Repository {
         return LitePal.where("isCurrent = ?", "1").findFirst(User.class);
     }
 
+    public List<User> getSavedUserList() {
+        return LitePal.findAll(User.class);
+    }
+
     public void saveOrUpdateUser(User user) {
+        updateCurrentUser();
+        user.saveOrUpdate("uid = ?", String.valueOf(user.getUid()));
+        this.user = user;
+    }
+
+    private void updateCurrentUser() {
         ContentValues contentValues = new ContentValues();
         contentValues.put("isCurrent", false);
         LitePal.updateAll(User.class, contentValues);
-        user.saveOrUpdate("uid = ?", String.valueOf(user.getUid()));
+    }
+
+    public void selectUser(User user) {
+        updateCurrentUser();
+        user.setCurrent(true);
+        user.update();
         this.user = user;
     }
 
@@ -240,7 +260,13 @@ public class Repository {
     @Nullable
     public LanzouUploadResponse.UploadInfo uploadFile(File file, Long folderId,
                                                       @Nullable OnFileIOListener listener) {
-        String fileName = file.getName();
+        return uploadFile(file, folderId, listener, null);
+    }
+
+    @Nullable
+    public LanzouUploadResponse.UploadInfo uploadFile(File file, Long folderId,
+                                                      @Nullable OnFileIOListener listener, @Nullable String uploadName) {
+        String fileName = uploadName == null ? file.getName() : uploadName;
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         boolean flag = false;
         for (String allowUploadType : allowUploadTypes) {
@@ -279,8 +305,6 @@ public class Repository {
                 url = url.replace(".com", ".com/tp");
             }
             String html = getHtml(url);
-            // 获取文件名
-            // TODO: 2023/3/24
             if (TextUtils.isEmpty(pwd)) {
                 // 无密码
                 Pattern pattern = Pattern.compile("submit.href = (.+) \\+ (.+)");
@@ -352,6 +376,31 @@ public class Repository {
             return Long.parseLong(response.getText());
         }
         return null;
+    }
+
+    public LanzouSimpleResponse deleteFile(LanzouFile lanzouFile) {
+        long id = lanzouFile.isFolder() ? lanzouFile.getFolderId() : lanzouFile.getFileId();
+        return deleteFile(id, !lanzouFile.isFolder());
+    }
+
+    public LanzouSimpleResponse deleteFile(long id) {
+        return deleteFile(id, true);
+    }
+
+    public LanzouSimpleResponse deleteFile(long id, boolean isFile) {
+        Map<String, String> map = new ArrayMap<>();
+        if (isFile) {
+            map.put("task", "6");
+            map.put("file_id", String.valueOf(id));
+        } else {
+            map.put("task", "3");
+            map.put("folder_id", String.valueOf(id));
+        }
+        return get(lanzouService.deleteFile(map));
+    }
+
+    public LanzouSimpleResponse moveFile(long fileId, long targetFolder) {
+        return get(lanzouService.moveFile(20, fileId, targetFolder));
     }
 
     public okhttp3.Response getResponse(String url) throws IOException {

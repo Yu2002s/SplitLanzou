@@ -5,6 +5,14 @@ public class LanzouFolder {
     private long folder_id;
     private String folder_name;
 
+    public LanzouFolder() {
+    }
+
+    public LanzouFolder(long folder_id, String folder_name) {
+        this.folder_id = folder_id;
+        this.folder_name = folder_name;
+    }
+
     public long getFolder_id() {
         return folder_id;
     }

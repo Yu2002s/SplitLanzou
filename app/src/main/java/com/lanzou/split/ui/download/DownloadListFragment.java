@@ -11,6 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -23,6 +27,8 @@ import com.lanzou.split.data.Download;
 import com.lanzou.split.event.OnDownloadListener;
 import com.lanzou.split.event.OnItemClickListener;
 import com.lanzou.split.service.DownloadService;
+
+import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,15 +55,27 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
     public void onServiceConnected(ComponentName name, IBinder service) {
         downloadService = ((DownloadService.DownloadBinder) service).getService();
         downloadService.addDownloadListener(this);
-        downloadList.addAll(downloadService.getDownloadList());
+        // downloadList.addAll(downloadService.getDownloadList());
+        downloadList.addAll(LitePal.order("id desc").limit(1000).find(Download.class));
         downloadAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDownload(Download download) {
+        if (download.isInsert()) {
+            downloadList.add(0, download);
+            downloadAdapter.notifyItemInserted(0);
+            return;
+        }
         int index = downloadList.indexOf(download);
         if (index != -1) {
+            if (downloadList.get(index) != download) {
+                downloadList.set(index, download);
+            }
             downloadAdapter.notifyItemChanged(index, 0);
+        } else {
+            downloadList.add(0, download);
+            downloadAdapter.notifyItemInserted(0);
         }
     }
 
@@ -74,12 +92,22 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(downloadAdapter);
 
-        downloadAdapter.setItemClickListener((position, view12) -> {
-            DownloadInfoActivity.actionStart(requireContext(), downloadList.get(position));
-        });
-
         downloadAdapter.setToggleTransmissionListener((position, view1)
                 -> downloadService.toggleDownload(downloadList.get(position)));
+
+        ActivityResultLauncher<Intent> launcher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getData() != null) {
+                        int position = result.getData().getIntExtra("position", -1);
+                        if (position == -1) return;
+                        downloadList.remove(position);
+                        downloadAdapter.notifyItemRemoved(position);
+                    }
+                });
+
+        downloadAdapter.setItemClickListener((position, view12) -> {
+            DownloadInfoActivity.actionStart(requireContext(), launcher, downloadList.get(position), position);
+        });
     }
 
     @Override

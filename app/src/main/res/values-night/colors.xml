@@ -2,4 +2,8 @@
 <resources>
     <color name="bg_dark">@android:color/transparent</color>
     <color name="left_card">#505050</color>
+
+    <color name="card_item">#50000000</color>
+
+    <color name="window_background">#a0000000</color>
 </resources>

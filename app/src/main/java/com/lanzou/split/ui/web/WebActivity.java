@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.WindowCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.lanzou.split.LanzouApplication;
 import com.lanzou.split.data.User;
@@ -84,8 +85,7 @@ public class WebActivity extends AppCompatActivity {
     private class HtmlSourceObj {
         @JavascriptInterface
         public void saveUser(long uid, String username, String cookie) {
-//            Log.d("jdy", "uid: " + uid + ", username: " + username + ", cookie: " + cookie);
-            runOnUiThread(() -> new AlertDialog.Builder(WebActivity.this)
+            runOnUiThread(() -> new MaterialAlertDialogBuilder(WebActivity.this)
                     .setCancelable(false)
                     .setTitle("保存用户信息")
                     .setMessage("将对登录信息进行保存在本地，不会对个人信息进行上传云端，请放心使用")
@@ -97,6 +97,7 @@ public class WebActivity extends AppCompatActivity {
                         user.setUsername(username);
                         user.setCurrent(true);
                         Repository.getInstance().saveOrUpdateUser(user);
+                        CookieManager.getInstance().removeAllCookies(null);
                         setResult(RESULT_OK);
                         finish();
                     }).setNegativeButton("退出", (dialog, which) -> finish()).show());
