@@ -16,6 +16,7 @@
         android:fillViewport="true">
 
         <TextView
+            android:textIsSelectable="true"
             android:padding="10dp"
             android:id="@+id/tv_log"
             android:layout_width="match_parent"

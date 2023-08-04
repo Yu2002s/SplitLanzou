@@ -4,16 +4,30 @@
     tools:context="com.lanzou.split.MainActivity">
     <item
         android:id="@+id/action_settings"
+        android:icon="@drawable/baseline_settings_24"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:visible="false"
+        app:showAsAction="always" />
 
-    <item android:id="@+id/create_folder"
-        android:title="新建文件夹"/>
+    <item
+        android:id="@+id/create_folder"
+        android:title="新建" />
 
-    <item android:id="@+id/transmission_list"
-        android:title="传输列表"/>
+    <item
+        android:id="@+id/download"
+        android:title="下载"
+        android:visible="false" />
 
-    <item android:id="@+id/resolve_file"
-        android:title="解析文件"/>
+    <item
+        android:id="@+id/move"
+        android:title="移动"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/delete"
+        android:title="删除"
+        android:visible="false" />
+
+
 </menu>

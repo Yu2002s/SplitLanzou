@@ -42,6 +42,10 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         this.sources = lanzouFiles;
     }
 
+    public void notifySelect(int position) {
+        notifyItemChanged(position, 0);
+    }
+
     @NonNull
     @Override
     public FileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -87,6 +91,17 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         binding.getRoot().setPadding(padding, padding, padding, padding);
 
         binding.getRoot().setSelected(lanzouFile.isSelected());
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull FileViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads);
+            return;
+        }
+        if (payloads.get(0).equals(0)) {
+            holder.binding.getRoot().setSelected(lanzouFiles.get(position).isSelected());
+        }
     }
 
     private final Filter filter = new Filter() {

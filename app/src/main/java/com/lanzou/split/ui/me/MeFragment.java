@@ -1,6 +1,7 @@
 package com.lanzou.split.ui.me;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.lanzou.split.data.User;
 import com.lanzou.split.databinding.FragmentMeBinding;
 import com.lanzou.split.network.Repository;
 import com.lanzou.split.ui.dialog.UserDialog;
+import com.lanzou.split.ui.resolve.ResolveFileActivity;
 
 public class MeFragment extends Fragment {
 
@@ -37,15 +39,14 @@ public class MeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 UserDialog userDialog = new UserDialog(v.getContext());
-                userDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        getUser();
-                    }
-                });
+                userDialog.setOnDismissListener(dialog -> getUser());
                 userDialog.show();
             }
         });
+
+        binding.btnResolve.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), ResolveFileActivity.class))
+        );
     }
 
     private void getUser() {

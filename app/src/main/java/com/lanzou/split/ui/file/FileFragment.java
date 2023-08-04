@@ -42,9 +42,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.split.LanzouApplication;
@@ -84,7 +86,9 @@ public class FileFragment extends Fragment implements ServiceConnection {
 
     private final List<LanzouPage> lanzouPages = fileAction.getLanzouPages();
 
-    private final List<LanzouFile> selectedFiles = new ArrayList<>();
+    // private final List<LanzouFile> selectedFiles = new ArrayList<>();
+
+    private int selectCount = 0;
 
     private FileAdapter fileAdapter;
 
@@ -95,6 +99,10 @@ public class FileFragment extends Fragment implements ServiceConnection {
     private DownloadService downloadService;
 
     private ActivityResultLauncher<Intent> moveLauncher;
+
+    public boolean isMultiMode() {
+        return selectCount > 0;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -186,20 +194,12 @@ public class FileFragment extends Fragment implements ServiceConnection {
             public void onActivityResult(ActivityResult result) {
                 if (result.getData() != null) {
                     LanzouFile lanzouFile = result.getData().getParcelableExtra("lanzouFile");
-                    if (lanzouFile == null) return;
                     new Thread(() -> {
                         long id = result.getData().getLongExtra("id", -1);
-                        LanzouSimpleResponse response = Repository.getInstance().moveFile(lanzouFile.getFileId(), id);
-                        if (response.getStatus() == 1) {
-                            requireActivity().runOnUiThread(() -> {
-                                int position = lanzouFiles.indexOf(lanzouFile);
-                                fileAdapter.deleteItem(position);
-                                fileAction.getCurrentPage().getFiles().remove(position);
-                            });
+                        if (lanzouFile == null) {
+                            moveFiles(id);
                         } else {
-                            Looper.prepare();
-                            Toast.makeText(requireContext(), "移动文件失败", Toast.LENGTH_SHORT).show();
-                            Looper.loop();
+                            moveFile(lanzouFile, id);
                         }
                     }).start();
                 }
@@ -232,14 +232,15 @@ public class FileFragment extends Fragment implements ServiceConnection {
 
         fileAdapter.setOnItemClickListener((position, v) -> {
             LanzouFile lanzouFile = fileAdapter.getItem(position);
-            if (selectedFiles.size() > 0) {
+            if (isMultiMode()) {
                 v.setSelected(!v.isSelected());
                 lanzouFile.setSelected(v.isSelected());
                 if (v.isSelected()) {
-                    selectedFiles.add(lanzouFile);
+                    selectCount++;
                 } else {
-                    selectedFiles.remove(lanzouFile);
+                    selectCount--;
                 }
+                changeSelect();
                 return;
             }
             long folderId = lanzouFile.getFolderId();
@@ -259,14 +260,33 @@ public class FileFragment extends Fragment implements ServiceConnection {
                 LanzouFile lanzouFile = fileAdapter.getItem(position);
                 lanzouFile.setSelected(v.isSelected());
                 if (v.isSelected()) {
-                    selectedFiles.add(lanzouFile);
+                    selectCount++;
                 } else {
-                    selectedFiles.remove(lanzouFile);
+                    selectCount--;
                 }
+                changeSelect();
             }
         });
 
-        binding.getRoot().setOnRefreshListener(fileAction::refresh);
+        binding.getRoot().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                selectCount = 0;
+                changeSelect();
+                fileAction.refresh();
+            }
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isMultiMode()) {
+                    clearSelect();
+                } else {
+                    fileAction.onBackPressed();
+                }
+            }
+        });
     }
 
     public void onBackPressed() {
@@ -281,6 +301,70 @@ public class FileFragment extends Fragment implements ServiceConnection {
         lanzouFiles.add(0, lanzouFile);
         fileAdapter.notifyItemInserted(0);
         binding.fileRecyclerView.scrollToPosition(0);
+    }
+
+    private void changeSelect() {
+        // 当选中内容为空时，取消全部选中，则退出多选模式
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        ActionBar actionBar = activity.getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+        if (!isMultiMode()) {
+            actionBar.setTitle(getString(R.string.app_name));
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            requireActivity().invalidateOptionsMenu();
+        } else if (selectCount == 1) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("已选择(" + selectCount + ")");
+            requireActivity().invalidateOptionsMenu();
+        } else {
+            actionBar.setTitle("已选择(" + selectCount + ")");
+        }
+    }
+
+    private void clearSelect() {
+        selectCount = 0;
+        for (int i = 0; i < lanzouFiles.size(); i++) {
+            LanzouFile lanzouFile = lanzouFiles.get(i);
+            if (lanzouFile.isSelected()) {
+                lanzouFile.setSelected(false);
+                fileAdapter.notifySelect(i);
+            }
+        }
+        changeSelect();
+    }
+
+    private void moveFile(LanzouFile lanzouFile, long id) {
+        LanzouSimpleResponse response = Repository.getInstance().moveFile(lanzouFile.getFileId(), id);
+        if (response.getStatus() == 1) {
+            requireActivity().runOnUiThread(() -> {
+                int position = lanzouFiles.indexOf(lanzouFile);
+                fileAdapter.deleteItem(position);
+                fileAction.getCurrentPage().getFiles().remove(position);
+            });
+        } else {
+            Looper.prepare();
+            Toast.makeText(requireContext(), "移动文件失败", Toast.LENGTH_SHORT).show();
+            Looper.loop();
+        }
+    }
+
+    private void moveFiles(long id) {
+        for (int i = lanzouFiles.size() -1; i >= 0; i--) {
+            LanzouFile file = lanzouFiles.get(i);
+            if (file.isSelected() && !file.isFolder()) {
+                LanzouSimpleResponse response = Repository.getInstance().moveFile(file.getFileId(), id);
+                final int position = i;
+                requireActivity().runOnUiThread(() -> {
+                    if (response.getStatus() == 1) {
+                        fileAdapter.deleteItem(position);
+                        fileAction.getCurrentPage().getFiles().remove(position);
+                    }
+                });
+            }
+        }
+        requireActivity().runOnUiThread(this::clearSelect);
     }
 
     private void showFileActionDialog(LanzouFile lanzouFile, int itemPosition) {
@@ -317,11 +401,21 @@ public class FileFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        boolean multiMode = isMultiMode();
+        menu.findItem(R.id.delete).setVisible(multiMode);
+        menu.findItem(R.id.download).setVisible(multiMode);
+        menu.findItem(R.id.move).setVisible(multiMode);
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         MenuItem search = menu.add("搜索");
         SearchView searchView = new SearchView(requireContext());
         search.setActionView(searchView);
-        search.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+        search.setIcon(R.drawable.baseline_search_24);
+        search.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItem.SHOW_AS_ACTION_ALWAYS);
         searchView.setQueryHint("输入关键字搜索");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -336,6 +430,31 @@ public class FileFragment extends Fragment implements ServiceConnection {
             }
         });
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            clearSelect();
+        } else if (item.getItemId() == R.id.delete) {
+            fileAction.deleteFiles(this::clearSelect);
+        } else if (item.getItemId() == R.id.download) {
+            for (LanzouFile lanzouFile : lanzouFiles) {
+                if (lanzouFile.isSelected() && !lanzouFile.isFolder()) {
+                    downloadService.addDownload(lanzouFile.getFileId(), lanzouFile.getName_all());
+                }
+            }
+            clearSelect();
+        } else if (item.getItemId() == R.id.move) {
+            List<LanzouFile> files = new ArrayList<>();
+            for (LanzouFile lanzouFile : lanzouFiles) {
+                if (lanzouFile.isSelected()) {
+                    files.add(lanzouFile);
+                }
+            }
+            fileAction.moveFiles(moveLauncher, files);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

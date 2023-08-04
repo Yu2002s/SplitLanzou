@@ -1,6 +1,7 @@
 package com.lanzou.split;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -36,6 +37,7 @@ import com.lanzou.split.data.LanzouPage;
 import com.lanzou.split.databinding.ActivityMainBinding;
 import com.lanzou.split.databinding.DialogCreateFolderBinding;
 import com.lanzou.split.network.Repository;
+import com.lanzou.split.service.DownloadFileService;
 import com.lanzou.split.service.DownloadService;
 import com.lanzou.split.service.UploadService;
 import com.lanzou.split.ui.file.FileFragment;
@@ -52,12 +54,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private UploadService uploadService;
     private DownloadService downloadService;
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         bindService(new Intent(this, UploadService.class), this, BIND_AUTO_CREATE);
         bindService(new Intent(this, DownloadService.class), this, BIND_AUTO_CREATE);
+        // startService(new Intent(this, DownloadFileService.class));
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -80,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     binding.viewpager2.setCurrentItem(2, false);
                     break;
             }
+            invalidateMenu();
             return true;
         });
 
@@ -90,6 +95,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     Intent data = result.getData();
                     if (data != null && result.getResultCode() == RESULT_OK) {
                         ArrayList<CharSequence> files = data.getCharSequenceArrayListExtra("files");
+                        if (files == null || files.isEmpty()) {
+                            // 选择的文件为空时
+                            return;
+                        }
                         for (CharSequence uri : files) {
                             Fragment fragment = getSupportFragmentManager().getFragments().get(0);
                             if (fragment instanceof FileFragment) {
@@ -105,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             Repository repository = Repository.getInstance();
             if (repository.getUploadPath() == null) {
                 // 未选择
-                // showUploadDialog();
                 Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
             } else {
                 // 开始去上传文件了
@@ -131,6 +139,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        int selectedItemId = binding.bottomNav.getSelectedItemId();
+        menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_home);
+        menu.findItem(R.id.action_settings).setVisible(selectedItemId == R.id.nav_me);
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -151,10 +168,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         } else if (id == R.id.create_folder) {
             createFolder();
             return true;
-        } else if (id == R.id.transmission_list) {
-            startActivity(new Intent(this, TransmissionListActivity.class));
-        } else if (id == R.id.resolve_file) {
-            startActivity(new Intent(this, ResolveFileActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -167,32 +180,32 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private void createFolder() {
         DialogCreateFolderBinding folderBinding = DialogCreateFolderBinding.inflate(getLayoutInflater());
+        Thread thread = new Thread(() -> {
+            String name = folderBinding.editName.getText().toString();
+            String desc = folderBinding.editDesc.getText().toString();
+            Fragment fragment = getSupportFragmentManager().getFragments().get(0);
+            if (fragment instanceof FileFragment) {
+                LanzouPage currentPage = ((FileFragment) fragment).getCurrentPage();
+                Long id = Repository.getInstance()
+                        .createFolder(currentPage.getFolderId(), name, desc);
+                runOnUiThread(() -> {
+                    if (id != null) {
+                        LanzouFile lanzouFile = new LanzouFile();
+                        lanzouFile.setName(name);
+                        lanzouFile.setFolderId(id);
+                        ((FileFragment) fragment).addLanzouFile(lanzouFile);
+                        Toast.makeText(MainActivity.this, "文件夹已新建", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "新建文件夹失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
         new MaterialAlertDialogBuilder(this)
                 .setTitle("新建文件夹")
                 .setView(folderBinding.getRoot())
                 .setPositiveButton("新建", (dialog, which) -> {
-                    String name = folderBinding.editName.getText().toString();
-                    String desc = folderBinding.editDesc.getText().toString();
-                    new Thread(() -> {
-                        Fragment fragment = getSupportFragmentManager().getFragments().get(0);
-                        if (fragment instanceof FileFragment) {
-                            LanzouPage currentPage = ((FileFragment) fragment).getCurrentPage();
-                            Long id = Repository.getInstance()
-                                    .createFolder(currentPage.getFolderId(), name, desc);
-                            runOnUiThread(() -> {
-                                if (id != null) {
-                                    LanzouFile lanzouFile = new LanzouFile();
-                                    lanzouFile.setName(name);
-                                    lanzouFile.setFolderId(id);
-                                    ((FileFragment) fragment).addLanzouFile(lanzouFile);
-                                    Toast.makeText(MainActivity.this, "文件夹已新建", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(MainActivity.this, "新建文件夹失败", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                    }).start();
-
+                    thread.start();
                 })
                 .setNegativeButton("取消", null)
                 .show();

@@ -35,6 +35,12 @@ public class ResolveFileActivity extends AppCompatActivity implements ServiceCon
             String pwd = binding.editPwd.getText().toString();
             resolveFile(url, pwd);
         });
+
+        CharSequence charSequenceExtra = getIntent().getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+        boolean readonly = getIntent().getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false);
+        if (charSequenceExtra != null) {
+            binding.editUrl.setText(charSequenceExtra);
+        }
     }
 
     private void resolveFile(String url, @Nullable String pwd) {

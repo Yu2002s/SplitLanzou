@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
     <application
         android:name=".LanzouApplication"
         android:allowBackup="true"
@@ -69,10 +71,17 @@
         <activity android:name=".ui.download.DownloadInfoActivity"
             android:label="下载信息"/>
         <activity android:name=".ui.resolve.ResolveFileActivity"
-            android:label="解析文件"/>
+            android:label="解析文件"
+            android:exported="true"
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <activity android:name=".ui.selector.FileSelectorActivity"
             android:label="上传文件" />
-
         <activity android:name=".ui.upload.ExternalUploadActivity"
             android:label="上传文件"
             android:launchMode="singleTask"
@@ -92,6 +101,7 @@
 
         <service android:name=".service.DownloadService" />
         <service android:name=".service.UploadService" />
+        <service android:name=".service.DownloadFileService"/>
     </application>
 
 </manifest>

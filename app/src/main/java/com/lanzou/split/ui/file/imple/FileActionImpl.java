@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -128,7 +129,7 @@ public class FileActionImpl extends AbstractFileAction {
     public void deleteItem(int position) {
         if (position == -1) return;
         lanzouFiles.remove(position);
-        currentPage.getFiles().remove(position);
+        // currentPage.getFiles().remove(position);
     }
 
     @Override
@@ -147,7 +148,7 @@ public class FileActionImpl extends AbstractFileAction {
             fileActionListener.onPageChange();
         }
         if (!lanzouFiles.isEmpty() && currentPage.getPage() == 1) {
-             lanzouFiles.clear();
+            lanzouFiles.clear();
             adapter.notifyDataSetChanged();
         }
         new Thread(() -> {
@@ -157,7 +158,7 @@ public class FileActionImpl extends AbstractFileAction {
                     currentPage.setNull(true);
                 }
                 lanzouFiles.addAll(files);
-                currentPage.addFiles(lanzouFiles);
+                currentPage.addFiles(files);
             } else {
                 currentPage.setNull(true);
             }
@@ -193,7 +194,7 @@ public class FileActionImpl extends AbstractFileAction {
         currentPage = lanzouPage;
         lanzouFiles.clear();
         if (lanzouPage.getFiles() != null) {
-            lanzouFiles.addAll(lanzouPage.getFiles());
+            lanzouFiles.addAll(currentPage.getFiles());
         }
         adapter.notifyDataSetChanged();
         lanzouPages.remove(position + 1);
@@ -215,6 +216,7 @@ public class FileActionImpl extends AbstractFileAction {
                 currentPage.setNull(true);
             }
             currentPage.setCompleted(true);
+            currentPage.addFiles(files);
             lanzouFiles.addAll(files);
             int size = lanzouFiles.size();
             int start = size - files.size();
@@ -222,20 +224,37 @@ public class FileActionImpl extends AbstractFileAction {
         }).start();
     }
 
+    private void deleteFile(LanzouFile lanzouFile, int position) {
+        LanzouSimpleResponse response = Repository.getInstance().deleteFile(lanzouFile);
+        mActivity.runOnUiThread(() -> {
+            if (response != null) {
+                if (response.getStatus() == 1) {
+                    deleteItem(position);
+                    adapter.notifyItemRemoved(position);
+                }
+                Toast.makeText(mActivity, response.getInfo(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @Override
     public void deleteFile(int position) {
         LanzouFile lanzouFile = lanzouFiles.get(position);
         new Thread(() -> {
-            LanzouSimpleResponse response = Repository.getInstance().deleteFile(lanzouFile);
-            mActivity.runOnUiThread(() -> {
-                if (response != null) {
-                    if (response.getStatus() == 1) {
-                        deleteItem(position);
-                        adapter.notifyItemRemoved(position);
-                    }
-                    Toast.makeText(mActivity, response.getInfo(), Toast.LENGTH_SHORT).show();
+            deleteFile(lanzouFile, position);
+        }).start();
+    }
+
+    @Override
+    public void deleteFiles(Callback callback) {
+        new Thread(() -> {
+            for (int i = lanzouFiles.size() - 1; i >= 0; i--) {
+                LanzouFile lanzouFile = lanzouFiles.get(i);
+                if (lanzouFile.isSelected()) {
+                    deleteFile(lanzouFile, i);
                 }
-            });
+            }
+            mActivity.runOnUiThread(callback::onCompleted);
         }).start();
     }
 
@@ -262,5 +281,10 @@ public class FileActionImpl extends AbstractFileAction {
     @Override
     public void moveFile(ActivityResultLauncher<Intent> launcher, LanzouFile lanzouFile) {
         FolderSelectorActivity.moveFile(mActivity, launcher, lanzouFile);
+    }
+
+    @Override
+    public void moveFiles(ActivityResultLauncher<Intent> launcher, List<LanzouFile> lanzouFiles) {
+        FolderSelectorActivity.moveFiles(mActivity, launcher, (ArrayList<LanzouFile>) lanzouFiles);
     }
 }

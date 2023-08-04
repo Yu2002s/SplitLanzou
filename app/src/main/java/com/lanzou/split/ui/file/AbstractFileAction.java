@@ -39,8 +39,16 @@ public abstract class AbstractFileAction {
 
     public void deleteFile(int position) {}
 
+    public void deleteFiles(Callback callback) {}
+
     public void shareFile(int position) {}
 
     public void moveFile(ActivityResultLauncher<Intent> launcher, LanzouFile lanzouFile) {}
 
+    public void moveFiles(ActivityResultLauncher<Intent> launcher, List<LanzouFile> lanzouFiles) {}
+
+
+    public interface Callback {
+        void onCompleted();
+    }
 }

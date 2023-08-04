@@ -282,6 +282,7 @@ public class Repository {
         if (mimeType == null) {
             mimeType = "*/*";
         }
+        Log.d("jdy", "sourceFile: " + file + ", fileName: " + fileName);
         RequestBody requestBody = RequestBody.create(MediaType.parse(mimeType), file);
         MultipartBody multipartBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -291,6 +292,7 @@ public class Repository {
                 .build();
         FileRequestBody fileRequestBody = new FileRequestBody(multipartBody, listener);
         LanzouUploadResponse response = get(lanzouService.uploadFile(fileRequestBody));
+        Log.d("jdy", "uploadInfo: " + response);
         if (response != null && response.getStatus() == 1) {
             return response.getUploadInfos().get(0);
         }

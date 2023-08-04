@@ -50,6 +50,12 @@ public class FolderSelectorActivity extends BaseActivity {
         );
     }
 
+    public static void moveFiles(Context context, ActivityResultLauncher<Intent> launcher,
+                                 ArrayList<LanzouFile> lanzouFiles) {
+        launcher.launch(new Intent(context, FolderSelectorActivity.class)
+                .putParcelableArrayListExtra("lanzouFiles", lanzouFiles));
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +86,8 @@ public class FolderSelectorActivity extends BaseActivity {
                 intent.putExtra("id", folderListAdapter.getCurrentList().get(position).getFolder_id());
                 LanzouFile lanzouFile = getIntent().getParcelableExtra("lanzouFile");
                 intent.putExtra("lanzouFile", lanzouFile);
+                ArrayList<Parcelable> lanzouFiles = getIntent().getParcelableArrayListExtra("lanzouFiles");
+                intent.putExtra("lanzouFiles", lanzouFiles);
                 setResult(RESULT_OK, intent);
                 finish();
             }

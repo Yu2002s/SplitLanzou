@@ -222,6 +222,11 @@ public class DownloadService extends Service {
                 }
             } else {
                 download = queryDownload;
+                if (download.isComplete()) {
+                    mHandler.post(() -> Toast.makeText(DownloadService.this, name + "任务已存在", Toast.LENGTH_SHORT).show());
+                    openFile(download);
+                    return;
+                }
             }
             // updateDownloadStatus(download);
             mHandler.post(() -> Toast.makeText(DownloadService.this, name + "已加入下载任务", Toast.LENGTH_SHORT).show());
@@ -341,7 +346,6 @@ public class DownloadService extends Service {
         Upload upload = null;
         try {
             upload = getUploadInfo(json);
-            Log.d(TAG, "upload: " + upload);
             Objects.requireNonNull(upload, "upload json is null");
         } catch (Exception e) {
             // 如果读取上传文件出错了，就直接下载文本内容到本地
