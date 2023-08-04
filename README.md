@@ -1,5 +1,9 @@
 # SplitLanzou
 更新地址：https://github.com/Yu2002s/SplitLanzou/releases
+# 截图
+![image](https://s1.ax1x.com/2023/08/03/pPFeucj.png)
+![image](https://s1.ax1x.com/2023/08/03/pPFen3Q.png)
+![image](https://s1.ax1x.com/2023/08/03/pPFem9g.png)
 # 捐赠我
 开发不易，你的捐赠是我最大的动力
 ![alipay](http://180.76.101.239/imgs/9b44cc730cf66bff9790af91108e020.jpg)
