@@ -45,6 +45,7 @@ import com.lanzou.split.ui.resolve.ResolveFileActivity;
 import com.lanzou.split.ui.selector.FileSelectorActivity;
 import com.lanzou.split.ui.setting.SettingActivity;
 import com.lanzou.split.ui.transmission.TransmissionListActivity;
+import com.lanzou.split.utils.UpdateUtils;
 
 import java.util.ArrayList;
 
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         });
 
         requestPermission();
+        UpdateUtils.checkUpdate(this);
     }
 
     @Override
