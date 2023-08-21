@@ -13,5 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/build.gradle
-/app/src/main/java/com/lanzou/split/service/UploadService.java
