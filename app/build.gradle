@@ -6,15 +6,15 @@ plugins {
 android {
     signingConfigs {
         debug {
-            storeFile file('C:\\Users\\jdy2002\\AppKey\\jdy.jks')
+            storeFile file('D:\\appkey\\jdy.jks')
             storePassword 'jdy200255'
-            keyAlias 'jdy'
+            keyAlias 'jdy2002'
             keyPassword 'jdy200255'
         }
         release {
-            storeFile file('C:\\Users\\jdy2002\\AppKey\\jdy.jks')
+            storeFile file('D:\\appkey\\jdy.jks')
             storePassword 'jdy200255'
-            keyAlias 'jdy'
+            keyAlias 'jdy2002'
             keyPassword 'jdy200255'
         }
     }
