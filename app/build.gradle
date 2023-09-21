@@ -18,15 +18,15 @@ android {
             keyPassword 'jdy200255'
         }
     }
-    namespace 'com.lanzou.split'
-    compileSdk 33
+    namespace 'com.lanzou.cloud'
+    compileSdk 34
 
     defaultConfig {
-        applicationId "com.lanzou.split"
+        applicationId "com.lanzou.cloud"
         minSdk 23
-        targetSdk 33
-        versionCode 5
-        versionName "1.4"
+        targetSdk 34
+        versionCode 6
+        versionName "1.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.debug

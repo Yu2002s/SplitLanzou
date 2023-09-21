@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:text="@string/app_name"
-    android:padding="16dp"
-    android:background="@drawable/bg_card"
     android:layout_margin="4dp"
-    android:textAppearance="@style/TextAppearance.Material3.TitleMedium">
+    android:background="@drawable/bg_card"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-</com.google.android.material.textview.MaterialTextView>
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+        tools:text="@string/app_name" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_sub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        tools:text="@string/app_name" />
+</LinearLayout>
+

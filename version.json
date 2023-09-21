@@ -1,7 +1,7 @@
 {
-  "version": "1.4",
-  "versionCode": 5,
-  "content": "test哈哈哈哈",
-  "url": "https://www.baidu.com",
-  "date": "2022-12-1"
+  "version": "1.5",
+  "versionCode": 6,
+  "content": "修复下载失败的问题\n签名掉了，安装完成后卸载之前的",
+  "url": "https://jdy2002.lanzoub.com/tp/iDsf619c3osd",
+  "date": "2023-09-21"
 }

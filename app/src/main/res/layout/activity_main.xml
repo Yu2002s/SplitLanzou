@@ -9,9 +9,9 @@
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager2"
-        android:layout_marginTop="?attr/actionBarSize"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize" />
 
     <include android:id="@+id/header"
         layout="@layout/content_header"/>

@@ -7,14 +7,14 @@
 
     <fragment android:id="@+id/fileFragment"
         android:label="SplitLanzou"
-        android:name="com.lanzou.split.ui.FileFragment">
+        android:name="com.lanzou.cloud.ui.FileFragment">
         <action
             android:id="@+id/action_webview"
             app:destination="@id/webviewFragment"/>
     </fragment>
 
     <fragment android:id="@+id/webviewFragment"
-        android:name="com.lanzou.split.ui.WebViewFragment">
+        android:name="com.lanzou.cloud.ui.WebViewFragment">
         <argument android:name="url"
             app:argType="string"/>
     </fragment>
