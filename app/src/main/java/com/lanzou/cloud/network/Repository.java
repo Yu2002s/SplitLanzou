@@ -68,7 +68,7 @@ public class Repository {
             "bds", "bdi", "ssd", "it"
     };
 
-    private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36 Edg/111.0.0.0";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
     private static final String ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
 
     private static final String ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6";
@@ -269,7 +269,6 @@ public class Repository {
         if (mimeType == null) {
             mimeType = "*/*";
         }
-        Log.d("jdy", "sourceFile: " + file + ", fileName: " + fileName);
         RequestBody requestBody = RequestBody.create(MediaType.parse(mimeType), file);
         MultipartBody multipartBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -279,7 +278,6 @@ public class Repository {
                 .build();
         FileRequestBody fileRequestBody = new FileRequestBody(multipartBody, listener);
         LanzouUploadResponse response = get(lanzouService.uploadFile(fileRequestBody));
-        Log.d("jdy", "uploadInfo: " + response);
         if (response != null && response.getStatus() == 1) {
             return response.getUploadInfos().get(0);
         }
@@ -290,55 +288,72 @@ public class Repository {
     public String getDownloadUrl(String url, @Nullable String pwd) {
         // 获取下载地址
         try {
-            if (!url.contains("/tp/")) {
-                url = url.replace(".com", ".com/tp");
+            if (url.contains("/tp/")) {
+                url = url.replace("tp/", "");
             }
             String html = getHtml(url);
+            String host = url.substring(0, url.lastIndexOf("/"));
+
             if (TextUtils.isEmpty(pwd)) {
-                // 无密码
-                Pattern pattern = Pattern.compile("submit.href = (.+) \\+ (.+)");
+                Pattern pattern = Pattern.compile("ifr2\" name=\"[0-9]{10}\" src=\"(.+)\" frameborder");
                 Matcher matcher = pattern.matcher(html);
                 if (matcher.find()) {
-                    String param = matcher.group(2);
-                    String word = matcher.group(1).trim();
-                    Pattern pattern2 = Pattern.compile("var " + word + " = '(.+)';");
-                    Pattern pattern3 = Pattern.compile("var " + param + " = '(.+)';");
-                    Matcher matcher2 = pattern2.matcher(html);
-                    Matcher matcher3 = pattern3.matcher(html);
-                    if (matcher2.find() && matcher3.find()) {
-                        String fileHost = matcher2.group(1);
-                        String downloadUrl = matcher3.group(1);
-                        return fileHost + downloadUrl;
+                    String location = host + matcher.group(1);
+                    String downloadHtml = getHtml(location);
+                    Pattern ajaxPattern = Pattern.compile("var ajaxdata = '(.+)';");
+                    Matcher ajaxMatcher = ajaxPattern.matcher(downloadHtml);
+                    if (!ajaxMatcher.find()) {
+                        return null;
                     }
+                    String ajaxData = ajaxMatcher.group(1);
+                    Pattern signPattern = Pattern.compile("'sign':'(.+)','web");
+                    Matcher signMatcher = signPattern.matcher(downloadHtml);
+                    if (!signMatcher.find()) {
+                        return null;
+                    }
+                    Pattern reqPattern = Pattern.compile("url : '(.+)',");
+                    Matcher reqMatcher = reqPattern.matcher(downloadHtml);
+                    if (!reqMatcher.find()) {
+                        return null;
+                    }
+                    FormBody body = new FormBody.Builder()
+                            .add("action", "downprocess")
+                            .add("signs", ajaxData)
+                            .add("sign", signMatcher.group(1))
+                            .build();
+                    LanzouDownloadResponse lanzouDownloadResponse = get(lanzouService.getDownloadUrl(USER_AGENT, host, host + reqMatcher.group(1), body));
+                    if (lanzouDownloadResponse.getStatus() == 1) {
+                        return lanzouDownloadResponse.getDom() + "/file/" + lanzouDownloadResponse.getUrl();
+                    }
+                    return null;
                 }
             } else {
-                // 有密码
-                String host = url.substring(0, url.indexOf(".com/") + 5);
-                String requestUrl = host + "ajaxm.php";
-                Pattern p = Pattern.compile("'sign':(.*?),");
-                Matcher m = p.matcher(html);
-                if (!m.find()) {
-                    throw new NullPointerException("获取资源错误");
-                }
-                String sign = m.group(1);
-                Pattern pattern = Pattern.compile("var " + sign + " = '(.*?)';");
+                Pattern pattern = Pattern.compile("'sign':(.+),'p'");
                 Matcher matcher = pattern.matcher(html);
                 if (!matcher.find()) {
-                    throw new IllegalStateException("获取资源出错了");
+                    return null;
                 }
-                FormBody formBody = new FormBody.Builder()
+                Pattern signPattern = Pattern.compile("var " + matcher.group(1) + " = '(.*?)';");
+                Matcher signMatcher = signPattern.matcher(html);
+                if (!signMatcher.find()) {
+                    return null;
+                }
+                Pattern reqPattern = Pattern.compile("url : '/ajaxm.php\\?file=(\\d+)',");
+                Matcher reqMatcher = reqPattern.matcher(html);
+                if (!reqMatcher.find()) {
+                    return null;
+                }
+                FormBody body = new FormBody.Builder()
                         .add("action", "downprocess")
-                        .add("sign", String.valueOf(matcher.group(1)))
+                        .add("sign", signMatcher.group(1))
                         .add("p", pwd)
+                        .add("kd", "1")
                         .build();
-                LanzouDownloadResponse responseResponse = get(lanzouService
-                        .getDownloadUrl(USER_AGENT, url, requestUrl, formBody));
-                if (responseResponse == null) {
-                    throw new NullPointerException("获取资源失败");
+                LanzouDownloadResponse lanzouDownloadResponse = get(lanzouService.getDownloadUrl(USER_AGENT, host, host + "/ajaxm.php?file="+ reqMatcher.group(1), body));
+                if (lanzouDownloadResponse.getStatus() == 1) {
+                    return lanzouDownloadResponse.getDom() + "/file/" + lanzouDownloadResponse.getUrl();
                 }
-                if (responseResponse.getStatus() == 1) {
-                    return responseResponse.getDom() + "/file/" + responseResponse.getUrl();
-                }
+                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();
