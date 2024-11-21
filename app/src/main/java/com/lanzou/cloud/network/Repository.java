@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,8 +81,11 @@ public class Repository {
             .compile("(.+)\\.([a-zA-Z]+\\d?)\\[(\\d+)]\\.enc");
 
     private final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-            .followRedirects(false)
-            .followSslRedirects(false)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(new Interceptor() {
                 @NonNull
                 @Override
@@ -278,6 +282,7 @@ public class Repository {
                 .build();
         FileRequestBody fileRequestBody = new FileRequestBody(multipartBody, listener);
         LanzouUploadResponse response = get(lanzouService.uploadFile(fileRequestBody));
+        Log.d("jdy", "uploadResponse: " + response);
         if (response != null && response.getStatus() == 1) {
             return response.getUploadInfos().get(0);
         }
@@ -286,6 +291,15 @@ public class Repository {
 
     @Nullable
     public String getDownloadUrl(String url, @Nullable String pwd) {
+        // 改用使用接口方式获取下载地址
+        /*String key = url.substring(url.lastIndexOf("/"));
+        String downloadUrl = LanzouApplication.FILE_PARSE_URL + key;
+        if (!TextUtils.isEmpty(pwd)) {
+            downloadUrl += "@" + pwd;
+        }
+        Log.d("jdy", "downloadUrl: " + downloadUrl);
+        return downloadUrl;*/
+        // 下面方法弃用，改用上面方法进行获取下载地址
         // 获取下载地址
         try {
             if (url.contains("/tp/")) {
