@@ -239,6 +239,7 @@ public class DownloadService extends Service {
             updateDownloadStatus(download);
             startDownload(download);
         } catch (Exception e) {
+            Log.d(TAG, "download error: " + e);
             if (!(e instanceof InterruptedIOException)) {
                 // 下载出错了
                 download.error();

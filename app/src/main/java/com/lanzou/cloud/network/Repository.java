@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.GsonBuilder;
-import com.lanzou.cloud.data.LanzouDownloadResponse;
+import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouFileResponse;
 import com.lanzou.cloud.data.LanzouFolder;
@@ -22,6 +22,7 @@ import com.lanzou.cloud.data.LanzouUrlResponse;
 import com.lanzou.cloud.data.User;
 import com.lanzou.cloud.event.OnFileIOListener;
 import com.lanzou.cloud.service.LanzouService;
+import com.lanzou.cloud.service.UploadService;
 import com.lanzou.cloud.utils.FileUtils;
 
 import org.litepal.LitePal;
@@ -35,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.FormBody;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -66,7 +66,7 @@ public class Repository {
             "iso", "img", "gho", "ttf", "ttc", "txf", "dwg", "bat",
             "dll", "crx", "xapk", "rp", "rpm", "rplib",
             "appimage", "lolgezi", "flac", "cad", "hwt", "accdb", "ce", "xmind", "enc",
-            "bds", "bdi", "ssd", "it"
+            "bds", "bdi", "conf", "it"
     };
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
@@ -78,11 +78,9 @@ public class Repository {
             .compile("(.+)\\.([a-zA-Z]+\\d?)\\.apk");
 
     private static final Pattern splitFilePattern = Pattern
-            .compile("(.+)\\.([a-zA-Z]+\\d?)\\[(\\d+)]\\.enc");
+            .compile("(.+)\\.([a-zA-Z]+\\d?)\\[(\\d+)]\\." + UploadService.SPLIT_FILE_EXTENSION);
 
     private final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-            .followRedirects(true)
-            .followSslRedirects(true)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -179,7 +177,7 @@ public class Repository {
                 for (LanzouFile file : files) {
                     if (file.getExtension().equals("apk")) {
                         getRealFile(file);
-                    } else if (file.getExtension().equals("enc")) {
+                    } else if (file.getExtension().equals(UploadService.SPLIT_FILE_EXTENSION)) {
                         getRealSplitFile(file);
                     }
                 }
@@ -273,6 +271,8 @@ public class Repository {
         if (mimeType == null) {
             mimeType = "*/*";
         }
+        Log.d("jdy", "uploadFile: " + file);
+        Log.d("jdy", "fileName: " + fileName + ", " + "extension: " + extension + ", mimeType: " + mimeType);
         RequestBody requestBody = RequestBody.create(MediaType.parse(mimeType), file);
         MultipartBody multipartBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -292,16 +292,16 @@ public class Repository {
     @Nullable
     public String getDownloadUrl(String url, @Nullable String pwd) {
         // 改用使用接口方式获取下载地址
-        /*String key = url.substring(url.lastIndexOf("/"));
-        String downloadUrl = LanzouApplication.FILE_PARSE_URL + key;
+        String key = url.substring(url.lastIndexOf("/"));
+        String downloadUrl = LanzouApplication.API_URL + "/lz" + key;
         if (!TextUtils.isEmpty(pwd)) {
             downloadUrl += "@" + pwd;
         }
         Log.d("jdy", "downloadUrl: " + downloadUrl);
-        return downloadUrl;*/
+        return downloadUrl;
         // 下面方法弃用，改用上面方法进行获取下载地址
         // 获取下载地址
-        try {
+        /*try {
             if (url.contains("/tp/")) {
                 url = url.replace("tp/", "");
             }
@@ -363,7 +363,7 @@ public class Repository {
                         .add("p", pwd)
                         .add("kd", "1")
                         .build();
-                LanzouDownloadResponse lanzouDownloadResponse = get(lanzouService.getDownloadUrl(USER_AGENT, host, host + "/ajaxm.php?file="+ reqMatcher.group(1), body));
+                LanzouDownloadResponse lanzouDownloadResponse = get(lanzouService.getDownloadUrl(USER_AGENT, host, host + "/ajaxm.php?file=" + reqMatcher.group(1), body));
                 if (lanzouDownloadResponse.getStatus() == 1) {
                     return lanzouDownloadResponse.getDom() + "/file/" + lanzouDownloadResponse.getUrl();
                 }
@@ -372,7 +372,7 @@ public class Repository {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return null;*/
     }
 
     @Nullable

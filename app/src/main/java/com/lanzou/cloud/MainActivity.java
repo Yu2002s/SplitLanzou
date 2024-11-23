@@ -42,6 +42,13 @@ import com.lanzou.cloud.utils.UpdateUtils;
 
 import java.util.ArrayList;
 
+/**
+ * SplitLanzou
+ *
+ * @author 冬日暖雨
+ * @email jiangdongyu54@gmail.com
+ * @date 2024/11/23
+ */
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private ActivityMainBinding binding;
 

@@ -20,6 +20,10 @@ public class LanzouApplication extends Application {
 
     public static final String HOST_LOGIN = HOST + "account.php?action=login";
 
+    public static final String API_URL = "http://api.jdynb.xyz:6400";
+
+    public static final String SHARE_URL = "http://lz.jdynb.xyz/index.html";
+
     @Override
     public void onCreate() {
         super.onCreate();

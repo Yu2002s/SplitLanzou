@@ -51,6 +51,11 @@ public class UploadService extends Service {
 
     private static final int MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
 
+    /**
+     * 分割文件后缀标识
+     */
+    public static final String SPLIT_FILE_EXTENSION = "enc";
+
     private File cacheFile;
 
     private final Repository repository = Repository.getInstance();
@@ -327,7 +332,10 @@ public class UploadService extends Service {
                 .setVersion(1.0)
                 .create();
         String json = gson.toJson(upload);
-        File jsonFile = new File(cacheFile, upload.getName() + "[" + upload.getLength() + "].enc");
+        // "[" + upload.getLength() + "]." + SPLIT_FILE_EXTENSION
+        File jsonFile = new File(cacheFile, upload.getName() + "[" + upload.getLength() + "]." + SPLIT_FILE_EXTENSION);
+        // File jsonFile = new File(cacheFile, upload.getName());
+        // File jsonFile = new File(cacheFile, name + "(" + upload.getLength() + ")" + "." + ext + "." + SPLIT_FILE_EXTENSION);
         if (jsonFile.exists() && !jsonFile.delete()) {
             // 有错误
             throw new IOException("文件覆盖失败");

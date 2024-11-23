@@ -5,16 +5,19 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Looper;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouPage;
 import com.lanzou.cloud.data.LanzouSimpleResponse;
@@ -260,21 +263,37 @@ public class FileActionImpl extends AbstractFileAction {
     @Override
     public void shareFile(int position) {
         LanzouFile lanzouFile = lanzouFiles.get(position);
-        new Thread(() -> {
-            LanzouUrl lanzouUrl = Repository.getInstance().getLanzouUrl(lanzouFile.getFileId());
-            if (lanzouUrl == null) {
-                // Toast.makeText(mActivity, "分享文件出错", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            mActivity.runOnUiThread(() -> {
-                String str = lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId();
-                if (lanzouUrl.getHasPwd() == 1) {
-                    str += "\n密码: " + lanzouUrl.getPwd();
-                }
-                clipboardManager.setPrimaryClip(ClipData.newPlainText("url", str));
-                Toast.makeText(mActivity, "分享链接已复制", Toast.LENGTH_SHORT).show();
-            });
-        }).start();
+        CharSequence[] items = new CharSequence[]{"自定义分享(支持分享100M+文件)", "普通分享(原始分享地址)"};
+        new AlertDialog.Builder(mActivity)
+                .setTitle("选择分享")
+                .setSingleChoiceItems(items, -1, (dialog, which) -> new Thread(() -> {
+                    LanzouUrl lanzouUrl = Repository.getInstance().getLanzouUrl(lanzouFile.getFileId());
+                    if (lanzouUrl == null) {
+                        Looper.prepare();
+                        Toast.makeText(mActivity, "分享文件出错", Toast.LENGTH_SHORT).show();
+                        Looper.loop();
+                        return;
+                    }
+                    mActivity.runOnUiThread(() -> {
+                        String str;
+                        if (which == 0) {
+                            str = LanzouApplication.SHARE_URL + "?url=" + lanzouUrl.getHost()
+                                    + "/" + lanzouUrl.getFileId();
+                            if (lanzouUrl.getHasPwd() == 1) {
+                                str += "&pwd=" + lanzouUrl.getPwd();
+                            }
+                        } else {
+                            str = lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId();
+                            if (lanzouUrl.getHasPwd() == 1) {
+                                str += "\n密码: " + lanzouUrl.getPwd();
+                            }
+                        }
+                        clipboardManager.setPrimaryClip(ClipData.newPlainText("url", str));
+                        Toast.makeText(mActivity, "分享链接已复制", Toast.LENGTH_SHORT).show();
+                    });
+                }).start())
+                .setPositiveButton("关闭", null)
+                .show();
     }
 
     @Override
