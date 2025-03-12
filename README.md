@@ -13,11 +13,23 @@
 
 ## 下载
 
-请查看最新发行版(release):
+### 1.最新发行版(release)
+
+> **以下版本不会自动更新，需要手动前往 github gitee 首页进行更新，如存在问题请提 issue**
 
 1. [github release](https://github.com/Yu2002s/SplitLanzou/releases) **可能无法访问**
 
 2. [gitee release](https://gitee.com/jdy2002/SplitLanzou/releases) **推荐**
+
+### 2.其他版本下载
+
+> 以下版本**可能存在问题**，不会发布正式更新，后期可能修复问题，可在 App 内加入交流群获得更新
+
+1. **可能存在问题** [LanzouCloud](https://github.com/Yu2002s/LanzouCloud) 
+|
+[云盘下载](https://jdy2002.lanzoue.com/b041496oj) (密码: 123456)
+
+2. **下载目前有问题** [雨盘下载](https://jdy2002.lanzoue.com/b040cdb5g) (密码: hyf3)
 
 ## 截图
 
