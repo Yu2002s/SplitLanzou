@@ -1,5 +1,6 @@
 package com.lanzou.cloud.adapter;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Filter;
@@ -117,11 +118,12 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
             return filterResults;
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         @Override
+        @SuppressWarnings("unchecked cast")
         protected void publishResults(CharSequence constraint, FilterResults results) {
             files = (List<FileInfo>) results.values;
             notifyDataSetChanged();
-
         }
     };
 
@@ -130,7 +132,7 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
         return filter;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         ItemListFileSelectorBinding binding;
 

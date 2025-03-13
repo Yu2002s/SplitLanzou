@@ -53,7 +53,7 @@ public class FolderListAdapter extends ListAdapter<LanzouFolder, FolderListAdapt
         holder.sub.setText(String.valueOf(lanzouFolder.getFolder_id()));
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView title;
         TextView sub;
 

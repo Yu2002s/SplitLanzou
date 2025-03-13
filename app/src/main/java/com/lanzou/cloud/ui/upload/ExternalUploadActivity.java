@@ -42,7 +42,6 @@ public class ExternalUploadActivity extends AppCompatActivity implements Service
         super.onCreate(savedInstanceState);
         startService(new Intent(this, UploadService.class));
         bindService(new Intent(this,  UploadService.class), this, BIND_AUTO_CREATE);
-
         binding = ActivityExternalUploadBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.header.toolBar);

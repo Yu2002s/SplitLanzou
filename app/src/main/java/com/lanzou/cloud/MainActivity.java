@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         binding.fab.setOnClickListener(view -> {
             Repository repository = Repository.getInstance();
+            // startActivity(new Intent(MainActivity.this, PhoneFileActivity.class));
             if (repository.getUploadPath() == null) {
                 // 未选择
                 Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();

@@ -108,7 +108,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             FilterResults results = new FilterResults();
-            if (constraint == null || "".equals(constraint.toString())) {
+            if (constraint == null || constraint.toString().isEmpty()) {
                 results.values = sources;
             } else {
                 List<LanzouFile> filterList = new ArrayList<>();
@@ -154,7 +154,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         return lanzouFiles.size();
     }
 
-    static class FileViewHolder extends RecyclerView.ViewHolder {
+    public static class FileViewHolder extends RecyclerView.ViewHolder {
 
         ItemListFileBinding binding;
 

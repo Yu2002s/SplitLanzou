@@ -246,15 +246,14 @@ public class DownloadService extends Service {
                 updateDownloadStatus(download);
             }
         } finally {
-            // always
             // 这里需要对下载进行判断
             // 如果文件已经下载完成了，就对下载队列进行删除
-            // 这里表示上传过程结束了
+            // 这里表示下载过程结束了
             if (download.isComplete()) {
                 // 这里需要对文件进行移动操作
                 try {
                     File target = new File(externalDownloadPath, download.getName());
-                    // ignore file exists 忽略文件已存在
+                    // 忽略文件已存在
                     if (new File(downloadPath, download.getName()).renameTo(target)) {
                         download.setPath(target.getPath());
                     }
@@ -348,7 +347,7 @@ public class DownloadService extends Service {
             Objects.requireNonNull(upload, "upload json is null");
         } catch (Exception e) {
             // 如果读取上传文件出错了，就直接下载文本内容到本地
-            writeCharFileToLocal(download, json);
+            writeTextFileToLocal(download, json);
         }
         return upload;
     }
@@ -357,7 +356,7 @@ public class DownloadService extends Service {
         if (download.getLength() <= 0) {
             long fileLength = responseBody.contentLength();
             if (fileLength <= 0) {
-                throw new IllegalArgumentException("response body must be null.");
+                throw new IllegalArgumentException("response body must be nonnull.");
             }
             download.setLength(fileLength);
         }
@@ -390,7 +389,7 @@ public class DownloadService extends Service {
                 updateDownloadStatus(download);
             }
         }
-        Log.d("jdy", "complete: current: " + current + ", progress: " + progress);
+        Log.d(TAG, "download complete: current: " + current + ", progress: " + progress);
         download.setCurrent(current);
         download.setProgress(progress);
         if (progress == 100) {
@@ -485,7 +484,7 @@ public class DownloadService extends Service {
      * @param content  文本内容
      * @throws Exception 读写出现的异常
      */
-    private void writeCharFileToLocal(Download download, String content) throws Exception {
+    private void writeTextFileToLocal(Download download, String content) throws Exception {
         File file = new File(downloadPath, download.getName());
         download.setPath(file.getPath());
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -506,7 +505,7 @@ public class DownloadService extends Service {
         if (response.header("Content-Range") == null) {
             download.setCurrent(0);
             download.setProgress(0);
-            Log.d("jdy", "range false");
+            Log.d(TAG, download.getUrl() + "不支持 Content-Range.");
         }
     }
 

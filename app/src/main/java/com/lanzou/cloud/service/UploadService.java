@@ -47,6 +47,8 @@ import ando.file.core.FileUri;
 
 public class UploadService extends Service {
 
+    private static final String TAG = "UploadService";
+
     private final ExecutorService executor = Executors.newFixedThreadPool(16);
 
     private static final int MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
@@ -116,7 +118,6 @@ public class UploadService extends Service {
 
     public void toggleUpload(Upload upload) {
         if (upload.isComplete()) {
-            // openFile
             // do nothing
             return;
         }
@@ -127,13 +128,13 @@ public class UploadService extends Service {
                 if (uploadTask.isUpload()) {
                     Future<?> future = entry.getValue();
                     stopUpload(future, uploadTask);
-                    Log.d("jdy", "stopUpload");
+                    Log.d(TAG, "stopUpload");
                 } else {
                     if (uploadTask.isComplete()) {
                         return;
                     }
                     resumeUpload(uploadTask);
-                    Log.d("jdy", "reUpload");
+                    Log.d(TAG, "reUpload");
                 }
                 break;
             }
@@ -151,9 +152,9 @@ public class UploadService extends Service {
         updateUploadStatus(upload);
         // 停止上传
         if (future.cancel(true)) {
-            Log.d("jdy", "stop upload success");
+            Log.d(TAG, "stop upload success");
         } else {
-            Log.e("jdy", "stop upload error");
+            Log.e(TAG, "stop upload error");
         }
     }
 
@@ -168,10 +169,12 @@ public class UploadService extends Service {
             return;
         }
         String name = path.substring(path.lastIndexOf("/") + 1);
+        // 对 qq 的文件进行特殊处理
         if (name.equals("base.apk")) {
             PackageManager packageManager = LanzouApplication.context.getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageArchiveInfo(path, 0);
-            upload.setName(packageInfo.applicationInfo.loadLabel(packageManager).toString() + "-" + packageInfo.versionName + ".apk");
+            assert packageInfo != null;
+            upload.setName(packageInfo.applicationInfo.loadLabel(packageManager) + "-" + packageInfo.versionName + ".apk");
         } else {
             upload.setName(name);
         }
@@ -190,7 +193,7 @@ public class UploadService extends Service {
                 startUploadFile(upload);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.d("jdy", "uploadError: " + e.getMessage());
+                Log.d(TAG, "uploadError: " + e.getMessage());
                 // 哎呀上传出错了
                 upload.error();
                 updateUploadStatus(upload);
@@ -200,14 +203,9 @@ public class UploadService extends Service {
                 if (upload.isComplete()) {
                     // uploadMap.remove(upload);
                     uploadMap.put(upload, null);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(UploadService.this, upload.getName() + "上传完成", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    mHandler.post(() -> Toast.makeText(UploadService.this, upload.getName() + "上传完成", Toast.LENGTH_SHORT).show());
                 }
-                Log.d("jdy", "finish Upload");
+                Log.d(TAG, "finish Upload");
             }
         });
     }
@@ -230,6 +228,7 @@ public class UploadService extends Service {
                 filePath = FileUri.INSTANCE.getPathByUri(Uri.parse(path));
             }
 
+            // 还有其他情况还没用考虑到，可能部分机型会有上传失败问题。
             if (filePath == null) {
                 throw new IllegalStateException("呜呜呜呜，这个还没适配");
             }
@@ -297,7 +296,7 @@ public class UploadService extends Service {
             }
             upload.complete();
         } else {
-            Log.d("jdy", "uploadError");
+            Log.d(TAG, "uploadError");
             upload.error();
         }
 

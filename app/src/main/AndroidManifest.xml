@@ -102,7 +102,6 @@
 
         <service android:name=".service.DownloadService" />
         <service android:name=".service.UploadService" />
-        <service android:name=".service.DownloadFileService"/>
     </application>
 
 </manifest>
