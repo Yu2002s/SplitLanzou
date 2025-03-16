@@ -9,10 +9,14 @@ import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.data.Download;
@@ -56,10 +60,16 @@ public class DownloadInfoActivity extends BaseActivity implements OnDownloadList
         + "\n当前进度: " + download.getCurrent() + "/" + download.getLength() + "\n");
         updateStatus();
 
-        binding.btnToggle.setOnClickListener(new View.OnClickListener() {
+        binding.btnToggle.setOnClickListener(v -> downloadService.toggleDownload(download));
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.btnToggle, new OnApplyWindowInsetsListener() {
+            @NonNull
             @Override
-            public void onClick(View v) {
-                downloadService.toggleDownload(download);
+            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+                int bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                layoutParams.bottomMargin = bottom;
+                return insets;
             }
         });
     }

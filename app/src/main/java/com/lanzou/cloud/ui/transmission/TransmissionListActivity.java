@@ -10,7 +10,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.databinding.ActivityTransmissionListBinding;
@@ -40,16 +39,13 @@ public class TransmissionListActivity extends BaseActivity {
         ViewPager2 viewPager2 = binding.viewPager2;
         viewPager2.setAdapter(new TransmissionAdapter(getSupportFragmentManager(), getLifecycle()));
 
-        new TabLayoutMediator(binding.tabLayout, viewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                if (position == 0) {
-                    tab.setText("下载");
-                } else {
-                    tab.setText("上传");
-                }
-
+        new TabLayoutMediator(binding.tabLayout, viewPager2, (tab, position) -> {
+            if (position == 0) {
+                tab.setText("下载");
+            } else {
+                tab.setText("上传");
             }
+
         }).attach();
     }
 

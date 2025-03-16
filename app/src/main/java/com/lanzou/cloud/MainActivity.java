@@ -23,7 +23,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
@@ -52,7 +51,7 @@ import java.util.ArrayList;
  *
  * @author 冬日暖雨
  * @email jiangdongyu54@gmail.com
- * @date 2024/11/23
+ * @date 2025/3/16
  */
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private ActivityMainBinding binding;

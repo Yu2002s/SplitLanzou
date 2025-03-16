@@ -10,6 +10,10 @@ import org.litepal.LitePal;
 
 import ando.file.core.FileOperator;
 
+/**
+ * 第三方蓝奏云 (lanzou.com)
+ * 支持上传 100M+ 文件
+ */
 public class LanzouApplication extends Application {
 
     @SuppressLint("StaticFieldLeak")

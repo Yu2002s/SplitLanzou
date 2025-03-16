@@ -1,7 +1,7 @@
 {
-  "version": "1.51",
-  "versionCode": 7,
-  "content": "修复下载、上传失败的问题\n签名掉了，安装完成后卸载之前的",
-  "url": "https://jdy2002.lanzoue.com/iLq4v2fs0wng",
-  "date": "2023-11-21"
+  "version": "1.7",
+  "versionCode": 9,
+  "content": "支持选择文件上传，修复已知的问题。",
+  "url": "http://lz.jdynb.xyz/index.html?url=https://jdy2002.lanzoue.com/iGPkP2qrrjwj",
+  "date": "2025-03-16"
 }

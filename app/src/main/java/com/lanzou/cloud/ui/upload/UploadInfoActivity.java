@@ -8,11 +8,15 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
-import com.lanzou.cloud.R;
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.data.SplitFile;
 import com.lanzou.cloud.data.Upload;
@@ -138,10 +142,16 @@ public class UploadInfoActivity extends BaseActivity implements ServiceConnectio
                 + "\n状态: " + upload.getStatusStr() + "\n\n"
                 + "===================上传日志=================\n\n");
 
-        binding.btnToggle.setOnClickListener(new View.OnClickListener() {
+        binding.btnToggle.setOnClickListener(v -> uploadService.toggleUpload(upload));
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.btnToggle, new OnApplyWindowInsetsListener() {
+            @NonNull
             @Override
-            public void onClick(View v) {
-                uploadService.toggleUpload(upload);
+            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+                int bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                layoutParams.bottomMargin = bottom;
+                return insets;
             }
         });
     }

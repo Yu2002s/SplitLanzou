@@ -2,6 +2,7 @@ package com.lanzou.cloud.adapter;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
@@ -20,10 +21,14 @@ import java.util.List;
 
 public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapter.ViewHolder> implements Filterable {
 
-
     private List<FileInfo> sources;
 
     private List<FileInfo> files;
+
+    /**
+     * 选择按钮是否可点击
+     */
+    private boolean isSelectButtonClickable = false;
 
     public FileSelectorAdapter(List<FileInfo> files) {
         this.files = files;
@@ -32,12 +37,22 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
 
     private OnItemClickListener onItemClickListener;
 
+    private OnItemClickListener onSelectItemClickListener;
+
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
     }
 
+    public void setOnSelectItemClickListener(OnItemClickListener onSelectItemClickListener) {
+        this.onSelectItemClickListener = onSelectItemClickListener;
+    }
+
     public void notifySelect(int position) {
         notifyItemChanged(position, 1);
+    }
+
+    public void setSelectButtonClickable(boolean selectButtonClickable) {
+        isSelectButtonClickable = selectButtonClickable;
     }
 
     @NonNull
@@ -47,23 +62,41 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
                 .inflate(LayoutInflater.from(parent.getContext()), parent, false);
         ViewHolder viewHolder = new ViewHolder(binding);
         viewHolder.itemView.setOnClickListener(v -> {
-            v.setSelected(!v.isSelected());
             int position = viewHolder.getAbsoluteAdapterPosition();
-            files.get(position).setSelected(v.isSelected());
-            onItemClickListener.onItemClick(position, v);
+            FileInfo fileInfo = files.get(position);
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position, v);
+            }
+            if (fileInfo.getExtension() == null) {
+                return;
+            }
+            v.setSelected(!v.isSelected());
+            fileInfo.setSelected(v.isSelected());
         });
+        if (isSelectButtonClickable) {
+            viewHolder.binding.select.setOnClickListener(v -> {
+                int position = viewHolder.getAbsoluteAdapterPosition();
+                FileInfo fileInfo = files.get(position);
+                View itemView = viewHolder.itemView;
+                itemView.setSelected(!itemView.isSelected());
+                fileInfo.setSelected(itemView.isSelected());
+                if (onSelectItemClickListener != null) {
+                    onSelectItemClickListener.onItemClick(position, v);
+                }
+            });
+        }
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FileInfo fileInfo = files.get(position);
+        String extension = fileInfo.getExtension();
+
         ItemListFileSelectorBinding binding = holder.binding;
         binding.tvName.setText(fileInfo.getName());
-        binding.getRoot().setSelected(fileInfo.isSelected());
+        holder.itemView.setSelected(fileInfo.isSelected());
         binding.tvDesc.setText(fileInfo.getFileDesc());
-
-        String extension = fileInfo.getExtension();
 
         if (extension == null) {
             binding.iconFile.setImageResource(R.drawable.baseline_folder_24);
@@ -102,7 +135,8 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
         }
         Object type = payloads.get(0);
         if (type.equals(1)) {
-            holder.itemView.setSelected(files.get(position).isSelected());
+            FileInfo fileInfo = files.get(position);
+            holder.itemView.setSelected(fileInfo.isSelected());
         }
     }
 
