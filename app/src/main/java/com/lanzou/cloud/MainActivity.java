@@ -3,6 +3,7 @@ package com.lanzou.cloud;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -14,12 +15,15 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
@@ -37,6 +41,7 @@ import com.lanzou.cloud.service.DownloadService;
 import com.lanzou.cloud.service.UploadService;
 import com.lanzou.cloud.ui.file.FileFragment;
 import com.lanzou.cloud.ui.selector.FileSelectorActivity;
+import com.lanzou.cloud.ui.selector.PhoneFileActivity;
 import com.lanzou.cloud.ui.setting.SettingActivity;
 import com.lanzou.cloud.utils.UpdateUtils;
 
@@ -88,7 +93,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             return true;
         });
 
-        binding.bottomNav.post(() -> viewPager2.setPadding(0, 0, 0, binding.bottomNav.getMeasuredHeight()));
+        binding.bottomNav.post(() -> {
+            int bottomNavHeight = binding.bottomNav.getMeasuredHeight();
+            viewPager2.setPadding(0, 0, 0, bottomNavHeight);
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) binding.fab.getLayoutParams();
+            params.bottomMargin = bottomNavHeight + 70;
+        });
 
         ActivityResultLauncher<Intent> selectFileLauncher =
                 registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -109,21 +119,35 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     }
                 });
 
-
         binding.fab.setOnClickListener(view -> {
-            Repository repository = Repository.getInstance();
-            // startActivity(new Intent(MainActivity.this, PhoneFileActivity.class));
-            if (repository.getUploadPath() == null) {
-                // 未选择
-                Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
-            } else {
-                // 开始去上传文件了
-                selectFileLauncher.launch(new Intent(MainActivity.this, FileSelectorActivity.class));
-            }
+            showUploadDialog(selectFileLauncher);
         });
 
         requestPermission();
         UpdateUtils.checkUpdate(this);
+    }
+
+    private void showUploadDialog(ActivityResultLauncher<Intent> selectFileLauncher) {
+        Repository repository = Repository.getInstance();
+        new AlertDialog.Builder(this)
+                .setTitle("选择上传方式")
+                .setSingleChoiceItems(new String[]{"分类选择", "文件选择"}, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) {
+                            if (repository.getUploadPath() == null) {
+                                // 未选择
+                                Toast.makeText(MainActivity.this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
+                            } else {
+                                // 开始去上传文件了
+                                selectFileLauncher.launch(new Intent(MainActivity.this, FileSelectorActivity.class));
+                            }
+                        } else {
+                            selectFileLauncher.launch(new Intent(MainActivity.this, PhoneFileActivity.class));
+                        }
+                        dialog.dismiss();
+                    }
+                }).show();
     }
 
     @Override

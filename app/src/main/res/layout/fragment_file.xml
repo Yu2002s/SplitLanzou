@@ -11,7 +11,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:clipToPadding="false"
             android:paddingHorizontal="8dp"
-            android:background="@color/white"
+            android:background="?attr/colorSurface"
             android:id="@+id/path_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

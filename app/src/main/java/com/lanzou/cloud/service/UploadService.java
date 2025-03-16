@@ -49,8 +49,14 @@ public class UploadService extends Service {
 
     private static final String TAG = "UploadService";
 
+    /**
+     * 线程池
+     */
     private final ExecutorService executor = Executors.newFixedThreadPool(16);
 
+    /**
+     * 单个最大上传文件大小限制
+     */
     private static final int MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
 
     /**
@@ -255,12 +261,14 @@ public class UploadService extends Service {
             // 这里处理单个文件进行上传
             targetUploadFile = files.get(0);
         } else {
+            // 将单个文件分割为多个文件，并添加 files 集合中
             getSplitUploadFiles(upload, files, new OnFileIOListener() {
                 private long now = System.currentTimeMillis();
                 private long size;
 
                 @Override
                 public void onProgress(long current, long length, long byteCount) {
+                    // 这里对文件处理、上传进度进行监听
                     upload.setCurrent(upload.getCurrent() + byteCount);
                     int progress = (int) (upload.getCurrent() * 100 / upload.getLength());
                     upload.setProgress(progress);
@@ -274,15 +282,18 @@ public class UploadService extends Service {
                     }
                 }
             });
+            // 根据上传对象信息创建对应的 json 文件
             targetUploadFile = createJsonFile(upload);
         }
+        // 是否是分割文件
         boolean isSplitFile = files.size() != 1;
         OnFileIOListener listener = isSplitFile ? null : createFileIOListener(upload);
         // 之后对文件进行生成
         LanzouUploadResponse.UploadInfo uploadInfo = repository
                 .uploadFile(targetUploadFile, upload.getUploadPage().getFolderId(),
                         listener, isSplitFile ? null : upload.getName());
-        if (files.size() != 1) {
+        if (isSplitFile) {
+            // 释放
             targetUploadFile.delete();
         }
         if (!upload.isUpload()) {
@@ -296,10 +307,12 @@ public class UploadService extends Service {
             }
             upload.complete();
         } else {
+            // 上传失败
             Log.d(TAG, "uploadError");
             upload.error();
         }
 
+        // 更新状态
         updateUploadStatus(upload);
     }
 
@@ -331,10 +344,7 @@ public class UploadService extends Service {
                 .setVersion(1.0)
                 .create();
         String json = gson.toJson(upload);
-        // "[" + upload.getLength() + "]." + SPLIT_FILE_EXTENSION
         File jsonFile = new File(cacheFile, upload.getName() + "[" + upload.getLength() + "]." + SPLIT_FILE_EXTENSION);
-        // File jsonFile = new File(cacheFile, upload.getName());
-        // File jsonFile = new File(cacheFile, name + "(" + upload.getLength() + ")" + "." + ext + "." + SPLIT_FILE_EXTENSION);
         if (jsonFile.exists() && !jsonFile.delete()) {
             // 有错误
             throw new IOException("文件覆盖失败");
@@ -348,7 +358,63 @@ public class UploadService extends Service {
         return jsonFile;
     }
 
+    /**
+     * 获取需要分割上传的文件
+     * @param upload 上传文件信息
+     * @param files 文件列表集合
+     * @param listener 读写监听
+     */
     private void getSplitUploadFiles(Upload upload, List<File> files, OnFileIOListener listener) {
+        List<SplitFile> splitFiles = getSplitFiles(files);
+        // 上传信息设置分割文件列表
+        upload.setFiles(splitFiles);
+        for (int i = 0; i < files.size(); i++) {
+            // 要上传的真实文件
+            File uploadFile = files.get(i);
+            // 已包装的分割文件信息
+            SplitFile splitFile = splitFiles.get(i);
+            // 设置索引
+            upload.setIndex(i);
+            // 这里执行实际的上传业务
+            LanzouUploadResponse.UploadInfo uploadInfo = repository
+                    .uploadFile(uploadFile, repository.getUploadPath(), listener); // 需要修改id,上传到指定的缓存文件目录
+            if (uploadInfo != null) {
+                // 上传成功了
+                LanzouUrl lanzouUrl = repository.getLanzouUrl(uploadInfo.getId());
+                if (lanzouUrl != null) {
+                    // 分割文件信息中设置已上传文件的 id，方便后续进行下载
+                    splitFile.setFileId(uploadInfo.getId());
+                    if (lanzouUrl.getHasPwd() == 1) {
+                        // 设置密码
+                        splitFile.setPwd(lanzouUrl.getPwd());
+                    }
+                    // 设置分享地址
+                    splitFile.setUrl(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId());
+                } else {
+                    // 没有获取到分享地址信息，视为失败
+                    throw new NullPointerException("upload url is null.");
+                }
+            } else {
+                // 其中一个上传失败则视为全部上传失败
+                throw new IllegalStateException("上传失败了，请重试");
+            }
+            // 结束上传后就对文件进行删除处理
+            uploadFile.delete();
+            if (i == files.size() - 1) {
+                // 对父文件夹已进行删除
+                uploadFile.getParentFile().delete();
+            }
+        }
+
+    }
+
+    /**
+     * 将多个文件包装为分割文件的集合
+     * @param files 文件列表
+     * @return 分割文件集合
+     */
+    @NonNull
+    private List<SplitFile> getSplitFiles(List<File> files) {
         List<SplitFile> splitFiles = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             // 这里对基本的上传信息进行完善
@@ -364,35 +430,7 @@ public class UploadService extends Service {
         if (splitFiles.isEmpty()) {
             throw new IllegalStateException("文件资源异常");
         }
-        upload.setFiles(splitFiles);
-        for (int i = 0; i < files.size(); i++) {
-            File uploadFile = files.get(i);
-            SplitFile splitFile = splitFiles.get(i);
-            upload.setIndex(i);
-            LanzouUploadResponse.UploadInfo uploadInfo = repository
-                    .uploadFile(uploadFile, repository.getUploadPath(), listener); // 需要修改id,上传到指定的缓存文件目录
-            if (uploadInfo != null) {
-                // 上传成功了
-                LanzouUrl lanzouUrl = repository.getLanzouUrl(uploadInfo.getId());
-                if (lanzouUrl != null) {
-                    splitFile.setFileId(uploadInfo.getId());
-                    if (lanzouUrl.getHasPwd() == 1) {
-                        splitFile.setPwd(lanzouUrl.getPwd());
-                    }
-                    splitFile.setUrl(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId());
-                } else {
-                    throw new NullPointerException("upload url is null.");
-                }
-            } else {
-                throw new IllegalStateException("上传失败了，请重试");
-            }
-            // 结束上传后就对文件进行删除处理
-            uploadFile.delete();
-            if (i == files.size() - 1) {
-                uploadFile.getParentFile().delete();
-            }
-        }
-
+        return splitFiles;
     }
 
     /**

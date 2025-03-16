@@ -11,12 +11,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.lanzou.cloud.R;
+import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.data.FileInfo;
 import com.lanzou.cloud.databinding.ActivityFileSelectorBinding;
 
@@ -42,6 +44,7 @@ public class FileSelectorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         binding = ActivityFileSelectorBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -51,24 +54,12 @@ public class FileSelectorActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("");
         SearchView searchView = new SearchView(this);
         searchView.setQueryHint("输入关键字进行搜索");
-        searchView.post(new Runnable() {
-            @Override
-            public void run() {
-                searchView.clearFocus();
-            }
-        });
+        searchView.post(searchView::clearFocus);
         searchView.onActionViewExpanded();
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         getSupportActionBar().setCustomView(searchView);
 
-        binding.header.toolBar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-        String[] titles = {"最近", "软件", "安装包", "图片", "音频", "视频", "文档", "QQ", "微信"};
+        String[] titles = {"最近", "软件", "安装包", "图片", "音频", "视频", "文档", /*"QQ", "微信"*/};
         List<FileSelectorFragment> fragmentList = new ArrayList<>();
         for (int i = 0; i < titles.length; i++) {
             fragmentList.add(FileSelectorFragment.newInstance(i));
@@ -115,17 +106,22 @@ public class FileSelectorActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_file_selector, menu);
         MenuItem item = menu.findItem(R.id.upload_file);
         Button upload = item.getActionView().findViewById(R.id.btn_upload);
-        upload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ArrayList<CharSequence> uris = new ArrayList<>();
-                for (int i = 0; i < selectedFiles.size(); i++) {
-                    uris.add(selectedFiles.get(i).getUri());
-                }
-                setResult(RESULT_OK, new Intent().putCharSequenceArrayListExtra("files", uris));
-                finish();
+        upload.setOnClickListener(v -> {
+            ArrayList<CharSequence> uris = new ArrayList<>();
+            for (int i = 0; i < selectedFiles.size(); i++) {
+                uris.add(selectedFiles.get(i).getUri());
             }
+            setResult(RESULT_OK, new Intent().putCharSequenceArrayListExtra("files", uris));
+            finish();
         });
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

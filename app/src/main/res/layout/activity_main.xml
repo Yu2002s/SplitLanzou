@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <androidx.viewpager2.widget.ViewPager2
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         android:id="@+id/viewpager2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize" />
+        android:layout_height="match_parent" />
 
     <include android:id="@+id/header"
         layout="@layout/content_header"/>
@@ -33,6 +32,6 @@
         android:id="@+id/bottom_nav"
         app:menu="@menu/menu_bottom"
         android:layout_width="match_parent"
-        android:layout_height="56dp"/>
+        android:layout_height="wrap_content"/>
 
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

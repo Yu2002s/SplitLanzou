@@ -60,28 +60,28 @@ public class ExternalUploadActivity extends AppCompatActivity implements Service
             runOnUiThread(() -> adapter.submitList(folders));
         }).start();
 
-        adapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View view) {
-                LanzouPage lanzouPage = new LanzouPage();
-                LanzouFolder lanzouFolder = adapter.getCurrentList().get(position);
-                lanzouPage.setName(lanzouFolder.getFolder_name());
-                lanzouPage.setFolderId(lanzouFolder.getFolder_id());
+        adapter.setOnItemClickListener((position, view) -> {
+            LanzouPage lanzouPage = new LanzouPage();
+            LanzouFolder lanzouFolder = adapter.getCurrentList().get(position);
+            lanzouPage.setName(lanzouFolder.getFolder_name());
+            lanzouPage.setFolderId(lanzouFolder.getFolder_id());
 
-                Intent intent = getIntent();
-                if (intent.getData() != null) {
-                    uploadService.uploadFile(intent.getData().toString(), lanzouPage);
-                    return;
-                }
-
-                ClipData clipData = intent.getClipData();
-                for (int i = 0; i < clipData.getItemCount(); i++) {
-                    ClipData.Item item = clipData.getItemAt(i);
-                    uploadService.uploadFile(item.getUri().toString(), lanzouPage);
-                }
-
-                finish();
+            Intent intent = getIntent();
+            if (intent.getData() != null) {
+                uploadService.uploadFile(intent.getData().toString(), lanzouPage);
+                return;
             }
+
+            ClipData clipData = intent.getClipData();
+            if (clipData == null) {
+                return;
+            }
+            for (int i = 0; i < clipData.getItemCount(); i++) {
+                ClipData.Item item = clipData.getItemAt(i);
+                uploadService.uploadFile(item.getUri().toString(), lanzouPage);
+            }
+
+            finish();
         });
 
     }

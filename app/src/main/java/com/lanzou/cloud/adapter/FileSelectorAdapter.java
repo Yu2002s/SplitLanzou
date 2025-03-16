@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.lanzou.cloud.R;
 import com.lanzou.cloud.data.FileInfo;
 import com.lanzou.cloud.databinding.ItemListFileSelectorBinding;
 import com.lanzou.cloud.event.OnItemClickListener;
@@ -64,19 +65,33 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
 
         String extension = fileInfo.getExtension();
 
-        if ("apk".equals(extension)) {
+        if (extension == null) {
+            binding.iconFile.setImageResource(R.drawable.baseline_folder_24);
+            return;
+        }
+
+        if (isApkFile(extension)) {
+            // 直接加载
             Glide.with(holder.itemView)
                     .load(fileInfo)
                     .into(binding.iconFile);
-        } else if ("png".equals(extension) || "jpg".equals(extension)
-                || "jpeg".equals(extension) || "webp".equals(extension)
-                || "mp4".equals(extension) || "gif".equals(extension)) {
+        } else if (isMediaFile(extension)) {
             Glide.with(holder.itemView)
                     .load(fileInfo.getUri())
                     .into(binding.iconFile);
         } else {
-            binding.iconFile.setImageDrawable(null);
+            binding.iconFile.setImageResource(R.drawable.baseline_insert_drive_file_24);
         }
+    }
+
+    private boolean isApkFile(String extension) {
+        return "apk".equals(extension);
+    }
+
+    private boolean isMediaFile(String extension) {
+        return "png".equals(extension) || "jpg".equals(extension)
+                || "jpeg".equals(extension) || "webp".equals(extension)
+                || "mp4".equals(extension) || "gif".equals(extension);
     }
 
     @Override

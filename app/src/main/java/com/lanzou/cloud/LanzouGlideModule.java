@@ -20,13 +20,11 @@ public class LanzouGlideModule extends AppGlideModule {
     @Override
     public void applyOptions(@NonNull Context context, @NonNull GlideBuilder builder) {
         super.applyOptions(context, builder);
-        Log.d("jdy", "applyOptions");
     }
 
     @Override
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
         // super.registerComponents(context, glide, registry);
-        Log.d("jdy", "register");
         registry.prepend(FileInfo.class, InputStream.class, new ApkLoaderFactory(context));
     }
 

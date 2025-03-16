@@ -37,7 +37,6 @@ public class ApkLoaderFactory implements ModelLoaderFactory<FileInfo, InputStrea
     @NonNull
     @Override
     public ModelLoader<FileInfo, InputStream> build(@NonNull MultiModelLoaderFactory multiFactory) {
-        Log.d("jdy", "loader");
         return new ApkIconLoader(context);
     }
 
@@ -90,7 +89,6 @@ public class ApkLoaderFactory implements ModelLoaderFactory<FileInfo, InputStrea
                     applicationInfo.sourceDir = fileInfo.getUri();
                     applicationInfo.publicSourceDir = fileInfo.getUri();
                     drawable = applicationInfo.loadIcon(packageManager);
-                    Log.d("jdy", fileInfo.toString());
                 } else {
                     applicationInfo = packageManager.getApplicationInfo(fileInfo.getPkgName(), 0);
                     drawable = packageManager.getApplicationIcon(applicationInfo); //xxx根据自己的情况获取drawable
@@ -99,7 +97,6 @@ public class ApkLoaderFactory implements ModelLoaderFactory<FileInfo, InputStrea
                 InputStream inputStream = bitmap2InputStream(drawable2Bitmap(drawable));
                 callback.onDataReady(inputStream);
             } catch (Exception e) {
-                e.printStackTrace();
                 callback.onLoadFailed(e);
             }
         }

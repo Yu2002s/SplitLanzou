@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,9 @@ import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,22 +38,52 @@ import java.util.List;
 
 public class FileSelectorFragment extends Fragment implements Searchable {
 
+    /**
+     * 所有文件
+     */
     public static final int TYPE_ALL = 0;
+
+    /**
+     * App
+     */
     public static final int TYPE_APP = 1;
 
+    /**
+     * Apk
+     */
     public static final int TYPE_APK = 2;
 
+    /**
+     * 图片
+     */
     public static final int TYPE_IMAGE = 3;
 
+    /**
+     * 音频
+     */
     public static final int TYPE_AUDIO = 4;
 
+    /**
+     * 视频
+     */
     public static final int TYPE_VIDEO = 5;
 
+    /**
+     * 文档
+     */
     public static final int TYPE_DOCUMENT = 6;
+
+    private static final String PARAM_TYPE = "type";
+
+    private static final String ANDROID_PATH = "/storage/emulated/0/Android";
+
+    private static final String MIME_TYPE_STREAM = "application/octet-stream";
+
+    private static final String MIME_TYPE_APK = "application/vnd.android.package-archive";
 
     public static FileSelectorFragment newInstance(int type) {
         Bundle args = new Bundle();
-        args.putInt("type", type);
+        args.putInt(PARAM_TYPE, type);
         FileSelectorFragment fragment = new FileSelectorFragment();
         fragment.setArguments(args);
         return fragment;
@@ -86,8 +120,17 @@ public class FileSelectorFragment extends Fragment implements Searchable {
 
         RecyclerView recyclerView = binding.fileRecyclerView;
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        // recyclerView.addItemDecoration(new LinearItemDecoration());
         recyclerView.setAdapter(fileSelectorAdapter);
+
+        ViewCompat.setOnApplyWindowInsetsListener(recyclerView, new OnApplyWindowInsetsListener() {
+            @NonNull
+            @Override
+            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+                recyclerView.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(),
+                        insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom);
+                return insets;
+            }
+        });
 
         fileSelectorAdapter.setOnItemClickListener((position, view1) -> {
             FileInfo fileInfo = fileSelectorAdapter.getItem(position);
@@ -98,13 +141,10 @@ public class FileSelectorFragment extends Fragment implements Searchable {
             }
         });
 
-        binding.getRoot().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                files.clear();
-                fileSelectorAdapter.notifyDataSetChanged();
-                getFiles();
-            }
+        binding.getRoot().setOnRefreshListener(() -> {
+            files.clear();
+            fileSelectorAdapter.notifyDataSetChanged();
+            getFiles();
         });
     }
 
@@ -141,7 +181,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
     }
 
     private void getFiles() {
-        int type = requireArguments().getInt("type", TYPE_ALL);
+        int type = requireArguments().getInt(PARAM_TYPE, TYPE_ALL);
 
         new Thread(() -> {
             switch (type) {
@@ -169,7 +209,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
                 default:
                     break;
             }
-            if (!"".equals(searchWorld)) {
+            if (!TextUtils.isEmpty(searchWorld)) {
                 searchFile();
             }
         }).start();
@@ -177,7 +217,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
 
     private void getApks() {
         String selection = "mime_type = ?";
-        queryFile(null, selection, new String[]{"application/vnd.android.package-archive"});
+        queryFile(null, selection, new String[]{MIME_TYPE_APK});
     }
 
     private void getImages() {
@@ -210,7 +250,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
         if (selection != null) {
             sel += " and " + selection;
         }
-        String[] args = {"application/octet-stream", ""};
+        String[] args = {MIME_TYPE_STREAM, ""};
         if (selectionArgs != null) {
             String[] defaultArgs = args;
             args = new String[defaultArgs.length + selectionArgs.length];
@@ -226,7 +266,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
         int nameIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME);
         while (cursor.moveToNext()) {
             String path = cursor.getString(cursor.getColumnIndexOrThrow("_data"));
-            if (path.startsWith("/storage/emulated/0/Android")) {
+            if (path.startsWith(ANDROID_PATH)) {
                 continue;
             }
             long id = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
@@ -257,7 +297,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
     }
 
     private void checkSelect() {
-        if (requireArguments().getInt("type") == TYPE_APP) {
+        if (requireArguments().getInt(PARAM_TYPE) == TYPE_APP) {
             return;
         }
         for (int i = 0; i < files.size(); i++) {

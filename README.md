@@ -4,7 +4,7 @@
 
 > 特别说明：本项目为**蓝奏云(lanzou.com)的第三方客户端**，本项目不存储任何文件和资源。项目采用
 > 分割文件方式达到上传储存目的，任何用户二次开发本项目行为，**本项目概不负责**。
-**请勿将本项目用于非法用途，否则一切后果由使用者自己承担。如本项目侵犯了原作者的版权，请立即联系我删除。**
+> **请勿将本项目用于非法用途，否则一切后果由使用者自己承担。如本项目侵犯了原作者的版权，请立即联系我删除。**
 
 ## 联系我
 
@@ -26,9 +26,9 @@
 > 以下版本比本项目**功能更加完善**，可以辅助本项目使用。但是**可能存在问题**，不会发布正式更新，后期可能修复问题，可在
 > App 内加入交流群获得更新
 
-1. **可能存在问题** [LanzouCloud下载](https://github.com/Yu2002s/LanzouCloud)
+1. **可能存在问题** [LanzouCloud 下载](https://github.com/Yu2002s/LanzouCloud)
    |
-[云盘下载](https://jdy2002.lanzoue.com/b041496oj) (密码: 123456)
+   [云盘下载](https://jdy2002.lanzoue.com/b041496oj) (密码: 123456)
 
 2. **下载目前有问题** [雨盘下载](https://jdy2002.lanzoue.com/b040cdb5g) (密码: hyf3)
 
@@ -39,8 +39,8 @@
 ### 本项目依赖环境：
 
 1. jdk17
-2. gradle8.0-bin (jdk不要超过17)
-3. AndroidStudio 2024.2.2 (AS版本太高，jdk也高，需要手动设置jdk版本)
+2. gradle8.0-bin (jdk 不要超过 17)
+3. AndroidStudio 2024.2.2 (AS 版本太高，jdk 也高，需要手动设置 jdk 版本)
 
 其他环境可能无法成功编译
 
@@ -56,7 +56,7 @@ android {
         release {
             // ...
         }
-    }   
+    }
 }
 ```
 
@@ -64,27 +64,27 @@ android {
 
 1. 没有文件选择器上传文件
 
-> 解决办法: 使用外部文件管理器分享(可多选)文件，选择 SplitLanzou上传文件。
+> 解决办法: 使用外部文件管理器分享(可多选)文件，选择 SplitLanzou 上传文件。
 > 或者使用 [雨盘下载](https://jdy2002.lanzoue.com/b040cdb5g) (密码: hyf3)
 
 2. 文件列表没有图标
 
 > 懒得做了
 
-3. 可以分享100M文件嘛?
+3. 可以分享 100M 文件嘛?
 
-> 支持，但是新用户注册的，只有一次下载机会，第二次网页下载会报错，需要对方也下载此App
+> 支持，但是新用户注册的，只有一次下载机会，第二次网页下载会报错，需要对方也下载此 App
 
 ## 截图
 
 文件管理截图，支持上传、下载、分享并显示**100m+**文件
 
-![image](https://s1.ax1x.com/2023/08/03/pPFeucj.png)
-![image](https://s1.ax1x.com/2023/08/03/pPFen3Q.png)
-![image](https://s1.ax1x.com/2023/08/03/pPFem9g.png)
+<img src="https://s1.ax1x.com/2023/08/03/pPFeucj.png"  align = "center" width="30%"  />
+<img src="https://s1.ax1x.com/2023/08/03/pPFen3Q.png"  align = "center"  width="30%" />
+<img src="https://s1.ax1x.com/2023/08/03/pPFem9g.png"  align = "center"  width="30%" />
 
 ## 关于
 
-1. 开发时间较短，可能有一些bug，欢迎提 issue。
-2. App不会自动更新，请前往本主页手动获取更新。
+1. 开发时间较短，可能有一些 bug，欢迎提 issue。
+2. App 不会自动更新，请前往本主页手动获取更新。
 3. 代码全部开源，不用担心后门问题。

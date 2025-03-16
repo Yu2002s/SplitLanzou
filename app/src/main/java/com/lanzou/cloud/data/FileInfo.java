@@ -1,6 +1,7 @@
 package com.lanzou.cloud.data;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class FileInfo implements Comparable<FileInfo> {
 
@@ -16,6 +17,7 @@ public class FileInfo implements Comparable<FileInfo> {
 
     private String pkgName;
 
+    @Nullable
     private String extension;
 
     private String fileDesc;
