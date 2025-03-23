@@ -2,7 +2,6 @@ package com.lanzou.cloud.ui.setting;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.TypedValue;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.MainActivity;
-import com.lanzou.cloud.R;
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.databinding.ActivitySettingBinding;
 import com.lanzou.cloud.event.OnItemClickListener;
@@ -86,35 +83,32 @@ public class SettingActivity extends BaseActivity {
             Toast.makeText(SettingActivity.this, "已选择缓存路径", Toast.LENGTH_SHORT).show();
         });
 
-        arrayAdapter.setItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View view) {
-                switch (position) {
-                    case 0:
-                        requestPermission();
-                        break;
-                    case 1:
-                        showUploadDialog();
-                        break;
-                    case 2:
-                        // 一些问题
-                        startActivity(new Intent(SettingActivity.this, QuestionActivity.class));
-                        break;
-                    case 3:
-                        String url = "https://github.com/Yu2002s/SplitLanzou";
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        startActivity(intent);
-                        break;
-                    case 4:
-                        // 关于
-                        showAboutDialog();
-                        break;
-                    case 5:
-                        Repository.getInstance().logout();
-                        System.exit(0);
-                        startActivity(new Intent(SettingActivity.this, MainActivity.class));
-                        break;
-                }
+        arrayAdapter.setItemClickListener((position, view) -> {
+            switch (position) {
+                case 0:
+                    requestPermission();
+                    break;
+                case 1:
+                    showUploadDialog();
+                    break;
+                case 2:
+                    // 一些问题
+                    startActivity(new Intent(SettingActivity.this, QuestionActivity.class));
+                    break;
+                case 3:
+                    String url = "https://github.com/Yu2002s/SplitLanzou";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                    break;
+                case 4:
+                    // 关于
+                    showAboutDialog();
+                    break;
+                case 5:
+                    Repository.getInstance().logout();
+                    System.exit(0);
+                    startActivity(new Intent(SettingActivity.this, MainActivity.class));
+                    break;
             }
         });
     }
@@ -122,15 +116,12 @@ public class SettingActivity extends BaseActivity {
     private void showAboutDialog() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("关于")
-                .setMessage("软件仅供学习交流，请勿用于其他用途。不会自动更新，如需获取其他信息请访问github主页，如有问题请提issue\n\n作者:jdy2002")
+                .setMessage("软件仅供学习交流，请勿用于其他用途。不会自动更新，如需获取其他信息请访问github主页，如有问题请提issue\n\n作者:Yu2002s")
                 .setPositiveButton("关闭", null)
-                .setNeutralButton("github主页", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String url = "https://github.com/Yu2002s/SplitLanzou";
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        startActivity(intent);
-                    }
+                .setNeutralButton("github主页", (dialog, which) -> {
+                    String url = "https://github.com/Yu2002s/SplitLanzou";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
                 })
                 .show();
     }

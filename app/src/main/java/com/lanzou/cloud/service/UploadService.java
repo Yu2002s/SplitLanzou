@@ -45,6 +45,11 @@ import java.util.concurrent.Future;
 
 import ando.file.core.FileUri;
 
+/**
+ * Lanzou 文件上传服务（支持对文件进行分割上传）
+ *
+ * @author Yu2002s
+ */
 public class UploadService extends Service {
 
     private static final String TAG = "UploadService";

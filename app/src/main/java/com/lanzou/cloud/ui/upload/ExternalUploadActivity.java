@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,7 +19,6 @@ import com.lanzou.cloud.adapter.FolderListAdapter;
 import com.lanzou.cloud.data.LanzouFolder;
 import com.lanzou.cloud.data.LanzouPage;
 import com.lanzou.cloud.databinding.ActivityExternalUploadBinding;
-import com.lanzou.cloud.event.OnItemClickListener;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.service.UploadService;
 

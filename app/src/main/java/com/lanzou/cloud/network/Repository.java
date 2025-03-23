@@ -289,6 +289,13 @@ public class Repository {
         return null;
     }
 
+    /**
+     * 通过 url 和 pwd 获取文件的实际下载地址
+     *
+     * @param url 分享地址
+     * @param pwd 分享密码
+     * @return 实际下载地址
+     */
     @Nullable
     public String getDownloadUrl(String url, @Nullable String pwd) {
         // 改用使用接口方式获取下载地址
@@ -297,7 +304,7 @@ public class Repository {
         if (!TextUtils.isEmpty(pwd)) {
             downloadUrl += "@" + pwd;
         }
-        Log.d("jdy", "downloadUrl: " + downloadUrl);
+        // Log.d("", "downloadUrl: " + downloadUrl);
         return downloadUrl;
         // 下面方法弃用，改用上面方法进行获取下载地址
         // 获取下载地址
@@ -481,7 +488,6 @@ public class Repository {
         try {
             return call.execute().body();
         } catch (Exception e) {
-            Log.e("jdy", e.toString());
             return null;
         }
     }

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -12,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.button.MaterialButton;
+import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.FileSelectorAdapter;
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.data.FileInfo;
@@ -21,6 +22,8 @@ import com.lanzou.cloud.utils.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -60,6 +63,8 @@ public class PhoneFileActivity extends BaseActivity {
         pathList.add(ROOT);
         getFiles(ROOT);
 
+        binding.refreshLayout.setOnRefreshListener(this::getFiles);
+
         fileSelectorAdapter.setOnItemClickListener((position, view) -> {
             FileInfo fileInfo = fileInfos.get(position);
             if (fileInfo.getExtension() != null) {
@@ -92,12 +97,10 @@ public class PhoneFileActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuItem doneItem = menu.add("完成");
-        doneItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        MaterialButton btn = new MaterialButton(this);
-        btn.setText("完成");
-        doneItem.setActionView(btn);
-        btn.setOnClickListener(v -> {
+        getMenuInflater().inflate(R.menu.menu_file_selector, menu);
+        MenuItem item = menu.findItem(R.id.upload_file);
+        Button upload = item.getActionView().findViewById(R.id.btn_upload);
+        upload.setOnClickListener(v -> {
             ArrayList<CharSequence> uris = new ArrayList<>();
             for (int i = 0; i < selectedFileInfos.size(); i++) {
                 File file = new File(selectedFileInfos.get(i).getUri());
@@ -119,6 +122,10 @@ public class PhoneFileActivity extends BaseActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    private void getFiles() {
+        getFiles(pathList.get(pathList.size() - 1));
+    }
+
     private void getFiles(String path) {
         fileInfos.clear();
         File file = new File(path);
@@ -129,8 +136,17 @@ public class PhoneFileActivity extends BaseActivity {
         } else {
             toolBar.setTitle(file.getName());
         }
+        toolBar.setSubtitle(path);
+        binding.refreshLayout.setRefreshing(true);
         new Thread(() -> {
             File[] files = file.listFiles();
+            if (files == null) {
+                runOnUiThread(() -> {
+                    fileSelectorAdapter.notifyDataSetChanged();
+                    binding.refreshLayout.setRefreshing(false);
+                });
+                return;
+            }
             for (File child : files) {
                 String name = child.getName();
                 FileInfo fileInfo = new FileInfo(name, child.getPath(), 0L);
@@ -148,7 +164,16 @@ public class PhoneFileActivity extends BaseActivity {
                 }
                 fileInfos.add(fileInfo);
             }
-            runOnUiThread(() -> fileSelectorAdapter.notifyDataSetChanged());
+            Collections.sort(fileInfos, new Comparator<FileInfo>() {
+                @Override
+                public int compare(FileInfo o1, FileInfo o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            runOnUiThread(() -> {
+                fileSelectorAdapter.notifyDataSetChanged();
+                binding.refreshLayout.setRefreshing(false);
+            });
         }).start();
     }
 }

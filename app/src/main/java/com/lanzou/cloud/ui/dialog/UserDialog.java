@@ -1,7 +1,6 @@
 package com.lanzou.cloud.ui.dialog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.widget.Toast;
 
@@ -40,21 +39,13 @@ public class UserDialog extends AlertDialog.Builder {
             }
         }
 
-        setSingleChoiceItems(list, position, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                repository.selectUser(userList.get(which));
-                dialog.dismiss();
-                Toast.makeText(context, "切换账号后请返回主页根目录刷新", Toast.LENGTH_SHORT).show();
-            }
+        setSingleChoiceItems(list, position, (dialog, which) -> {
+            repository.selectUser(userList.get(which));
+            dialog.dismiss();
+            Toast.makeText(context, "切换账号后请返回主页根目录刷新", Toast.LENGTH_SHORT).show();
         });
 
-        setPositiveButton("添加账号", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                context.startActivity(new Intent(context, WebActivity.class)
-                        .putExtra("url", LanzouApplication.HOST_LOGIN));
-            }
-        });
+        setPositiveButton("添加账号", (dialog, which) -> context.startActivity(new Intent(context, WebActivity.class)
+                .putExtra("url", LanzouApplication.HOST_LOGIN)));
     }
 }

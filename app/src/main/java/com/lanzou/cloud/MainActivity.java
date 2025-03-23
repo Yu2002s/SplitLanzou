@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -99,28 +101,28 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             params.bottomMargin = bottomNavHeight + 70;
         });
 
-        ActivityResultLauncher<Intent> selectFileLauncher =
-                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                    Intent data = result.getData();
-                    if (data != null && result.getResultCode() == RESULT_OK) {
-                        ArrayList<CharSequence> files = data.getCharSequenceArrayListExtra("files");
-                        if (files == null || files.isEmpty()) {
-                            // 选择的文件为空时
-                            return;
-                        }
-                        for (CharSequence uri : files) {
-                            Fragment fragment = getSupportFragmentManager().getFragments().get(0);
-                            if (fragment instanceof FileFragment) {
-                                LanzouPage currentPage = ((FileFragment) fragment).getCurrentPage();
-                                uploadService.uploadFile(uri.toString(), currentPage);
-                            }
-                        }
+        ActivityResultCallback<ActivityResult> selectFileCallback = result -> {
+            Intent data = result.getData();
+            if (data != null && result.getResultCode() == RESULT_OK) {
+                ArrayList<CharSequence> files = data.getCharSequenceArrayListExtra("files");
+                if (files == null || files.isEmpty()) {
+                    // 选择的文件为空时
+                    return;
+                }
+                for (CharSequence uri : files) {
+                    Fragment fragment = getSupportFragmentManager().getFragments().get(0);
+                    if (fragment instanceof FileFragment) {
+                        LanzouPage currentPage = ((FileFragment) fragment).getCurrentPage();
+                        uploadService.uploadFile(uri.toString(), currentPage);
                     }
-                });
+                }
+            }
+        };
 
-        binding.fab.setOnClickListener(view -> {
-            showUploadDialog(selectFileLauncher);
-        });
+        ActivityResultLauncher<Intent> selectFileLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), selectFileCallback);
+
+        binding.fab.setOnClickListener(view -> showUploadDialog(selectFileLauncher));
 
         requestPermission();
         UpdateUtils.checkUpdate(this);
@@ -128,25 +130,26 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private void showUploadDialog(ActivityResultLauncher<Intent> selectFileLauncher) {
         Repository repository = Repository.getInstance();
+
+        DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
+            if (which == 0) {
+                if (repository.getUploadPath() == null) {
+                    // 未选择
+                    Toast.makeText(MainActivity.this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 开始去上传文件了
+                    selectFileLauncher.launch(new Intent(MainActivity.this, FileSelectorActivity.class));
+                }
+            } else {
+                selectFileLauncher.launch(new Intent(MainActivity.this, PhoneFileActivity.class));
+            }
+            dialog.dismiss();
+        };
+
         new AlertDialog.Builder(this)
                 .setTitle("选择上传方式")
-                .setSingleChoiceItems(new String[]{"分类选择", "文件选择"}, -1, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) {
-                            if (repository.getUploadPath() == null) {
-                                // 未选择
-                                Toast.makeText(MainActivity.this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
-                            } else {
-                                // 开始去上传文件了
-                                selectFileLauncher.launch(new Intent(MainActivity.this, FileSelectorActivity.class));
-                            }
-                        } else {
-                            selectFileLauncher.launch(new Intent(MainActivity.this, PhoneFileActivity.class));
-                        }
-                        dialog.dismiss();
-                    }
-                }).show();
+                .setSingleChoiceItems(new String[]{"分类选择", "文件选择"}, -1, onClickListener)
+                .show();
     }
 
     @Override
@@ -172,19 +175,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingActivity.class));
             return true;

@@ -7,15 +7,17 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.lanzou.cloud.LanzouApplication;
 
-import java.util.Arrays;
-
+/**
+ * 改用开源框架
+ * com.github.javakam:file.core
+ */
+@Deprecated
 public class UriUtils {
 
     @SuppressLint("Range")
@@ -96,7 +98,6 @@ public class UriUtils {
                 path = getPath(uri);
             }
         } catch (Exception e) {
-            Log.e("jdy", e.toString());
         }
         return path;
     }
@@ -104,10 +105,7 @@ public class UriUtils {
     @Nullable
     private static String getPath(Uri uri) {
         String authority = uri.getAuthority();
-        Log.d("jdy", "uri: " + uri);
-        Log.d("jdy", "authority: " + authority);
         String[] documentId = DocumentsContract.getDocumentId(uri).split(":");
-        Log.d("jdy", "documentId: " + Arrays.toString(documentId));
         String path = null;
         switch (authority) {
             case "com.android.externalstorage.documents":
@@ -174,7 +172,6 @@ public class UriUtils {
         if (cursor != null) {
             cursor.moveToFirst();
             String data = cursor.getString(cursor.getColumnIndexOrThrow("_data"));
-            Log.d("jdy", "path: " + data);
             cursor.close();
         }
         return null;

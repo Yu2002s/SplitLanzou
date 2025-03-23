@@ -37,12 +37,7 @@ public class UpdateUtils {
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    context.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(context, "网络被墙，检查更新失败\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    context.runOnUiThread(() -> Toast.makeText(context, "网络被墙，检查更新失败\n" + e.getMessage(), Toast.LENGTH_SHORT).show());
                 }
 
                 @Override

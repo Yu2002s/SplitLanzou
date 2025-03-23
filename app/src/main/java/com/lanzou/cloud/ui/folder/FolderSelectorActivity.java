@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -13,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.FolderListAdapter;
@@ -21,7 +19,6 @@ import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouFolder;
 import com.lanzou.cloud.databinding.ActivityFolderSelectorBinding;
-import com.lanzou.cloud.event.OnItemClickListener;
 import com.lanzou.cloud.network.Repository;
 
 import java.util.ArrayList;
@@ -62,31 +59,18 @@ public class FolderSelectorActivity extends BaseActivity {
         binding.refresh.setRefreshing(true);
         getFolders();
 
-        binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                getFolders();
-            }
+        binding.refresh.setOnRefreshListener(this::getFolders);
+
+        folderListAdapter.setOnItemClickListener((position, view) -> {
+            Intent intent = new Intent();
+            intent.putExtra("id", folderListAdapter.getCurrentList().get(position).getFolder_id());
+            LanzouFile lanzouFile = getIntent().getParcelableExtra("lanzouFile");
+            intent.putExtra("lanzouFile", lanzouFile);
+            setResult(RESULT_OK, intent);
+            finish();
         });
 
-        folderListAdapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View view) {
-                Intent intent = new Intent();
-                intent.putExtra("id", folderListAdapter.getCurrentList().get(position).getFolder_id());
-                LanzouFile lanzouFile = getIntent().getParcelableExtra("lanzouFile");
-                intent.putExtra("lanzouFile", lanzouFile);
-                setResult(RESULT_OK, intent);
-                finish();
-            }
-        });
-
-        binding.add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(FolderSelectorActivity.this, "前往主页新建文件夹", Toast.LENGTH_SHORT).show();
-            }
-        });
+        binding.add.setOnClickListener(v -> Toast.makeText(FolderSelectorActivity.this, "前往主页新建文件夹", Toast.LENGTH_SHORT).show());
 
     }
 

@@ -53,15 +53,15 @@ public class QuestionActivity extends BaseActivity {
         addLeft("为啥打开软件就要获取权限？");
         addRight("为了省事，省的后面判断有没有权限");
         addLeft("我的账号会被上传到云端吗？");
-        addRight("不会的，都保存在本地");
+        addRight("不会的，全部源代码开源，都保存在本地");
         addLeft("软件会自动更新吗？");
-        addRight("不会，去github主页获取更新");
+        addRight("暂时会，可能后面会移除自动更新");
         addLeft("我要分享文件出去怎么办？");
-        addRight("暂时不要解析文件，后面看情况吧");
+        addRight("已支持分享100M+文件，不过新注册用户有限制，下载一次可能就会失效，需要对方也下载本App");
         addLeft("好的，我已了解");
         addRight("--------------------------------------");
         addRight("软件仅供交流学习使用，请勿用于其他用途");
-        addRight("作者：jdy2002");
+        addRight("作者：Yu2002s");
 
         rv.setAdapter(new QuestionAdapter(questions));
     }

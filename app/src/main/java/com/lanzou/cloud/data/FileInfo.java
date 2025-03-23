@@ -30,6 +30,7 @@ public class FileInfo implements Comparable<FileInfo> {
         this.fileDesc = fileDesc;
     }
 
+    @Nullable
     public String getExtension() {
         return extension;
     }
@@ -42,7 +43,7 @@ public class FileInfo implements Comparable<FileInfo> {
         this.id = id;
     }
 
-    public void setExtension(String extension) {
+    public void setExtension(@Nullable String extension) {
         this.extension = extension;
     }
 

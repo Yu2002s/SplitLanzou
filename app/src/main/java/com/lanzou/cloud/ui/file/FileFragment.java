@@ -32,7 +32,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.LanzouApplication;
@@ -46,7 +45,6 @@ import com.lanzou.cloud.data.LanzouSimpleResponse;
 import com.lanzou.cloud.data.SimpleItem;
 import com.lanzou.cloud.databinding.FragmentFileBinding;
 import com.lanzou.cloud.event.FileActionListener;
-import com.lanzou.cloud.event.OnItemLongClickListener;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.service.DownloadService;
 import com.lanzou.cloud.ui.file.imple.FileActionImpl;
@@ -162,20 +160,17 @@ public class FileFragment extends Fragment implements ServiceConnection {
             }
         });
 
-        moveLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if (result.getData() != null) {
-                    LanzouFile lanzouFile = result.getData().getParcelableExtra("lanzouFile");
-                    new Thread(() -> {
-                        long id = result.getData().getLongExtra("id", -1);
-                        if (lanzouFile == null) {
-                            moveFiles(id);
-                        } else {
-                            moveFile(lanzouFile, id);
-                        }
-                    }).start();
-                }
+        moveLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getData() != null) {
+                LanzouFile lanzouFile = result.getData().getParcelableExtra("lanzouFile");
+                new Thread(() -> {
+                    long id = result.getData().getLongExtra("id", -1);
+                    if (lanzouFile == null) {
+                        moveFiles(id);
+                    } else {
+                        moveFile(lanzouFile, id);
+                    }
+                }).start();
             }
         });
 
@@ -226,28 +221,22 @@ public class FileFragment extends Fragment implements ServiceConnection {
             fileAction.getFiles(lanzouFile.getFolderId(), lanzouFile.getName());
         });
 
-        fileAdapter.setLongClickListener(new OnItemLongClickListener() {
-            @Override
-            public void onItemLongClick(int position, View v) {
-                v.setSelected(!v.isSelected());
-                LanzouFile lanzouFile = fileAdapter.getItem(position);
-                lanzouFile.setSelected(v.isSelected());
-                if (v.isSelected()) {
-                    selectCount++;
-                } else {
-                    selectCount--;
-                }
-                changeSelect();
+        fileAdapter.setLongClickListener((position, v) -> {
+            v.setSelected(!v.isSelected());
+            LanzouFile lanzouFile = fileAdapter.getItem(position);
+            lanzouFile.setSelected(v.isSelected());
+            if (v.isSelected()) {
+                selectCount++;
+            } else {
+                selectCount--;
             }
+            changeSelect();
         });
 
-        binding.getRoot().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                selectCount = 0;
-                changeSelect();
-                fileAction.refresh();
-            }
+        binding.getRoot().setOnRefreshListener(() -> {
+            selectCount = 0;
+            changeSelect();
+            fileAction.refresh();
         });
 
         requireActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {

@@ -67,7 +67,7 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
             if (onItemClickListener != null) {
                 onItemClickListener.onItemClick(position, v);
             }
-            if (fileInfo.getExtension() == null) {
+            if (fileInfo.getExtension() == null || isSelectButtonClickable) {
                 return;
             }
             v.setSelected(!v.isSelected());

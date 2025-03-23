@@ -165,8 +165,8 @@ public class LanzouFile implements Parcelable {
 
     @Override
     public int hashCode() {
-        int result = (int) (fileId ^ (fileId >>> 32));
-        result = 31 * result + (int) (folderId ^ (folderId >>> 32));
+        int result = Long.hashCode(fileId);
+        result = 31 * result + Long.hashCode(folderId);
         return result;
     }
 

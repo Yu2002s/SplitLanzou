@@ -31,13 +31,10 @@ public class MeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.btnManager.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                UserDialog userDialog = new UserDialog(v.getContext());
-                userDialog.setOnDismissListener(dialog -> getUser());
-                userDialog.show();
-            }
+        binding.btnManager.setOnClickListener(v -> {
+            UserDialog userDialog = new UserDialog(v.getContext());
+            userDialog.setOnDismissListener(dialog -> getUser());
+            userDialog.show();
         });
 
         binding.btnResolve.setOnClickListener(v ->
