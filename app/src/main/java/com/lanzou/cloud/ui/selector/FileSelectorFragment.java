@@ -23,7 +23,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.lanzou.cloud.adapter.FileSelectorAdapter;
 import com.lanzou.cloud.data.FileInfo;
@@ -37,6 +36,14 @@ import java.util.Collections;
 import java.util.List;
 
 public class FileSelectorFragment extends Fragment implements Searchable {
+
+    private static final String TAG = "FileSelectorFragment";
+
+    /*
+
+        TODO: 临时写法，后期维护考虑枚举
+
+     */
 
     /**
      * 所有文件
@@ -64,14 +71,24 @@ public class FileSelectorFragment extends Fragment implements Searchable {
     public static final int TYPE_AUDIO = 4;
 
     /**
+     * WeChat
+     */
+    public static final int TYPE_WECHAT = 5;
+
+    /**
+     * QQ
+     */
+    private static final int TYPE_QQ = 6;
+
+    /**
      * 视频
      */
-    public static final int TYPE_VIDEO = 5;
+    public static final int TYPE_VIDEO = 7;
 
     /**
      * 文档
      */
-    public static final int TYPE_DOCUMENT = 6;
+    public static final int TYPE_DOCUMENT = 8;
 
     private static final String PARAM_TYPE = "type";
 
@@ -114,6 +131,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
         return binding.getRoot();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -197,6 +215,12 @@ public class FileSelectorFragment extends Fragment implements Searchable {
                 case TYPE_IMAGE:
                     getImages();
                     break;
+                case TYPE_WECHAT:
+                    getWeChatFiles();
+                    break;
+                case TYPE_QQ:
+                    getQQFiles();
+                    break;
                 case TYPE_AUDIO:
                     getAudios();
                     break;
@@ -236,6 +260,21 @@ public class FileSelectorFragment extends Fragment implements Searchable {
         String selection = "mime_type = ? and mime_type = ? and mime_type = ?";
         String[] selectionArgs = {"application/msword", "application/vnd.ms-excel", "application/vnd.ms-powerpoint"};
         queryFile(null, selection, selectionArgs);
+    }
+
+    private void getQQFiles() {
+        getFilesForPath(FileUtils.QQ_PATH);
+    }
+
+    private void getWeChatFiles() {
+        getFilesForPath(FileUtils.WECHAT_PATH);
+    }
+
+    private void getFilesForPath(String path) {
+        List<FileInfo> fileInfoList = FileUtils.getFileInfosForPath(path, selectedFiles::contains);
+        files.clear();
+        files.addAll(fileInfoList);
+        notifyData();
     }
 
     public void queryFile() {

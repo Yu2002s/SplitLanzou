@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId "com.lanzou.cloud"
-        minSdk 23
+        minSdk 24
         targetSdk 34
         versionCode 9
         versionName "1.7"

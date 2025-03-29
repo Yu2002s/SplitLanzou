@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -18,7 +17,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.lanzou.cloud.R;
-import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.data.FileInfo;
 import com.lanzou.cloud.databinding.ActivityFileSelectorBinding;
 
@@ -59,7 +57,7 @@ public class FileSelectorActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         getSupportActionBar().setCustomView(searchView);
 
-        String[] titles = {"最近", "软件", "安装包", "图片", "音频", "视频", "文档", /*"QQ", "微信"*/};
+        String[] titles = {"最近", "软件", "安装包", "图片", "微信", "QQ", "音频", "视频", "文档", /*"QQ", "微信"*/};
         List<FileSelectorFragment> fragmentList = new ArrayList<>();
         for (int i = 0; i < titles.length; i++) {
             fragmentList.add(FileSelectorFragment.newInstance(i));

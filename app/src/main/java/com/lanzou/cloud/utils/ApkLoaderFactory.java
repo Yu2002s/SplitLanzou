@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,9 +56,17 @@ public class ApkLoaderFactory implements ModelLoaderFactory<FileInfo, InputStrea
         @Nullable
         @Override
         public LoadData<InputStream> buildLoadData(@NonNull FileInfo fileInfo, int width, int height, @NonNull Options options) {
-            return new LoadData<>(new ObjectKey(
-                    fileInfo.getPkgName() == null ? fileInfo.getId() : fileInfo.getPkgName()),
-                    new ApkIconFetcher(context, fileInfo));
+            Object key;
+            if (!TextUtils.isEmpty(fileInfo.getPkgName())) {
+                key = fileInfo.getPkgName();
+            } else if (fileInfo.getId() != null) {
+                key = fileInfo.getId();
+            } else if (fileInfo.getUri() != null) {
+                key = fileInfo.getUri();
+            } else {
+                key = fileInfo.hashCode();
+            }
+            return new LoadData<>(new ObjectKey(key), new ApkIconFetcher(context, fileInfo));
 
         }
 

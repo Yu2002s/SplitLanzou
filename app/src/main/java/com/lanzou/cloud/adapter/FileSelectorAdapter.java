@@ -37,14 +37,8 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
 
     private OnItemClickListener onItemClickListener;
 
-    private OnItemClickListener onSelectItemClickListener;
-
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
-    }
-
-    public void setOnSelectItemClickListener(OnItemClickListener onSelectItemClickListener) {
-        this.onSelectItemClickListener = onSelectItemClickListener;
     }
 
     public void notifySelect(int position) {
@@ -61,29 +55,21 @@ public class FileSelectorAdapter extends RecyclerView.Adapter<FileSelectorAdapte
         ItemListFileSelectorBinding binding = ItemListFileSelectorBinding
                 .inflate(LayoutInflater.from(parent.getContext()), parent, false);
         ViewHolder viewHolder = new ViewHolder(binding);
-        viewHolder.itemView.setOnClickListener(v -> {
+        View.OnClickListener listener = v -> {
             int position = viewHolder.getAbsoluteAdapterPosition();
             FileInfo fileInfo = files.get(position);
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(position, v);
-            }
-            if (fileInfo.getExtension() == null || isSelectButtonClickable) {
-                return;
-            }
-            v.setSelected(!v.isSelected());
-            fileInfo.setSelected(v.isSelected());
-        });
-        if (isSelectButtonClickable) {
-            viewHolder.binding.select.setOnClickListener(v -> {
-                int position = viewHolder.getAbsoluteAdapterPosition();
-                FileInfo fileInfo = files.get(position);
+            if (fileInfo.getExtension() != null || v.getId() == R.id.select) {
                 View itemView = viewHolder.itemView;
                 itemView.setSelected(!itemView.isSelected());
                 fileInfo.setSelected(itemView.isSelected());
-                if (onSelectItemClickListener != null) {
-                    onSelectItemClickListener.onItemClick(position, v);
-                }
-            });
+            }
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position, v);
+            }
+        };
+        viewHolder.itemView.setOnClickListener(listener);
+        if (isSelectButtonClickable) {
+            viewHolder.binding.select.setOnClickListener(listener);
         }
         return viewHolder;
     }

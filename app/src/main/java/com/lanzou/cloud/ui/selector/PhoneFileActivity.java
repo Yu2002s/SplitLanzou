@@ -1,5 +1,6 @@
 package com.lanzou.cloud.ui.selector;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,8 +23,6 @@ import com.lanzou.cloud.utils.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -67,20 +66,16 @@ public class PhoneFileActivity extends BaseActivity {
 
         fileSelectorAdapter.setOnItemClickListener((position, view) -> {
             FileInfo fileInfo = fileInfos.get(position);
-            if (fileInfo.getExtension() != null) {
+            if (fileInfo.getExtension() != null || view.getId() == R.id.select) {
+                if (fileInfo.isSelected()) {
+                    selectedFileInfos.add(fileInfo);
+                } else {
+                    selectedFileInfos.remove(fileInfo);
+                }
                 return;
             }
             pathList.add(fileInfo.getUri());
             getFiles(fileInfo.getUri());
-        });
-
-        fileSelectorAdapter.setOnSelectItemClickListener((position, view) -> {
-            FileInfo fileInfo = fileInfos.get(position);
-            if (fileInfo.isSelected()) {
-                selectedFileInfos.add(fileInfo);
-            } else {
-                selectedFileInfos.remove(fileInfo);
-            }
         });
     }
 
@@ -126,8 +121,8 @@ public class PhoneFileActivity extends BaseActivity {
         getFiles(pathList.get(pathList.size() - 1));
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void getFiles(String path) {
-        fileInfos.clear();
         File file = new File(path);
         ActionBar toolBar = getSupportActionBar();
         assert toolBar != null;
@@ -139,40 +134,13 @@ public class PhoneFileActivity extends BaseActivity {
         toolBar.setSubtitle(path);
         binding.refreshLayout.setRefreshing(true);
         new Thread(() -> {
-            File[] files = file.listFiles();
-            if (files == null) {
-                runOnUiThread(() -> {
-                    fileSelectorAdapter.notifyDataSetChanged();
-                    binding.refreshLayout.setRefreshing(false);
-                });
-                return;
-            }
-            for (File child : files) {
-                String name = child.getName();
-                FileInfo fileInfo = new FileInfo(name, child.getPath(), 0L);
-                if (child.isFile()) {
-                    long length = child.length();
-                    fileInfo.setLength(length);
-                    String extension = ando.file.core.FileUtils.INSTANCE.getExtension(name);
-                    fileInfo.setExtension(extension);
-                    fileInfo.setFileDesc(FileUtils.toSize(length));
-                } else {
-                    fileInfo.setFileDesc("文件夹");
-                }
-                if (selectedFileInfos.contains(fileInfo)) {
-                    fileInfo.setSelected(true);
-                }
-                fileInfos.add(fileInfo);
-            }
-            Collections.sort(fileInfos, new Comparator<FileInfo>() {
-                @Override
-                public int compare(FileInfo o1, FileInfo o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
+            List<FileInfo> fileInfoList = FileUtils.getFileInfosForPath(file, selectedFileInfos::contains);
+            fileInfos.clear();
+            fileInfos.addAll(fileInfoList);
             runOnUiThread(() -> {
                 fileSelectorAdapter.notifyDataSetChanged();
                 binding.refreshLayout.setRefreshing(false);
+                binding.fileRecyclerView.scrollToPosition(0);
             });
         }).start();
     }
