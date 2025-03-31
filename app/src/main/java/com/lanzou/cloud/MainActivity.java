@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private ActivityMainBinding binding;
 
     private UploadService uploadService;
+
     private DownloadService downloadService;
 
     @SuppressLint("NonConstantResourceId")

@@ -16,6 +16,7 @@ import com.lanzou.cloud.data.LanzouFileResponse;
 import com.lanzou.cloud.data.LanzouFolder;
 import com.lanzou.cloud.data.LanzouFolderResponse;
 import com.lanzou.cloud.data.LanzouSimpleResponse;
+import com.lanzou.cloud.data.LanzouTask;
 import com.lanzou.cloud.data.LanzouUploadResponse;
 import com.lanzou.cloud.data.LanzouUrl;
 import com.lanzou.cloud.data.LanzouUrlResponse;
@@ -44,7 +45,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -57,6 +57,8 @@ public class Repository {
     public static Repository getInstance() {
         return RepositoryHolder.instance;
     }
+
+    private static final String TAG = "Repository";
 
     private static final String[] allowUploadTypes = {
             "doc", "docx", "zip", "rar", "apk", "ipa", "txt", "exe",
@@ -164,36 +166,30 @@ public class Repository {
         if (!isLogin()) {
             return null;
         }
-        try {
-            List<LanzouFile> lanzouFiles = new ArrayList<>();
-            if (page == 1) {
-                List<LanzouFile> files = getLanzouFiles(47, folderId, page);
-                if (files != null) {
-                    lanzouFiles.addAll(files);
-                }
-            }
-            List<LanzouFile> files = getLanzouFiles(5, folderId, page);
+        List<LanzouFile> lanzouFiles = new ArrayList<>();
+        if (page == 1) {
+            List<LanzouFile> files = getLanzouFiles(LanzouTask.GET_FOLDERS.id, folderId, page);
             if (files != null) {
-                for (LanzouFile file : files) {
-                    if (file.getExtension().equals("apk")) {
-                        getRealFile(file);
-                    } else if (file.getExtension().equals(UploadService.SPLIT_FILE_EXTENSION)) {
-                        getRealSplitFile(file);
-                    }
-                }
                 lanzouFiles.addAll(files);
             }
-            return lanzouFiles;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
+        List<LanzouFile> files = getLanzouFiles(LanzouTask.GET_FILES.id, folderId, page);
+        if (files != null) {
+            for (LanzouFile file : files) {
+                if (file.getExtension().equals("apk")) {
+                    getRealFile(file);
+                } else if (file.getExtension().equals(UploadService.SPLIT_FILE_EXTENSION)) {
+                    getRealSplitFile(file);
+                }
+            }
+            lanzouFiles.addAll(files);
+        }
+        return lanzouFiles;
     }
 
-    private List<LanzouFile> getLanzouFiles(int task, long folderId, int page) throws IOException {
+    private List<LanzouFile> getLanzouFiles(int task, long folderId, int page) {
         Call<LanzouFileResponse> call = lanzouService.getFiles(user.getUid(), task, folderId, page);
-        Response<LanzouFileResponse> response = call.execute();
-        LanzouFileResponse lanzouFileResponse = response.body();
+        LanzouFileResponse lanzouFileResponse = get(call);
         if (lanzouFileResponse != null && lanzouFileResponse.getStatus() == 1) {
             return lanzouFileResponse.getFiles();
         }
@@ -271,8 +267,8 @@ public class Repository {
         if (mimeType == null) {
             mimeType = "*/*";
         }
-        Log.d("jdy", "uploadFile: " + file);
-        Log.d("jdy", "fileName: " + fileName + ", " + "extension: " + extension + ", mimeType: " + mimeType);
+        Log.d(TAG, "uploadFile: " + file);
+        Log.d(TAG, "fileName: " + fileName + ", " + "extension: " + extension + ", mimeType: " + mimeType);
         RequestBody requestBody = RequestBody.create(MediaType.parse(mimeType), file);
         MultipartBody multipartBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -282,7 +278,7 @@ public class Repository {
                 .build();
         FileRequestBody fileRequestBody = new FileRequestBody(multipartBody, listener);
         LanzouUploadResponse response = get(lanzouService.uploadFile(fileRequestBody));
-        Log.d("jdy", "uploadResponse: " + response);
+        Log.d(TAG, "uploadResponse: " + response);
         if (response != null && response.getStatus() == 1) {
             return response.getUploadInfos().get(0);
         }

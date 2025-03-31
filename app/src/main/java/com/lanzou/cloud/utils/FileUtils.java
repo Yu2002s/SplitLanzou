@@ -12,7 +12,7 @@ import com.lanzou.cloud.data.FileInfo;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -37,9 +37,9 @@ public class FileUtils {
 
     private static final String MIUI_PATH = ROOT_PATH + "/MIUI";
 
-    public static final String QQ_PATH = ROOT_PATH + "/QQ";
+    public static final String QQ_PATH = DOWNLOAD_PATH + "/QQ";
 
-    public static final String WECHAT_PATH = ROOT_PATH + "/WeiXin";
+    public static final String WECHAT_PATH = DOWNLOAD_PATH + "/WeiXin";
 
     /**
      * 获取文件大小 + 单位
@@ -123,7 +123,7 @@ public class FileUtils {
             }
             fileInfos.add(fileInfo);
         }
-        fileInfos.sort(Comparator.comparing(FileInfo::getName));
+        Collections.sort(fileInfos);
         return fileInfos;
     }
 

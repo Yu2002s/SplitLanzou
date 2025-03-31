@@ -1,5 +1,7 @@
 package com.lanzou.cloud.data;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -103,6 +105,22 @@ public class FileInfo implements Comparable<FileInfo> {
         isSelected = selected;
     }
 
+    public boolean isApp() {
+        return pkgName != null;
+    }
+
+    public boolean isApk() {
+        return "apk".equalsIgnoreCase(extension);
+    }
+
+    public boolean isDirectory() {
+        return TextUtils.isEmpty(extension);
+    }
+
+    public boolean isFile() {
+        return !isDirectory();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -134,6 +152,16 @@ public class FileInfo implements Comparable<FileInfo> {
 
     @Override
     public int compareTo(FileInfo o) {
-        return o.getTime().compareTo(time);
+        if (isApp() && o.isApp()) {
+            return o.getTime().compareTo(time);
+        }
+
+        if (isDirectory() && o.isFile()) {
+            return -1;
+        } else if (isFile() && o.isDirectory()) {
+            return 1;
+        }
+
+        return name.compareTo(o.getName());
     }
 }
