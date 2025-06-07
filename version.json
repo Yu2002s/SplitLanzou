@@ -1,7 +1,7 @@
 {
-  "version": "1.7.1",
-  "versionCode": 10,
-  "content": "修复文件上传存在的问题，优化软件上传逻辑",
-  "url": "http://lz.jdynb.xyz/index.html?url=https://jdy2002.lanzoue.com/id9c82s2beha",
-  "date": "2025-03-29"
+  "version": "1.7.2",
+  "versionCode": 11,
+  "content": "1.修复下载断点续传的问题\n2.修复其他一些已知问题\n\n【如有问题可前往github首页反馈】",
+  "url": "http://lz.jdynb.xyz/index.html?url=https://jdy2002.lanzoue.com/ik9Af2y9iaji",
+  "date": "2025-06-07"
 }
