@@ -1,5 +1,6 @@
 package com.lanzou.cloud.ui.download;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.DownloadAdapter;
 import com.lanzou.cloud.data.Download;
+import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.event.OnDownloadListener;
 import com.lanzou.cloud.service.DownloadService;
 
@@ -47,12 +49,19 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
     public void onServiceDisconnected(ComponentName name) {
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         downloadService = ((DownloadService.DownloadBinder) service).getService();
         downloadService.addDownloadListener(this);
         // downloadList.addAll(downloadService.getDownloadList());
-        downloadList.addAll(LitePal.order("id desc").limit(1000).find(Download.class));
+        List<Download> downloads = LitePal.order("id desc").limit(1000).find(Download.class, true);
+        downloads.forEach(download -> {
+            if (download.isDownload() && !downloadService.isDownloading(download)) {
+                download.setStatus(Upload.STOP);
+            }
+        });
+        downloadList.addAll(downloads);
         downloadAdapter.notifyDataSetChanged();
     }
 

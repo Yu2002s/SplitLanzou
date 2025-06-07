@@ -8,7 +8,15 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Since;
 
-public class SplitFile implements Parcelable {
+import org.litepal.LitePal;
+import org.litepal.crud.LitePalSupport;
+
+public class SplitFile extends LitePalSupport implements Parcelable {
+
+    /**
+     * 唯一 id
+     */
+    private long id;
 
     /**
      * 文件批次
@@ -51,6 +59,22 @@ public class SplitFile implements Parcelable {
     private long byteStart;
 
     public SplitFile() {
+    }
+
+    public void update() {
+        if (id == 0) {
+            updateAll("fileId = ?", String.valueOf(fileId));
+        } else {
+            update(id);
+        }
+    }
+
+    @Override
+    public int delete() {
+        if (id != 0) {
+            return super.delete();
+        }
+        return LitePal.deleteAll(SplitFile.class, "fileId = ?", String.valueOf(fileId));
     }
 
     protected SplitFile(Parcel in) {

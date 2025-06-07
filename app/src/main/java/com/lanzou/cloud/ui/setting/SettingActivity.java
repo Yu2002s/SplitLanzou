@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.MainActivity;
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.databinding.ActivitySettingBinding;
@@ -96,8 +97,7 @@ public class SettingActivity extends BaseActivity {
                     startActivity(new Intent(SettingActivity.this, QuestionActivity.class));
                     break;
                 case 3:
-                    String url = "https://github.com/Yu2002s/SplitLanzou";
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(LanzouApplication.GITHUB_HOME));
                     startActivity(intent);
                     break;
                 case 4:
@@ -119,8 +119,7 @@ public class SettingActivity extends BaseActivity {
                 .setMessage("软件仅供学习交流，请勿用于其他用途。不会自动更新，如需获取其他信息请访问github主页，如有问题请提issue\n\n作者:Yu2002s")
                 .setPositiveButton("关闭", null)
                 .setNeutralButton("github主页", (dialog, which) -> {
-                    String url = "https://github.com/Yu2002s/SplitLanzou";
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(LanzouApplication.GITHUB_HOME));
                     startActivity(intent);
                 })
                 .show();

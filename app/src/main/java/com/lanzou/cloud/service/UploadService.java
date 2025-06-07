@@ -203,7 +203,6 @@ public class UploadService extends Service {
             try {
                 startUploadFile(upload);
             } catch (Exception e) {
-                e.printStackTrace();
                 Log.d(TAG, "uploadError: " + e.getMessage());
                 // 哎呀上传出错了
                 upload.error();
@@ -337,6 +336,7 @@ public class UploadService extends Service {
                     int progress = (int) (current * 100 / length);
                     upload.setCurrent(current);
                     upload.setProgress(progress);
+                    // Log.i(TAG, "current: " + current + ", length: " + length);
                     updateUploadStatus(upload);
                 }
             }

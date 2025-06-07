@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -133,6 +134,7 @@ public class DownloadInfoActivity extends BaseActivity implements OnDownloadList
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == 0) {
+            Log.i("jdy", "removeDownload: " + download);
             downloadService.removeDownload(download);
             setResult(RESULT_OK, new Intent().putExtra("position", getIntent().getIntExtra("position", -1)));
             finish();

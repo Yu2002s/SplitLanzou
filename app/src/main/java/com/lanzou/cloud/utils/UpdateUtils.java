@@ -12,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.content.pm.PackageInfoCompat;
 
+import com.lanzou.cloud.LanzouApplication;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,7 +52,7 @@ public class UpdateUtils {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 context.runOnUiThread(() ->
-                        Toast.makeText(context, "网络被墙，检查更新失败\n" + e.getMessage(),
+                        Toast.makeText(context, "网络被墙，检查更新失败，请前往设置手动获取更新\n" + e.getMessage(),
                                 Toast.LENGTH_SHORT).show()
                 );
             }
@@ -109,6 +111,9 @@ public class UpdateUtils {
                 .setTitle("发现新版本-" + versionName)
                 .setMessage(content)
                 .setPositiveButton("取消", null)
+                .setNeutralButton("Github主页", ((dialog, which) -> {
+                    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LanzouApplication.GITHUB_HOME)));
+                }))
                 .setNegativeButton("更新", (dialog, which) ->
                         context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 ).show();

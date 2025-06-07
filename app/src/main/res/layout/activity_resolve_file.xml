@@ -11,7 +11,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginHorizontal="16dp"
         android:id="@+id/edit_url"
-        android:hint="请输入文件分享地址"
+        android:hint="请输入文件分享地址(原始分享地址)"
         android:inputType="text|textUri"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
 
     <TextView
         android:padding="16dp"
-        android:text="可能下载后文件名不对，记得自己改后缀"
+        android:text="注意：可能下载后文件名不对，记得自己改后缀，请输入蓝奏云原始的分享地址"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

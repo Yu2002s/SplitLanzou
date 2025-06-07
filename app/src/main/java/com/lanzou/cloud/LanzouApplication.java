@@ -26,6 +26,8 @@ public class LanzouApplication extends Application {
 
     public static final String SHARE_URL = "http://lz.jdynb.xyz/index.html";
 
+    public static final String GITHUB_HOME = "https://github.com/Yu2002s/SplitLanzou";
+
     @Override
     public void onCreate() {
         super.onCreate();

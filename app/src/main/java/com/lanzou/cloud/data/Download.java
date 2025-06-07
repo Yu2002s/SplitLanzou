@@ -2,6 +2,7 @@ package com.lanzou.cloud.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,7 +53,7 @@ public class Download extends LitePalSupport implements Comparable<Download>, Pa
   /**
    * 上传文件json
    */
-  private StringBuilder uploadJson;
+  private String uploadJson;
 
   // 获取文件所有的上传信息
   private Upload upload;
@@ -183,11 +184,11 @@ public class Download extends LitePalSupport implements Comparable<Download>, Pa
     return speed;
   }
 
-  public void setUploadJson(StringBuilder uploadJson) {
+    public void setUploadJson(String uploadJson) {
     this.uploadJson = uploadJson;
   }
 
-  public StringBuilder getUploadJson() {
+    public String getUploadJson() {
     return uploadJson;
   }
 
@@ -251,6 +252,15 @@ public class Download extends LitePalSupport implements Comparable<Download>, Pa
   public boolean isDownload() {
     return status < Upload.ERROR;
   }
+
+    /**
+     * 是否是分割文件
+     *
+     * @return true 是 false 不是
+     */
+    public boolean isSplitFile() {
+        return upload != null || !TextUtils.isEmpty(uploadJson);
+    }
 
   public int getStatus() {
     return status;

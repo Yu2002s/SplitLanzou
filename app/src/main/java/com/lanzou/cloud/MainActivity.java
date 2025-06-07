@@ -52,8 +52,8 @@ import java.util.ArrayList;
  * SplitLanzou
  *
  * @author 冬日暖雨
- * @email jiangdongyu54@gmail.com
- * @date 2025/3/16
+ * @mail jiangdongyu54@gmail.com
+ * @since 2025/06/07
  */
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private ActivityMainBinding binding;

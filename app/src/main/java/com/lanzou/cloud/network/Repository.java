@@ -430,23 +430,21 @@ public class Repository {
         return get(lanzouService.moveFile(20, fileId, targetFolder));
     }
 
-    public okhttp3.Response getResponse(String url) throws IOException {
-        Request request = new Request.Builder()
+    private Request.Builder createRequest(String url) {
+        return new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", USER_AGENT)
                 .addHeader("Accept", ACCEPT)
-                .addHeader("Accept-Language", ACCEPT_LANGUAGE)
-                .build();
-        return okHttpClient.newCall(request).execute();
+                .addHeader("Accept-Language", ACCEPT_LANGUAGE);
+    }
+
+    public okhttp3.Response getResponse(String url) throws IOException {
+        return okHttpClient.newCall(createRequest(url).build()).execute();
     }
 
     public okhttp3.Response getRangeResponse(String url, long start) throws IOException {
-        Request request = new Request.Builder()
-                .url(url)
+        Request request = createRequest(url)
                 .addHeader("Range", "bytes=" + start + "-")
-                .addHeader("User-Agent", USER_AGENT)
-                .addHeader("Accept", ACCEPT)
-                .addHeader("Accept-Language", ACCEPT_LANGUAGE)
                 .build();
         return okHttpClient.newCall(request).execute();
     }

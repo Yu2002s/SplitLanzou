@@ -3,10 +3,12 @@ package com.lanzou.cloud.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.litepal.crud.LitePalSupport;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class LanzouPage implements Parcelable {
+public class LanzouPage extends LitePalSupport implements Parcelable {
 
     private long folderId;
 

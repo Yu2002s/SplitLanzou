@@ -26,6 +26,7 @@ import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.utils.FileUtils;
 
 import org.litepal.LitePal;
+import org.litepal.crud.LitePalSupport;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -44,6 +45,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -56,6 +59,8 @@ import okhttp3.ResponseBody;
 public class DownloadService extends Service {
 
     private static final String TAG = "DownloadService";
+
+    private static final String[] FILENAME_REGEX_ARR = {"filename\\*=UTF-8''(.+)", "filename=\"(.+)\""};
 
     /**
      * 下载线程池
@@ -100,6 +105,7 @@ public class DownloadService extends Service {
 
     /**
      * 更新下载状态，从子线程切换到主线程中进行更新操作
+     *
      * @param download 下载信息
      */
     private void updateDownloadStatus(Download download) {
@@ -137,7 +143,18 @@ public class DownloadService extends Service {
     }
 
     /**
+     * 通过 download 对象判断下载任务是否正在下载
+     *
+     * @param download 下载信息
+     * @return 是否正在下载
+     */
+    public boolean isDownloading(@NonNull Download download) {
+        return downloadMap.containsKey(download.getUrl());
+    }
+
+    /**
      * 对下载队列进行切换暂停、继续操作
+     *
      * @param download 下载信息
      */
     public void toggleDownload(Download download) {
@@ -151,18 +168,22 @@ public class DownloadService extends Service {
         if (future != null) {
             // 正在下载的话就停止，已停止就恢复下载
             if (download.isDownload()) {
+                Log.i(TAG, "停止下载");
                 stopDownload(future, download);
             } else {
+                Log.i(TAG, "恢复下载");
                 resumeDownload(download);
             }
         } else {
             // 如果任务不存在
             addDownload(download.getUrl(), download.getName(), download.getPwd());
+            Log.i(TAG, "开始新下载");
         }
     }
 
     /**
      * 打开已下载的文件
+     *
      * @param download 下载对象信息
      */
     private void openFile(Download download) {
@@ -174,6 +195,7 @@ public class DownloadService extends Service {
 
     /**
      * 恢复暂停的下载
+     *
      * @param download 下载对象信息
      */
     private void resumeDownload(Download download) {
@@ -184,7 +206,8 @@ public class DownloadService extends Service {
 
     /**
      * 停止下载文件
-     * @param future Future
+     *
+     * @param future   Future
      * @param download 下载信息
      */
     private void stopDownload(Future<?> future, Download download) {
@@ -195,12 +218,19 @@ public class DownloadService extends Service {
 
     /**
      * 删除下载服务
+     *
      * @param download 下载信息
      */
     public void removeDownload(Download download) {
+        Upload upload = download.getUpload();
+        Log.i(TAG, "remove upload: " + upload);
+        if (upload != null) {
+            upload.delete();
+            LitePal.deleteAll(SplitFile.class, "upload_id = ?", String.valueOf(upload.getId()));
+        }
         LitePal.delete(Download.class, download.getId());
         download.stop();
-        Future<?> future = downloadMap.get(download.getUrl());
+        Future<?> future = downloadMap.remove(download.getUrl());
         if (future != null) {
             future.cancel(true);
         }
@@ -217,8 +247,9 @@ public class DownloadService extends Service {
 
     /**
      * 通过 fileId 和名称添加下载
+     *
      * @param fileId 文件 id
-     * @param name 文件名称
+     * @param name   文件名称
      */
     public void addDownload(long fileId, @Nullable String name) {
         // 如果只有文件的 id，则需要先通过 id 获取到文件的分享地址
@@ -234,9 +265,10 @@ public class DownloadService extends Service {
 
     /**
      * 通过 url、name、pwd 添加下载
-     * @param url 文件分享地址
+     *
+     * @param url  文件分享地址
      * @param name 文件名称
-     * @param pwd 文件分享密码
+     * @param pwd  文件分享密码
      */
     public void addDownload(String url, @Nullable String name, @Nullable String pwd) {
         if (downloadMap.containsKey(url)) {
@@ -244,17 +276,20 @@ public class DownloadService extends Service {
             Log.d(TAG, "下载任务已存在");
             return;
         }
+
+        String showName = name == null ? url : name;
+
         downloadMap.put(url, executorService.submit(() -> {
             Download download;
 
             Download queryDownload = LitePal
                     .where("url = ?", url)
-                    .findFirst(Download.class);
+                    .findFirst(Download.class, true);
             if (queryDownload == null) {
                 download = new Download();
                 download.setUrl(url);
                 download.setTime(System.currentTimeMillis());
-                download.setName(name == null ? url : name);
+                download.setName(showName);
                 download.setPwd(pwd);
                 if (!download.insert()) {
                     download.error();
@@ -263,20 +298,27 @@ public class DownloadService extends Service {
                 }
             } else {
                 download = queryDownload;
+                Upload upload = download.getUpload();
+                if (upload != null) {
+                    List<SplitFile> files = LitePal.where("upload_id = ?", String.valueOf(upload.getId()))
+                            .find(SplitFile.class);
+                    upload.setFiles(files);
+                }
                 if (download.isComplete()) {
-                    mHandler.post(() -> Toast.makeText(DownloadService.this, name + "任务已存在", Toast.LENGTH_SHORT).show());
+                    mHandler.post(() -> Toast.makeText(DownloadService.this, showName + "任务已存在", Toast.LENGTH_SHORT).show());
                     openFile(download);
                     return;
                 }
             }
             // updateDownloadStatus(download);
-            mHandler.post(() -> Toast.makeText(DownloadService.this, name + "已加入下载任务", Toast.LENGTH_SHORT).show());
+            mHandler.post(() -> Toast.makeText(DownloadService.this, showName + "已加入下载任务", Toast.LENGTH_SHORT).show());
             prepareDownload(download);
         }));
     }
 
     /**
      * 准备下载文件
+     *
      * @param download 下载信息
      */
     private void prepareDownload(Download download) {
@@ -324,12 +366,13 @@ public class DownloadService extends Service {
 
     /**
      * 开始下载文件
+     *
      * @param download 下载信息
      * @throws Exception 可能抛出的异常
      */
     private void startDownload(Download download) throws Exception {
-        if (download.getUpload() != null) {
-            // 表示已经获取到了文件信息，此时已知文件是分割文件
+        // 当 App 被销毁时，下载任务未完成，重新打开 App 断点续传
+        if (download.isSplitFile()) {
             handleSplitFiles(download);
             return;
         }
@@ -337,6 +380,9 @@ public class DownloadService extends Service {
         // 获取下载地址
         String downloadUrl = repository.getDownloadUrl(url, download.getPwd());
         Objects.requireNonNull(downloadUrl, "获取下载地址失败");
+        Log.i(TAG, "downloadUrl: " + downloadUrl);
+
+        repository.getResponse(downloadUrl);
 
         // 获取到响应信息，注意：这里获取到的可能不是完整响应，因为需要断点续传
         Response response = repository.getRangeResponse(downloadUrl, download.getCurrent());
@@ -350,14 +396,11 @@ public class DownloadService extends Service {
         // 获取文件大小
         getFileLength(responseBody, download);
 
-        // 如果下载地址和文件名相同，就通过结果头获取文件名（可能文件名错误）
-        if (download.getUrl().equals(download.getName())) {
-            download.setName(getFileName(response));
-        }
         InputStream inputStream = responseBody.byteStream();
         try {
             int len = inputStream.read();
-            boolean isSplitFile = len == 123; // 获取起始字符是否以{开头，如果是，就可能是json
+            // 获取起始字符是否以{开头，如果是，就可能是json
+            boolean isSplitFile = len == 123;
             // 直接通过文件的第一个字符判断是否是分割文件
             if (isSplitFile) {
                 // 读取文件的上传内容信息，可能出现异常
@@ -366,20 +409,31 @@ public class DownloadService extends Service {
                     // 可能会出现异常的问题
                     return;
                 }
-                // 下载信息中设置上传文件信息
+                download.setName(upload.getName());
+                List<SplitFile> files = upload.getFiles();
+                if (files != null && !files.isEmpty()) {
+                    files.forEach(LitePalSupport::save);
+                }
+                Log.i(TAG, "downloadId: " + download.getId());
+                upload.setDownloadId(download.getId());
+                upload.save();
                 download.setUpload(upload);
                 // 开始处理分割文件
                 handleSplitFiles(download);
             } else {
+                // 如果下载地址和文件名相同，就通过结果头获取文件名（可能文件名错误）
+                if (download.getUrl().equals(download.getName())) {
+                    download.setName(getFileName(response));
+                }
                 // 写入小于100M的文件
                 writeSingleFile(download, len, inputStream);
             }
         } catch (Exception e) {
             // 这里处理异常
-            e.printStackTrace();
             Log.e(TAG, "startDownloadError: " + e.getMessage());
+            throw e;
         } finally {
-            // 这里在最后进行资源释放
+            // 这里在最后进行资源释放，忽略可能存在的错误
             responseBody.close();
             response.close();
         }
@@ -399,7 +453,7 @@ public class DownloadService extends Service {
         download.read();
         updateDownloadStatus(download);
         StringBuilder builder = download.getUploadJson() == null
-                ? new StringBuilder() : download.getUploadJson();
+                ? new StringBuilder() : new StringBuilder(download.getUploadJson());
         builder.append((char) len);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
@@ -413,6 +467,9 @@ public class DownloadService extends Service {
         try {
             upload = getUploadInfo(json);
             Objects.requireNonNull(upload, "upload json is null");
+            if (download.getUploadJson() == null) {
+                download.setUploadJson(json);
+            }
         } catch (Exception e) {
             Log.e(TAG, "获取上传信息失败，尝试写入文本文件");
             // 如果读取上传文件出错了，就直接下载文本内容到本地
@@ -423,8 +480,9 @@ public class DownloadService extends Service {
 
     /**
      * 获取文件大小
+     *
      * @param responseBody 响应体
-     * @param download 下载信息
+     * @param download     下载信息
      */
     private void getFileLength(ResponseBody responseBody, Download download) {
         if (download.getLength() <= 0) {
@@ -448,6 +506,7 @@ public class DownloadService extends Service {
         // 进入下载文件状态
         download.progress();
         File file = new File(downloadPath, download.getName());
+        Log.i(TAG, "downloadPath: " + file.getPath());
         download.setPath(file.getPath());
         RandomAccessFile raf = new RandomAccessFile(file, "rwd");
         raf.seek(download.getCurrent());
@@ -476,6 +535,8 @@ public class DownloadService extends Service {
         download.setProgress(progress);
         if (progress == 100) {
             download.complete();
+        } else {
+            download.error();
         }
         raf.close();
         inputStream.close();
@@ -512,6 +573,10 @@ public class DownloadService extends Service {
                 String pwd = splitFile.getPwd();
                 // 获取到分割文件的实际下载地址
                 String childDownloadUrl = repository.getDownloadUrl(fileUrl, pwd);
+                Log.i(TAG, "child downloadUrl: " + childDownloadUrl);
+                Log.i(TAG, "childByteStart: " + splitFile.getByteStart());
+                Log.i(TAG, "childFileLength: " + splitFile.getLength());
+                Log.i(TAG, "childFile: start -> " + splitFile.getStart() + " -> " + splitFile.getEnd());
                 // 获取到请求的响应信息
                 Response response = repository.getRangeResponse(childDownloadUrl, splitFile.getByteStart());
                 // 判断是否支持断点续传
@@ -522,6 +587,7 @@ public class DownloadService extends Service {
                 }
                 // 响应体信息
                 ResponseBody childResponseBody = response.body();
+                Log.i(TAG, "responseLength: " + childResponseBody.contentLength());
                 Objects.requireNonNull(childResponseBody, "获取资源失败");
                 // 开始写入到本地
                 writeFileToLocal(download, splitFile, childResponseBody.byteStream(), raf);
@@ -561,11 +627,14 @@ public class DownloadService extends Service {
                 start = now;
                 download.setSpeed((int) (current - size));
                 size = current;
+                splitFile.update();
                 updateDownloadStatus(download);
             }
         }
+        splitFile.update();
         download.setProgress(progress);
         download.setCurrent(current);
+        download.update();
 
         // 当进度为100时则表示已下载完成了
         if (progress == 100) {
@@ -607,23 +676,41 @@ public class DownloadService extends Service {
 
     /**
      * 通过响应信息获取到要下载的文件名
+     *
      * @param response 响应
      * @return 文件名称
      */
     private String getFileName(Response response) {
         String header = response.header("Content-Disposition");
         // attachment; filename= open-install-2.4.6-I602.exe
+        // attachment; filename*=UTF-8''idm.inet.download.manager.apk
+        // attachment;filename="%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6%5B0%5D.apk";filename*=UTF-8''%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6%5B0%5D.apk
         if (header != null) {
-            int index = header.indexOf("=") + 2;
-            String s = URLDecoder.decode(header.substring(index));
-            String fileName = repository.getRealFileName(s);
-            return fileName == null ? s : fileName;
+            String fileName = null;
+            for (String regex : FILENAME_REGEX_ARR) {
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(header);
+                if (matcher.find()) {
+                    fileName = matcher.group(1).trim();
+                    Log.i(TAG, "[regex]fileName: " + fileName);
+                    break;
+                }
+            }
+            if (fileName == null) {
+                int index = header.indexOf("=") + 2;
+                fileName = header.substring(index);
+                Log.i(TAG, "[手动匹配]fileName: " + fileName);
+            }
+            String decodeFileName = URLDecoder.decode(fileName);
+            fileName = repository.getRealFileName(decodeFileName);
+            return fileName == null ? decodeFileName : fileName;
         }
         return String.valueOf(System.currentTimeMillis());
     }
 
     /**
      * 通过 json 转换成上传对象信息
+     *
      * @param jsonContent json 文本
      * @return Upload 对象
      */

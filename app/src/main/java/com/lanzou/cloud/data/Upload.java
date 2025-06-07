@@ -8,10 +8,13 @@ import androidx.annotation.NonNull;
 import com.google.gson.annotations.Since;
 import com.lanzou.cloud.utils.FileUtils;
 
+import org.litepal.LitePal;
+import org.litepal.crud.LitePalSupport;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Upload implements Parcelable, Comparable<Upload> {
+public class Upload extends LitePalSupport implements Parcelable, Comparable<Upload> {
 
     public static final int INSERT = 0;
     public static final int PREPARE = 1;
@@ -21,6 +24,8 @@ public class Upload implements Parcelable, Comparable<Upload> {
     public static final int STOP = 5;
 
     private long id;
+
+    private long download_id;
 
     /**
      * 当前上传区块
@@ -68,7 +73,27 @@ public class Upload implements Parcelable, Comparable<Upload> {
     public Upload() {
     }
 
+    public void update() {
+        update(id);
+    }
+
+    public void copy(@NonNull Upload target) {
+        this.index = target.index;
+        this.name = target.name;
+        this.length = target.length;
+        this.progress = target.progress;
+        this.path = target.path;
+        this.current = target.current;
+        this.uploadPage = target.uploadPage;
+        this.status = target.status;
+        this.speed = target.speed;
+        this.blockSize = target.blockSize;
+        this.time = target.time;
+        this.files = target.files;
+    }
+
     protected Upload(Parcel in) {
+        id = in.readLong();
         index = in.readInt();
         name = in.readString();
         length = in.readLong();
@@ -88,6 +113,7 @@ public class Upload implements Parcelable, Comparable<Upload> {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(id);
         dest.writeInt(index);
         dest.writeString(name);
         dest.writeLong(length);
@@ -271,6 +297,22 @@ public class Upload implements Parcelable, Comparable<Upload> {
         return status == STOP || status == ERROR;
     }
 
+    public long getDownloadId() {
+        return download_id;
+    }
+
+    public void setDownloadId(long downloadId) {
+        this.download_id = downloadId;
+    }
+
+    @Override
+    public int delete() {
+        if (id != 0) {
+            return super.delete();
+        }
+        return LitePal.deleteAll(Upload.class, "download_id = ?", String.valueOf(download_id));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -307,6 +349,7 @@ public class Upload implements Parcelable, Comparable<Upload> {
     @Override
     public String toString() {
         return "Upload{" +
+                "id='" + id + '\'' +
                 "name='" + name + '\'' +
                 ", length=" + length +
                 ", progress=" + progress +
