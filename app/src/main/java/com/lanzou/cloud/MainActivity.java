@@ -133,14 +133,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Repository repository = Repository.getInstance();
 
         DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
+            if (repository.getUploadPath() == null) {
+                // 未选择
+                Toast.makeText(MainActivity.this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (which == 0) {
-                if (repository.getUploadPath() == null) {
-                    // 未选择
-                    Toast.makeText(MainActivity.this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
-                } else {
-                    // 开始去上传文件了
-                    selectFileLauncher.launch(new Intent(MainActivity.this, FileSelectorActivity.class));
-                }
+                // 开始去上传文件了
+                selectFileLauncher.launch(new Intent(MainActivity.this, FileSelectorActivity.class));
             } else {
                 selectFileLauncher.launch(new Intent(MainActivity.this, PhoneFileActivity.class));
             }

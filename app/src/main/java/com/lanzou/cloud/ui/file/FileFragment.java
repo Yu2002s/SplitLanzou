@@ -1,5 +1,6 @@
 package com.lanzou.cloud.ui.file;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -122,6 +123,7 @@ public class FileFragment extends Fragment implements ServiceConnection {
 
         fileAction.bindView(recyclerView, new FileActionListener() {
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onPageChange() {
                 pathAdapter.notifyDataSetChanged();
@@ -140,9 +142,7 @@ public class FileFragment extends Fragment implements ServiceConnection {
             }
         });
 
-        if (!Repository.getInstance().isLogin()) {
-            binding.btnLogin.setVisibility(View.VISIBLE);
-        } else {
+        if (Repository.getInstance().isLogin()) {
             fileAction.getFiles();
         }
 
@@ -177,7 +177,7 @@ public class FileFragment extends Fragment implements ServiceConnection {
         ActivityResultLauncher<Intent> loginLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        binding.btnLogin.setVisibility(View.INVISIBLE);
+                        // binding.btnLogin.setVisibility(View.INVISIBLE);
                         // 开始加载文件
                         fileAction.getFiles();
                         // 选择上传目录
@@ -360,6 +360,17 @@ public class FileFragment extends Fragment implements ServiceConnection {
                     break;
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (Repository.getInstance().isLogin()
+                && binding.btnLogin.getVisibility() == View.VISIBLE) {
+            binding.btnLogin.setVisibility(View.INVISIBLE);
+        } else {
+            binding.btnLogin.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -132,7 +131,6 @@ public class UploadInfoActivity extends BaseActivity implements ServiceConnectio
         updateStatus();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        Log.d("jdy", upload.toString());
         addLog("文件名: " + upload.getName()
                 + "\n文件大小: " + upload.getSize()
                 + "\n分割区块: " + upload.getFiles().size() + "(未确定)"

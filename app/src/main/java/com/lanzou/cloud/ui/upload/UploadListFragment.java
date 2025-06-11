@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.UploadAdapter;
 import com.lanzou.cloud.data.Upload;
-import com.lanzou.cloud.event.OnItemClickListener;
 import com.lanzou.cloud.event.OnUploadListener;
 import com.lanzou.cloud.service.UploadService;
 
@@ -53,20 +52,13 @@ public class UploadListFragment extends Fragment implements ServiceConnection, O
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(uploadAdapter);
 
-        uploadAdapter.setToggleTransmissionListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View view) {
-                Upload upload = uploadList.get(position);
-                uploadService.toggleUpload(upload);
-            }
+        uploadAdapter.setToggleTransmissionListener((position, view1) -> {
+            Upload upload = uploadList.get(position);
+            uploadService.toggleUpload(upload);
         });
 
-        uploadAdapter.setItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View view) {
-                UploadInfoActivity.start(requireContext(), uploadList.get(position));
-            }
-        });
+        uploadAdapter.setItemClickListener((position, view2) ->
+                UploadInfoActivity.start(requireContext(), uploadList.get(position)));
     }
 
     @Override

@@ -43,7 +43,7 @@ public class QuestionActivity extends BaseActivity {
         addRight("没有授权储存权限保存在" + getExternalFilesDir("Download")
                 + "\n授权了保存在外部根目录/Download");
         addLeft("为啥重新打开软件上传下载记录没了");
-        addRight("懒得搞了");
+        addRight("目前下载有记录，上传没有");
         addLeft("为啥软件没有图标？");
         addRight("懒得搞了");
         addLeft("文件上传下载有问题？");
@@ -55,7 +55,7 @@ public class QuestionActivity extends BaseActivity {
         addLeft("我的账号会被上传到云端吗？");
         addRight("不会的，全部源代码开源，都保存在本地");
         addLeft("软件会自动更新吗？");
-        addRight("暂时会，可能后面会移除自动更新");
+        addRight("暂时会，可能后面会移除自动更新，国内网络可能被墙");
         addLeft("我要分享文件出去怎么办？");
         addRight("已支持分享100M+文件，不过新注册用户有限制，下载一次可能就会失效，需要对方也下载本App");
         addLeft("好的，我已了解");

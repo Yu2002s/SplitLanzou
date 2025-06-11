@@ -17,9 +17,9 @@
 
 > **以下版本不会自动更新，需要手动前往 github gitee 首页进行更新，如存在问题请提 issue**
 
-1. [github release](https://github.com/Yu2002s/SplitLanzou/releases) **可能无法访问**
-
-2. [gitee release](https://gitee.com/jdy2002/SplitLanzou/releases) **推荐**
+1. [网盘下载](https://jdy2002.lanzoub.com/b041xpw2d) *推荐* (密码：2fgt)
+2. [github release](https://github.com/Yu2002s/SplitLanzou/releases) **可能无法访问**
+3. [gitee release](https://gitee.com/jdy2002/SplitLanzou/releases) 国内仓库
 
 ### 2.其他版本下载
 
@@ -75,16 +75,29 @@ android {
 
 > 支持，但是新用户注册的，只有一次下载机会，第二次网页下载会报错，需要对方也下载此 App
 
+其他方面问题，请通过 issue 方式告诉我，并尽量附带问题截图
+
 ## 截图
 
 文件管理截图，支持上传、下载、分享并显示**100m+**文件
 
-<img src="https://s1.ax1x.com/2023/08/03/pPFeucj.png"  align = "center" width="30%"  />
-<img src="https://s1.ax1x.com/2023/08/03/pPFen3Q.png"  align = "center"  width="30%" />
-<img src="https://s1.ax1x.com/2023/08/03/pPFem9g.png"  align = "center"  width="30%" />
+<img src="https://s1.ax1x.com/2023/08/03/pPFeucj.png"  align = "center" width="30%"  alt="文件列表"/>
+<img src="https://s1.ax1x.com/2023/08/03/pPFen3Q.png"  align = "center"  width="30%" alt="" />
+<img src="https://s1.ax1x.com/2023/08/03/pPFem9g.png"  align = "center"  width="30%" alt="" />
+
+## 分享文件
+
+App 内置了自定义分享功能，由于目前蓝奏云限制手机端分享文件，需要开通会员，
+再加上**100M以上文件不能直接通过分享文件方式下载**，所以需要使用内置的分享地址
+
+分享地址参考: `http://lz.jdynb.xyz/index.html?url=分享地址&pwd=分享密码(没有留空)`
+
+> 参考实际地址: http://lz.jdynb.xyz/index.html?url=https://jdy2002.lanzoub.com/ik9Af2y9iaji
+
+> 注意：这里的分享可能**不太稳定**，还是建议接收者也下载 `SplitLanzou`
 
 ## 关于
 
 1. 开发时间较短，可能有一些 bug，欢迎提 issue。
-2. App 不会自动更新，请前往本主页手动获取更新。
+2. App 更新地址为 Github 的地址，网络被墙将无法获取更新，所以请手动前往本页更新
 3. 代码全部开源，不用担心后门问题。
