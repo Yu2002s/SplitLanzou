@@ -6,43 +6,92 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Looper;
+import android.view.LayoutInflater;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.LanzouApplication;
+import com.lanzou.cloud.adapter.FileAdapter;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouPage;
 import com.lanzou.cloud.data.LanzouSimpleResponse;
 import com.lanzou.cloud.data.LanzouUrl;
+import com.lanzou.cloud.databinding.DialogCreateFolderBinding;
 import com.lanzou.cloud.event.FileActionListener;
 import com.lanzou.cloud.network.Repository;
-import com.lanzou.cloud.ui.file.AbstractFileAction;
+import com.lanzou.cloud.ui.file.FileAction;
+import com.lanzou.cloud.ui.file.FileFragment;
 import com.lanzou.cloud.ui.folder.FolderSelectorActivity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class FileActionImpl extends AbstractFileAction {
+public class FileActionImpl implements FileAction {
 
     private final List<LanzouPage> lanzouPages = new LinkedList<>();
     private final List<LanzouFile> lanzouFiles = new ArrayList<>();
-    private RecyclerView.Adapter<RecyclerView.ViewHolder> adapter;
+    private FileAdapter adapter;
     private LanzouPage currentPage = new LanzouPage();
 
     private AppCompatActivity mActivity;
 
+    private Fragment mFragment;
+
     private FileActionListener fileActionListener;
 
     private ClipboardManager clipboardManager;
+
+    private ActivityResultLauncher<Intent> moveActivityResultLauncher;
+
+    private final LifecycleObserver mLifecycleObserver = new DefaultLifecycleObserver() {
+        @Override
+        public void onDestroy(@NonNull LifecycleOwner owner) {
+            mActivity.getLifecycle().removeObserver(this);
+            lanzouFiles.clear();
+            lanzouPages.clear();
+            moveActivityResultLauncher.unregister();
+        }
+
+        @Override
+        public void onCreate(@NonNull LifecycleOwner owner) {
+            ActivityResultCallback<ActivityResult> callback = result -> {
+                if (result.getData() != null) {
+                    // lanzouFile 为需要移动的文件对象
+                    new Thread(() -> {
+                        LanzouFile lanzouFile = result.getData().getParcelableExtra("lanzouFile");
+                        // id 为移动到目标文件夹的 id
+                        long id = result.getData().getLongExtra("id", -1);
+                        if (lanzouFile == null) {
+                            handleMoveFiles(id);
+                        } else {
+                            handleMoveFile(lanzouFile, id);
+                        }
+                        fileActionListener.onMoveFile(lanzouFile, id);
+                    }).start();
+                }
+            };
+            moveActivityResultLauncher = mFragment.registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(), callback);
+        }
+    };
 
     @Override
     public List<LanzouFile> getSource() {
@@ -59,14 +108,31 @@ public class FileActionImpl extends AbstractFileAction {
         return currentPage;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void bindView(RecyclerView rv, FileActionListener fileActionListener) {
-        mActivity = (AppCompatActivity) rv.getContext();
+    public void observable(Fragment context) {
+        mFragment = context;
+        mActivity = (AppCompatActivity) context.requireActivity();
+        Lifecycle lifecycle = mActivity.getLifecycle();
+        lifecycle.removeObserver(mLifecycleObserver);
+        lifecycle.addObserver(mLifecycleObserver);
         clipboardManager = (ClipboardManager) mActivity
                 .getSystemService(Context.CLIPBOARD_SERVICE);
-        adapter = rv.getAdapter();
+    }
+
+    @Override
+    public void bindView(RecyclerView rv, FileActionListener fileActionListener) {
+        if (mActivity == null) {
+            throw new NullPointerException("请先调用 observable 方法");
+        }
+        adapter = (FileAdapter) rv.getAdapter();
         this.fileActionListener = fileActionListener;
+
+        addBackCallback();
+
+        initView(rv);
+    }
+
+    private void addBackCallback() {
         OnBackPressedDispatcher backPressedDispatcher = mActivity.getOnBackPressedDispatcher();
         backPressedDispatcher.addCallback(new OnBackPressedCallback(true) {
             @Override
@@ -74,6 +140,9 @@ public class FileActionImpl extends AbstractFileAction {
                 onBackPressed();
             }
         });
+    }
+
+    private void initView(RecyclerView rv) {
         StaggeredGridLayoutManager staggeredGridLayoutManager =
                 (StaggeredGridLayoutManager) rv.getLayoutManager();
         assert staggeredGridLayoutManager != null;
@@ -131,7 +200,6 @@ public class FileActionImpl extends AbstractFileAction {
     public void deleteItem(int position) {
         if (position == -1) return;
         lanzouFiles.remove(position);
-        // currentPage.getFiles().remove(position);
     }
 
     @Override
@@ -226,6 +294,41 @@ public class FileActionImpl extends AbstractFileAction {
         }).start();
     }
 
+    @Override
+    public void createFolder() {
+        LayoutInflater layoutInflater = mActivity.getLayoutInflater();
+        DialogCreateFolderBinding folderBinding = DialogCreateFolderBinding.inflate(layoutInflater);
+        Thread thread = new Thread(() -> {
+            String name = folderBinding.editName.getText().toString();
+            String desc = folderBinding.editDesc.getText().toString();
+            Fragment fragment = mActivity.getSupportFragmentManager().getFragments().get(0);
+            if (fragment instanceof FileFragment) {
+                LanzouPage currentPage = ((FileFragment) fragment).getCurrentPage();
+                Long id = Repository.getInstance()
+                        .createFolder(currentPage.getFolderId(), name, desc);
+                mActivity.runOnUiThread(() -> {
+                    if (id != null) {
+                        LanzouFile lanzouFile = new LanzouFile();
+                        lanzouFile.setName(name);
+                        lanzouFile.setFolderId(id);
+                        ((FileFragment) fragment).addLanzouFile(lanzouFile);
+                        Toast.makeText(mActivity, "文件夹已新建", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(mActivity, "新建文件夹失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        new MaterialAlertDialogBuilder(mActivity)
+                .setTitle("新建文件夹")
+                .setView(folderBinding.getRoot())
+                .setPositiveButton("新建", (dialog, which) -> {
+                    thread.start();
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
+
     private void deleteFile(LanzouFile lanzouFile, int position) {
         LanzouSimpleResponse response = Repository.getInstance().deleteFile(lanzouFile);
         mActivity.runOnUiThread(() -> {
@@ -297,12 +400,43 @@ public class FileActionImpl extends AbstractFileAction {
     }
 
     @Override
-    public void moveFile(ActivityResultLauncher<Intent> launcher, LanzouFile lanzouFile) {
-        FolderSelectorActivity.moveFile(mActivity, launcher, lanzouFile);
+    public void moveFile(LanzouFile lanzouFile) {
+        FolderSelectorActivity.moveFile(mActivity, moveActivityResultLauncher, lanzouFile);
+    }
+
+    private void handleMoveFile(LanzouFile lanzouFile, long id) {
+        LanzouSimpleResponse response = Repository.getInstance().moveFile(lanzouFile.getFileId(), id);
+        if (response.getStatus() == 1) {
+            mActivity.runOnUiThread(() -> {
+                int position = lanzouFiles.indexOf(lanzouFile);
+                adapter.deleteItem(position);
+                getCurrentPage().getFiles().remove(position);
+            });
+        } else {
+            Looper.prepare();
+            Toast.makeText(mActivity, "移动文件失败", Toast.LENGTH_SHORT).show();
+            Looper.loop();
+        }
+    }
+
+    private void handleMoveFiles(long id) {
+        for (int i = lanzouFiles.size() - 1; i >= 0; i--) {
+            LanzouFile file = lanzouFiles.get(i);
+            if (file.isSelected() && !file.isFolder()) {
+                LanzouSimpleResponse response = Repository.getInstance().moveFile(file.getFileId(), id);
+                final int position = i;
+                mActivity.runOnUiThread(() -> {
+                    if (response.getStatus() == 1) {
+                        adapter.deleteItem(position);
+                        getCurrentPage().getFiles().remove(position);
+                    }
+                });
+            }
+        }
     }
 
     @Override
-    public void moveFiles(ActivityResultLauncher<Intent> launcher) {
-        FolderSelectorActivity.moveFiles(mActivity, launcher);
+    public void moveFiles() {
+        FolderSelectorActivity.moveFiles(mActivity, moveActivityResultLauncher);
     }
 }

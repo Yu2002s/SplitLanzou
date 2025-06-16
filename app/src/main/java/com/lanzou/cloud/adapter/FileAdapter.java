@@ -54,12 +54,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         FileViewHolder fileViewHolder = new FileViewHolder(binding);
         binding.getRoot().setOnClickListener(v ->
                 listener.onItemClick(fileViewHolder.getAdapterPosition(), v));
-        binding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                longClickListener.onItemLongClick(fileViewHolder.getAbsoluteAdapterPosition(), v);
-                return true;
-            }
+        binding.getRoot().setOnLongClickListener(v -> {
+            longClickListener.onItemLongClick(fileViewHolder.getAbsoluteAdapterPosition(), v);
+            return true;
         });
         return fileViewHolder;
     }

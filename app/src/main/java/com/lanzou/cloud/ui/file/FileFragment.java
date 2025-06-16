@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,8 +18,6 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -42,7 +39,6 @@ import com.lanzou.cloud.adapter.PathAdapter;
 import com.lanzou.cloud.adapter.SimpleListAdapter;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouPage;
-import com.lanzou.cloud.data.LanzouSimpleResponse;
 import com.lanzou.cloud.data.SimpleItem;
 import com.lanzou.cloud.databinding.FragmentFileBinding;
 import com.lanzou.cloud.event.FileActionListener;
@@ -55,16 +51,28 @@ import com.lanzou.cloud.ui.web.WebActivity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileFragment extends Fragment implements ServiceConnection {
+public class FileFragment extends Fragment implements ServiceConnection, FileActionListener {
 
     private FragmentFileBinding binding;
 
-    private final AbstractFileAction fileAction = new FileActionImpl();
+    /**
+     * 文件操作的实现类
+     */
+    private final FileAction fileAction = new FileActionImpl();
 
+    /**
+     * 文件集合（文件夹+文件）
+     */
     private final List<LanzouFile> lanzouFiles = fileAction.getSource();
 
+    /**
+     * 页面列表
+     */
     private final List<LanzouPage> lanzouPages = fileAction.getLanzouPages();
 
+    /**
+     * 多选文件的数量
+     */
     private int selectCount = 0;
 
     private FileAdapter fileAdapter;
@@ -73,8 +81,15 @@ public class FileFragment extends Fragment implements ServiceConnection {
 
     private DownloadService downloadService;
 
-    private ActivityResultLauncher<Intent> moveLauncher;
+    private ActivityResultLauncher<Intent> uploadPathLauncher;
 
+    private ActivityResultLauncher<Intent> loginLauncher;
+
+    /**
+     * 是否处于多选模式
+     *
+     * @return true 多选
+     */
     public boolean isMultiMode() {
         return selectCount > 0;
     }
@@ -85,6 +100,33 @@ public class FileFragment extends Fragment implements ServiceConnection {
         requireContext().bindService(new Intent(requireContext(),
                 DownloadService.class), this, Context.BIND_AUTO_CREATE);
         setHasOptionsMenu(true);
+        fileAction.observable(this);
+
+        uploadPathLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                Intent data = result.getData();
+                if (data != null) {
+                    long id = data.getLongExtra("id", -1);
+                    Repository.getInstance().updateUploadPath(id);
+                    Toast.makeText(requireContext(), "已选择缓存路径", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        loginLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                // 开始加载文件
+                fileAction.getFiles();
+                // 选择上传目录
+                new AlertDialog.Builder(requireContext())
+                        .setCancelable(false)
+                        .setTitle("选择缓存位置")
+                        .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处")
+                        .setNegativeButton("先不选", null)
+                        .setPositiveButton("去选择", (dialog, which) ->
+                                uploadPathLauncher.launch(new Intent(requireContext(), FolderSelectorActivity.class))).show();
+            }
+        });
     }
 
     @Override
@@ -107,91 +149,15 @@ public class FileFragment extends Fragment implements ServiceConnection {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        RecyclerView recyclerView = binding.fileRecyclerView;
-        StaggeredGridLayoutManager staggeredGridLayoutManager =
-                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(staggeredGridLayoutManager);
-        fileAdapter = new FileAdapter(lanzouFiles);
-        recyclerView.setAdapter(fileAdapter);
-
-        RecyclerView pathRecyclerView = binding.pathRecyclerview;
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
-        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        pathRecyclerView.setLayoutManager(linearLayoutManager);
-        pathRecyclerView.setAdapter(pathAdapter);
-        pathAdapter.setListener((position, view1) -> fileAction.navigateTo(position));
-
-        fileAction.bindView(recyclerView, new FileActionListener() {
-
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onPageChange() {
-                pathAdapter.notifyDataSetChanged();
-                pathRecyclerView.post(() -> pathRecyclerView.smoothScrollToPosition(lanzouPages.size() - 1));
-            }
-
-            @Override
-            public void onPreLoadFile() {
-                binding.progressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onFileLoaded() {
-                binding.getRoot().setRefreshing(false);
-                binding.progressBar.setVisibility(View.INVISIBLE);
-            }
-        });
+        initView();
+        initEvents();
 
         if (Repository.getInstance().isLogin()) {
             fileAction.getFiles();
         }
+    }
 
-        ActivityResultLauncher<Intent> uploadPathLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null) {
-                        long id = data.getLongExtra("id", -1);
-                        Repository.getInstance().updateUploadPath(id);
-                        Toast.makeText(requireContext(), "已选择缓存路径", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-
-        moveLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getData() != null) {
-                LanzouFile lanzouFile = result.getData().getParcelableExtra("lanzouFile");
-                new Thread(() -> {
-                    long id = result.getData().getLongExtra("id", -1);
-                    if (lanzouFile == null) {
-                        moveFiles(id);
-                    } else {
-                        moveFile(lanzouFile, id);
-                    }
-                }).start();
-            }
-        });
-
-        ActivityResultLauncher<Intent> loginLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        // binding.btnLogin.setVisibility(View.INVISIBLE);
-                        // 开始加载文件
-                        fileAction.getFiles();
-                        // 选择上传目录
-
-                        new AlertDialog.Builder(requireContext())
-                                .setCancelable(false)
-                                .setTitle("选择缓存位置")
-                                .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处")
-                                .setNegativeButton("先不选", null)
-                                .setPositiveButton("去选择", (dialog, which) ->
-                                        uploadPathLauncher.launch(new Intent(requireContext(), FolderSelectorActivity.class))).show();
-                    }
-                });
-
+    private void initEvents() {
         binding.btnLogin.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), WebActivity.class);
             intent.putExtra("url", LanzouApplication.HOST_LOGIN);
@@ -251,8 +217,22 @@ public class FileFragment extends Fragment implements ServiceConnection {
         });
     }
 
-    public void onBackPressed() {
-        fileAction.onBackPressed();
+    private void initView() {
+        RecyclerView recyclerView = binding.fileRecyclerView;
+        StaggeredGridLayoutManager staggeredGridLayoutManager =
+                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(staggeredGridLayoutManager);
+        fileAdapter = new FileAdapter(lanzouFiles);
+        recyclerView.setAdapter(fileAdapter);
+
+        RecyclerView pathRecyclerView = binding.pathRecyclerview;
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
+        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        pathRecyclerView.setLayoutManager(linearLayoutManager);
+        pathRecyclerView.setAdapter(pathAdapter);
+        pathAdapter.setListener((position, view1) -> fileAction.navigateTo(position));
+
+        fileAction.bindView(recyclerView, this);
     }
 
     public LanzouPage getCurrentPage() {
@@ -297,36 +277,11 @@ public class FileFragment extends Fragment implements ServiceConnection {
         changeSelect();
     }
 
-    private void moveFile(LanzouFile lanzouFile, long id) {
-        LanzouSimpleResponse response = Repository.getInstance().moveFile(lanzouFile.getFileId(), id);
-        if (response.getStatus() == 1) {
-            requireActivity().runOnUiThread(() -> {
-                int position = lanzouFiles.indexOf(lanzouFile);
-                fileAdapter.deleteItem(position);
-                fileAction.getCurrentPage().getFiles().remove(position);
-            });
-        } else {
-            Looper.prepare();
-            Toast.makeText(requireContext(), "移动文件失败", Toast.LENGTH_SHORT).show();
-            Looper.loop();
-        }
-    }
-
-    private void moveFiles(long id) {
-        for (int i = lanzouFiles.size() -1; i >= 0; i--) {
-            LanzouFile file = lanzouFiles.get(i);
-            if (file.isSelected() && !file.isFolder()) {
-                LanzouSimpleResponse response = Repository.getInstance().moveFile(file.getFileId(), id);
-                final int position = i;
-                requireActivity().runOnUiThread(() -> {
-                    if (response.getStatus() == 1) {
-                        fileAdapter.deleteItem(position);
-                        fileAction.getCurrentPage().getFiles().remove(position);
-                    }
-                });
-            }
-        }
-        requireActivity().runOnUiThread(this::clearSelect);
+    /**
+     * 创建文件夹
+     */
+    public void createFolder() {
+        fileAction.createFolder();
     }
 
     private void showFileActionDialog(LanzouFile lanzouFile, int itemPosition) {
@@ -353,7 +308,7 @@ public class FileFragment extends Fragment implements ServiceConnection {
                     fileAction.shareFile(itemPosition);
                     break;
                 case 2:
-                    fileAction.moveFile(moveLauncher, lanzouFile);
+                    fileAction.moveFile(lanzouFile);
                     break;
                 case 3:
                     fileAction.deleteFile(itemPosition);
@@ -362,13 +317,45 @@ public class FileFragment extends Fragment implements ServiceConnection {
         });
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    @Override
+    public void onPageChange() {
+        pathAdapter.notifyDataSetChanged();
+        RecyclerView pathRecyclerView = binding.pathRecyclerview;
+        pathRecyclerView.post(() -> pathRecyclerView.smoothScrollToPosition(lanzouPages.size() - 1));
+    }
+
+    @Override
+    public void onPreLoadFile() {
+        binding.progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onFileLoaded() {
+        binding.getRoot().setRefreshing(false);
+        binding.progressBar.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onMoveFile(LanzouFile lanzouFile, long id) {
+        if (isMultiMode()) {
+            requireActivity().runOnUiThread(FileFragment.this::clearSelect);
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onResume() {
         super.onResume();
-        if (Repository.getInstance().isLogin()
-                && binding.btnLogin.getVisibility() == View.VISIBLE) {
+        boolean isLogin = Repository.getInstance().isLogin();
+        int visibility = binding.btnLogin.getVisibility();
+        if (isLogin && visibility == View.VISIBLE) {
             binding.btnLogin.setVisibility(View.INVISIBLE);
-        } else {
+        } else if (!isLogin && visibility == View.INVISIBLE) {
+            if (!lanzouFiles.isEmpty()) {
+                lanzouFiles.clear();
+                fileAdapter.notifyDataSetChanged();
+            }
             binding.btnLogin.setVisibility(View.VISIBLE);
         }
     }
@@ -419,7 +406,7 @@ public class FileFragment extends Fragment implements ServiceConnection {
             }
             clearSelect();
         } else if (item.getItemId() == R.id.move) {
-            fileAction.moveFiles(moveLauncher);
+            fileAction.moveFiles();
         }
         return super.onOptionsItemSelected(item);
     }
