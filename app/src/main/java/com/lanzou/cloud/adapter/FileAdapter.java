@@ -1,7 +1,6 @@
 package com.lanzou.cloud.adapter;
 
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,7 +68,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         ItemListFileBinding binding = holder.binding;
         TextView name = binding.tvName;
         if (lanzouFile.isFolder()) {
-            binding.tvDesc.setText(lanzouFile.getDesc().replaceFirst("[\\[\\]]+", ""));
+            binding.tvDesc.setText(lanzouFile.getDesc().replaceFirst("([\\[\\]])+", ""));
             binding.tvDesc.setVisibility(TextUtils.isEmpty(lanzouFile.getDesc()) ? View.GONE : View.VISIBLE);
             name.setTextSize(18);
             name.setText(lanzouFile.getName());
@@ -100,7 +99,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         }
         if (payloads.get(0).equals(0)) {
             holder.binding.getRoot().setChecked(lanzouFiles.get(position).isSelected());
-            Log.d("jdy", "isChecked: " + lanzouFiles.get(position).isSelected());
         }
     }
 

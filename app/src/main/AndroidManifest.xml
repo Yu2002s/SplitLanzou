@@ -83,6 +83,7 @@
             <intent-filter>
                 <data android:scheme="lanzou" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>

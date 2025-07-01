@@ -1,7 +1,6 @@
 package com.lanzou.cloud.utils;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -12,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.content.pm.PackageInfoCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.LanzouApplication;
 
 import org.json.JSONException;
@@ -107,7 +107,7 @@ public class UpdateUtils {
      */
     private static void showUpdateDialog(Activity context, String versionName, String content, String url) {
         // 需要更新了
-        new AlertDialog.Builder(context)
+        new MaterialAlertDialogBuilder(context)
                 .setTitle("发现新版本-" + versionName)
                 .setMessage(content)
                 .setPositiveButton("取消", null)
