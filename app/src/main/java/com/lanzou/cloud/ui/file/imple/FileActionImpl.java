@@ -16,7 +16,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -37,7 +36,6 @@ import com.lanzou.cloud.databinding.DialogCreateFolderBinding;
 import com.lanzou.cloud.event.FileActionListener;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.ui.file.FileAction;
-import com.lanzou.cloud.ui.file.FileFragment;
 import com.lanzou.cloud.ui.folder.FolderSelectorActivity;
 
 import java.util.ArrayList;
@@ -54,6 +52,8 @@ public class FileActionImpl implements FileAction {
     private AppCompatActivity mActivity;
 
     private Fragment mFragment;
+
+    private RecyclerView mRecyclerView;
 
     private FileActionListener fileActionListener;
 
@@ -143,6 +143,7 @@ public class FileActionImpl implements FileAction {
     }
 
     private void initView(RecyclerView rv) {
+        mRecyclerView = rv;
         StaggeredGridLayoutManager staggeredGridLayoutManager =
                 (StaggeredGridLayoutManager) rv.getLayoutManager();
         assert staggeredGridLayoutManager != null;
@@ -177,14 +178,16 @@ public class FileActionImpl implements FileAction {
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void navigateTo(int position) {
+    public boolean navigateTo(int position) {
         int size = lanzouPages.size() - 1;
         if (position == size) {
-            return;
+            // 导航到当前页面
+            return false;
         }
         if (size - position == 1) {
+            // 导航到上一页
             onBackPressed();
-            return;
+            return true;
         }
         for (int i = size; i > position; i--) {
             lanzouPages.remove(i);
@@ -194,6 +197,7 @@ public class FileActionImpl implements FileAction {
         lanzouFiles.addAll(lanzouPages.get(position).getFiles());
         adapter.notifyDataSetChanged();
         fileActionListener.onPageChange();
+        return true;
     }
 
     @Override
@@ -301,23 +305,22 @@ public class FileActionImpl implements FileAction {
         Thread thread = new Thread(() -> {
             String name = folderBinding.editName.getText().toString();
             String desc = folderBinding.editDesc.getText().toString();
-            Fragment fragment = mActivity.getSupportFragmentManager().getFragments().get(0);
-            if (fragment instanceof FileFragment) {
-                LanzouPage currentPage = ((FileFragment) fragment).getCurrentPage();
-                Long id = Repository.getInstance()
-                        .createFolder(currentPage.getFolderId(), name, desc);
-                mActivity.runOnUiThread(() -> {
-                    if (id != null) {
-                        LanzouFile lanzouFile = new LanzouFile();
-                        lanzouFile.setName(name);
-                        lanzouFile.setFolderId(id);
-                        ((FileFragment) fragment).addLanzouFile(lanzouFile);
-                        Toast.makeText(mActivity, "文件夹已新建", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(mActivity, "新建文件夹失败", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
+            LanzouPage currentPage = getCurrentPage();
+            Long id = Repository.getInstance()
+                    .createFolder(currentPage.getFolderId(), name, desc);
+            mActivity.runOnUiThread(() -> {
+                if (id != null) {
+                    LanzouFile lanzouFile = new LanzouFile();
+                    lanzouFile.setName(name);
+                    lanzouFile.setFolderId(id);
+                    lanzouFiles.add(0, lanzouFile);
+                    adapter.notifyItemInserted(0);
+                    mRecyclerView.scrollToPosition(0);
+                    Toast.makeText(mActivity, "文件夹已新建", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(mActivity, "新建文件夹失败", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
         new MaterialAlertDialogBuilder(mActivity)
                 .setTitle("新建文件夹")
@@ -367,7 +370,7 @@ public class FileActionImpl implements FileAction {
     public void shareFile(int position) {
         LanzouFile lanzouFile = lanzouFiles.get(position);
         CharSequence[] items = new CharSequence[]{"自定义分享(支持分享100M+文件)", "普通分享(原始分享地址)"};
-        new AlertDialog.Builder(mActivity)
+        new MaterialAlertDialogBuilder(mActivity)
                 .setTitle("选择分享")
                 .setSingleChoiceItems(items, -1, (dialog, which) -> new Thread(() -> {
                     LanzouUrl lanzouUrl = Repository.getInstance().getLanzouUrl(lanzouFile.getFileId());

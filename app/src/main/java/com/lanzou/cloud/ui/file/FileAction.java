@@ -78,7 +78,7 @@ public interface FileAction {
      * 导航到指定的页面
      * @param position 页面的位于 <code>lanzouPages</code> 中的位置（0开始）
      */
-    void navigateTo(int position);
+    boolean navigateTo(int position);
 
     /**
      * 删除指定的文件项

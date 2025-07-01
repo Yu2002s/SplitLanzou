@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.SplitLanzou" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.SplitLanzou" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <!-- Status bar color. -->
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">?attr/colorSurface</item>
@@ -8,8 +8,8 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
         <!-- Customize your theme here. -->
-        <item name="appBarLayoutStyle">@style/Widget.MaterialComponents.AppBarLayout.Surface</item>
+        <!--<item name="appBarLayoutStyle">@style/Widget.MaterialComponents.AppBarLayout.Surface</item>-->
 
-        <item name="android:windowBackground">@color/window_background</item>
+        <!--<item name="android:windowBackground">@color/window_background</item>-->
     </style>
 </resources>

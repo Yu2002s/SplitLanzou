@@ -1,46 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+<com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_card"
-    android:orientation="horizontal"
-    android:padding="8dp"
-    android:layout_margin="4dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:contentPadding="8dp"
+    android:layout_margin="4dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            tools:text="@string/app_name" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-            android:layout_marginTop="5dp"
-            android:id="@+id/tv_desc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="@string/app_name" />
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                tools:text="@string/app_name" />
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:layout_marginTop="10dp"
-            android:id="@+id/progressBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            <TextView
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:layout_marginTop="5dp"
+                android:id="@+id/tv_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="@string/app_name" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:layout_marginTop="10dp"
+                android:id="@+id/progressBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:layout_gravity="center_vertical"
+            android:id="@+id/btn_toggle"
+            android:layout_width="35dp"
+            android:layout_height="35dp" />
 
     </LinearLayout>
 
-    <ImageButton
-        android:layout_gravity="center_vertical"
-        android:id="@+id/btn_toggle"
-        android:layout_width="35dp"
-        android:layout_height="35dp"/>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

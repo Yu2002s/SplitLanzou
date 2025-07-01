@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.SplitLanzou" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.SplitLanzou" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -9,6 +9,6 @@
         <item name="android:windowTranslucentNavigation">false</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
         <!-- Customize your theme here. -->
-        <item name="appBarLayoutStyle">@style/Widget.MaterialComponents.AppBarLayout.Surface</item>
+        <!-- <item name="appBarLayoutStyle">@style/Widget.MaterialComponents.AppBarLayout.Surface</item>-->
     </style>
 </resources>

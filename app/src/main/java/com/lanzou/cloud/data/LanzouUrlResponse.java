@@ -1,5 +1,7 @@
 package com.lanzou.cloud.data;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.annotations.SerializedName;
 
 public class LanzouUrlResponse {
@@ -23,5 +25,14 @@ public class LanzouUrlResponse {
 
     public void setInfo(LanzouUrl info) {
         this.info = info;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "LanzouUrlResponse{" +
+                "status=" + status +
+                ", info=" + info +
+                '}';
     }
 }

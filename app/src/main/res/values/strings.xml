@@ -11,4 +11,13 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="upload">上传文件</string>
     <string name="file_desc">%1$s %2$s %3$d下载</string>
+    <string name="mkdir">新建</string>
+    <string name="detail">详情</string>
+    <string name="download">下载</string>
+    <string name="move">移动</string>
+    <string name="delete">删除</string>
+    <string name="go_login">去登录</string>
+    <string name="file_pwd">文件密码</string>
+    <string name="share_file">分享文件</string>
+    <string name="close">关闭</string>
 </resources>

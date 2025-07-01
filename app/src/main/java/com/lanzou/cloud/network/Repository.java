@@ -300,7 +300,6 @@ public class Repository {
         if (!TextUtils.isEmpty(pwd)) {
             downloadUrl += "@" + pwd;
         }
-        // Log.d("", "downloadUrl: " + downloadUrl);
         return downloadUrl;
         // 下面方法弃用，改用上面方法进行获取下载地址
         // 获取下载地址
@@ -428,6 +427,14 @@ public class Repository {
 
     public LanzouSimpleResponse moveFile(long fileId, long targetFolder) {
         return get(lanzouService.moveFile(20, fileId, targetFolder));
+    }
+
+    public LanzouUrlResponse getFolder(long folderId) {
+        return get(lanzouService.getFolder(18, folderId));
+    }
+
+    public LanzouSimpleResponse editFilePassword(long fileId, boolean enable, String pwd) {
+        return get(lanzouService.editFilePassword(16, fileId, enable ? 1 : 0, pwd));
     }
 
     private Request.Builder createRequest(String url) {

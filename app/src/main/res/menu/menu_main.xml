@@ -12,22 +12,24 @@
 
     <item
         android:id="@+id/create_folder"
-        android:title="新建" />
+        android:title="@string/mkdir" />
+
+    <item
+        android:id="@+id/detail"
+        android:title="@string/detail" />
 
     <item
         android:id="@+id/download"
-        android:title="下载"
+        android:title="@string/download"
         android:visible="false" />
 
     <item
         android:id="@+id/move"
-        android:title="移动"
+        android:title="@string/move"
         android:visible="false" />
 
     <item
         android:id="@+id/delete"
-        android:title="删除"
+        android:title="@string/delete"
         android:visible="false" />
-
-
 </menu>

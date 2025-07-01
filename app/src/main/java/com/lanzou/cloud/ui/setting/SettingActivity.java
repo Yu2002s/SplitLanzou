@@ -4,15 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -29,8 +27,10 @@ import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.MainActivity;
 import com.lanzou.cloud.base.BaseActivity;
 import com.lanzou.cloud.databinding.ActivitySettingBinding;
+import com.lanzou.cloud.databinding.ItemListSettingBinding;
 import com.lanzou.cloud.event.OnItemClickListener;
 import com.lanzou.cloud.network.Repository;
+import com.lanzou.cloud.ui.LinearItemDecoration;
 import com.lanzou.cloud.ui.folder.FolderSelectorActivity;
 import com.lanzou.cloud.ui.question.QuestionActivity;
 
@@ -58,6 +58,7 @@ public class SettingActivity extends BaseActivity {
 
         list.add("退出登录");
         RecyclerView rv = binding.settingRv;
+        rv.addItemDecoration(new LinearItemDecoration());
         rv.setLayoutManager(new LinearLayoutManager(this));
         ArrayAdapter arrayAdapter = new ArrayAdapter(list);
         rv.setAdapter(arrayAdapter);
@@ -157,11 +158,9 @@ public class SettingActivity extends BaseActivity {
         }
     }
 
-    private static class ArrayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static class ArrayAdapter extends RecyclerView.Adapter<ArrayAdapter.ViewHolder> {
 
         private final List<String> list;
-
-        private int color;
 
         private OnItemClickListener itemClickListener;
 
@@ -173,47 +172,31 @@ public class SettingActivity extends BaseActivity {
             this.list = list;
         }
 
-        @Override
-        public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-            super.onAttachedToRecyclerView(recyclerView);
-            TypedValue typedValue = new TypedValue();
-            recyclerView.getContext().getTheme()
-                    .resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true);
-            color = typedValue.data;
+        static final class ViewHolder extends RecyclerView.ViewHolder {
+
+            final ItemListSettingBinding binding;
+
+            public ViewHolder(@NonNull ItemListSettingBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
+            }
         }
 
         @NonNull
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            TextView tv = new TextView(parent.getContext());
-            tv.setLayoutParams(new ViewGroup.LayoutParams(-1, -2));
-            tv.setTextSize(17);
-            tv.setTextColor(color);
-            TypedArray typedArray = parent.getContext().getTheme()
-                    .obtainStyledAttributes(new int[]{androidx.appcompat.R.attr.selectableItemBackground});
-            tv.setBackground(typedArray.getDrawable(0));
-            typedArray.recycle();
-
-            //tv.getPaint().setFakeBoldText(true);
-            tv.setPadding(52, 52, 52, 52);
-            RecyclerView.ViewHolder viewHolder = new RecyclerView.ViewHolder(tv) {
-                @NonNull
-                @Override
-                public String toString() {
-                    return super.toString();
-                }
-            };
-            tv.setOnClickListener(v -> {
-                int position = viewHolder.getAdapterPosition();
+        public ArrayAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            ItemListSettingBinding binding = ItemListSettingBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+            ViewHolder viewHolder = new ViewHolder(binding);
+            binding.getRoot().setOnClickListener(v -> {
+                int position = viewHolder.getAbsoluteAdapterPosition();
                 itemClickListener.onItemClick(position, v);
             });
             return viewHolder;
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            TextView tv = (TextView) holder.itemView;
-            tv.setText(list.get(position));
+        public void onBindViewHolder(@NonNull ArrayAdapter.ViewHolder holder, int position) {
+            holder.binding.tvTitle.setText(list.get(position));
         }
 
         @Override

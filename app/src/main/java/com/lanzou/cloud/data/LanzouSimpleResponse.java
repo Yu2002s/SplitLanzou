@@ -34,4 +34,13 @@ public class LanzouSimpleResponse {
     public void setText(String text) {
         this.text = text;
     }
+
+    @Override
+    public String toString() {
+        return "LanzouSimpleResponse{" +
+                "status=" + status +
+                ", info='" + info + '\'' +
+                ", text='" + text + '\'' +
+                '}';
+    }
 }

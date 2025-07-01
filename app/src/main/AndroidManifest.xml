@@ -80,6 +80,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter>
+                <data android:scheme="lanzou" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.VIEW" />
+            </intent-filter>
         </activity>
         <activity android:name=".ui.selector.FileSelectorActivity"
             android:label="上传文件" />

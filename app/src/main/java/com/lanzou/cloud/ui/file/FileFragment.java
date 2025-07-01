@@ -44,6 +44,7 @@ import com.lanzou.cloud.databinding.FragmentFileBinding;
 import com.lanzou.cloud.event.FileActionListener;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.service.DownloadService;
+import com.lanzou.cloud.ui.dialog.FileDetailDialog;
 import com.lanzou.cloud.ui.file.imple.FileActionImpl;
 import com.lanzou.cloud.ui.folder.FolderSelectorActivity;
 import com.lanzou.cloud.ui.web.WebActivity;
@@ -52,6 +53,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileFragment extends Fragment implements ServiceConnection, FileActionListener {
+
+    private static final String TAG = "FileFragment";
 
     private FragmentFileBinding binding;
 
@@ -118,7 +121,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
                 // 开始加载文件
                 fileAction.getFiles();
                 // 选择上传目录
-                new AlertDialog.Builder(requireContext())
+                new MaterialAlertDialogBuilder(requireContext())
                         .setCancelable(false)
                         .setTitle("选择缓存位置")
                         .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处")
@@ -169,6 +172,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             if (isMultiMode()) {
                 v.setSelected(!v.isSelected());
                 lanzouFile.setSelected(v.isSelected());
+                fileAdapter.notifySelect(position);
                 if (v.isSelected()) {
                     selectCount++;
                 } else {
@@ -191,6 +195,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             v.setSelected(!v.isSelected());
             LanzouFile lanzouFile = fileAdapter.getItem(position);
             lanzouFile.setSelected(v.isSelected());
+            fileAdapter.notifySelect(position);
             if (v.isSelected()) {
                 selectCount++;
             } else {
@@ -205,16 +210,17 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             fileAction.refresh();
         });
 
-        requireActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (isMultiMode()) {
-                    clearSelect();
-                } else {
-                    fileAction.onBackPressed();
-                }
-            }
-        });
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (isMultiMode()) {
+                            clearSelect();
+                        } else {
+                            fileAction.onBackPressed();
+                        }
+                    }
+                });
     }
 
     private void initView() {
@@ -230,7 +236,12 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         pathRecyclerView.setLayoutManager(linearLayoutManager);
         pathRecyclerView.setAdapter(pathAdapter);
-        pathAdapter.setListener((position, view1) -> fileAction.navigateTo(position));
+        pathAdapter.setListener((position, view1) -> {
+            if (!fileAction.navigateTo(position)) {
+                // 显示详情对话框
+                new FileDetailDialog(requireContext(), getCurrentPage().getFolderId());
+            }
+        });
 
         fileAction.bindView(recyclerView, this);
     }
@@ -239,10 +250,8 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         return fileAction.getCurrentPage();
     }
 
-    public void addLanzouFile(LanzouFile lanzouFile) {
-        lanzouFiles.add(0, lanzouFile);
-        fileAdapter.notifyItemInserted(0);
-        binding.fileRecyclerView.scrollToPosition(0);
+    public void createFolder() {
+        fileAction.createFolder();
     }
 
     private void changeSelect() {
@@ -275,13 +284,6 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             }
         }
         changeSelect();
-    }
-
-    /**
-     * 创建文件夹
-     */
-    public void createFolder() {
-        fileAction.createFolder();
     }
 
     private void showFileActionDialog(LanzouFile lanzouFile, int itemPosition) {
@@ -367,6 +369,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         menu.findItem(R.id.delete).setVisible(multiMode);
         menu.findItem(R.id.download).setVisible(multiMode);
         menu.findItem(R.id.move).setVisible(multiMode);
+        menu.findItem(R.id.detail).setVisible(!multiMode && getCurrentPage().getFolderId() > 0);
     }
 
     @Override
@@ -407,6 +410,11 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             clearSelect();
         } else if (item.getItemId() == R.id.move) {
             fileAction.moveFiles();
+        } else if (item.getItemId() == R.id.create_folder) {
+            fileAction.createFolder();
+        } else if (item.getItemId() == R.id.detail) {
+            // 显示详情对话框
+            new FileDetailDialog(requireContext(), getCurrentPage().getFolderId());
         }
         return super.onOptionsItemSelected(item);
     }

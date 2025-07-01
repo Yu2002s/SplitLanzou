@@ -3,8 +3,10 @@ package com.lanzou.cloud.ui.resolve;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -37,6 +39,16 @@ public class ResolveFileActivity extends AppCompatActivity implements ServiceCon
         boolean readonly = getIntent().getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false);
         if (charSequenceExtra != null) {
             binding.editUrl.setText(charSequenceExtra);
+        }
+
+        Uri data = getIntent().getData();
+        if (data != null) {
+            String pwd = data.getQueryParameter("pwd");
+            if (!TextUtils.isEmpty(pwd)) {
+                binding.editPwd.setText(pwd);
+            }
+            String url = "https://" + data.getHost() + data.getPath();
+            binding.editUrl.setText(url);
         }
     }
 

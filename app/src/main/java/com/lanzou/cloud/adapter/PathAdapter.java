@@ -34,12 +34,8 @@ public class PathAdapter extends RecyclerView.Adapter<PathAdapter.ViewHolder> {
         View itemView = ItemPathBinding.inflate(LayoutInflater.
                 from(parent.getContext()), parent, false).getRoot();
         ViewHolder viewHolder = new ViewHolder(itemView);
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onItemClick(viewHolder.getAdapterPosition(), v);
-            }
-        });
+        viewHolder.itemView.setOnClickListener(v ->
+                listener.onItemClick(viewHolder.getAbsoluteAdapterPosition(), v));
         return viewHolder;
     }
 

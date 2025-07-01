@@ -1,5 +1,7 @@
 package com.lanzou.cloud.adapter;
 
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +55,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
                 .inflate(LayoutInflater.from(parent.getContext()), parent, false);
         FileViewHolder fileViewHolder = new FileViewHolder(binding);
         binding.getRoot().setOnClickListener(v ->
-                listener.onItemClick(fileViewHolder.getAdapterPosition(), v));
+                listener.onItemClick(fileViewHolder.getAbsoluteAdapterPosition(), v));
         binding.getRoot().setOnLongClickListener(v -> {
             longClickListener.onItemLongClick(fileViewHolder.getAbsoluteAdapterPosition(), v);
             return true;
@@ -67,8 +69,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         ItemListFileBinding binding = holder.binding;
         TextView name = binding.tvName;
         if (lanzouFile.isFolder()) {
-            binding.tvDesc.setVisibility(View.GONE);
-            name.setTextSize(16);
+            binding.tvDesc.setText(lanzouFile.getDesc().replaceFirst("[\\[\\]]+", ""));
+            binding.tvDesc.setVisibility(TextUtils.isEmpty(lanzouFile.getDesc()) ? View.GONE : View.VISIBLE);
+            name.setTextSize(18);
             name.setText(lanzouFile.getName());
         } else {
             name.setTextSize(14);
@@ -85,9 +88,8 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         }
 
         int padding = lanzouFile.isFolder() ? 38 : 24;
-        binding.getRoot().setPadding(padding, padding, padding, padding);
-
-        binding.getRoot().setSelected(lanzouFile.isSelected());
+        binding.getRoot().setContentPadding(padding, padding, padding, padding);
+        binding.getRoot().setChecked(lanzouFile.isSelected());
     }
 
     @Override
@@ -97,7 +99,8 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
             return;
         }
         if (payloads.get(0).equals(0)) {
-            holder.binding.getRoot().setSelected(lanzouFiles.get(position).isSelected());
+            holder.binding.getRoot().setChecked(lanzouFiles.get(position).isSelected());
+            Log.d("jdy", "isChecked: " + lanzouFiles.get(position).isSelected());
         }
     }
 
@@ -120,6 +123,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         }
 
         @Override
+        @SuppressWarnings({"unchecked", "NotifyDataSetChanged"})
         protected void publishResults(CharSequence constraint, FilterResults results) {
             lanzouFiles = (List<LanzouFile>) results.values;
             notifyDataSetChanged();

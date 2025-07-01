@@ -22,7 +22,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -30,6 +29,7 @@ import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.adapter.MainPageAdapter;
 import com.lanzou.cloud.data.LanzouPage;
 import com.lanzou.cloud.databinding.ActivityMainBinding;
@@ -50,7 +50,7 @@ import java.util.List;
  *
  * @author 冬日暖雨
  * @mail jiangdongyu54@gmail.com
- * @since 2025/06/07
+ * @since 2025/07/01
  */
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private ActivityMainBinding binding;
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             dialog.dismiss();
         };
 
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("选择操作")
                 .setSingleChoiceItems(new String[]{"新建文件夹", "分类选择上传", "文件选择上传"}, -1, onClickListener)
                 .show();
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         int selectedItemId = binding.bottomNav.getSelectedItemId();
         menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_home);
         menu.findItem(R.id.action_settings).setVisible(selectedItemId == R.id.nav_me);
+        menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_home);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -201,10 +202,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (id == R.id.action_settings) {
             // 点击设置
             startActivity(new Intent(this, SettingActivity.class));
-            return true;
-        } else if (id == R.id.create_folder) {
-            // 创建文件夹
-            getFileFragment().createFolder();
             return true;
         }
         return super.onOptionsItemSelected(item);

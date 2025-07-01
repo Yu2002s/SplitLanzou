@@ -23,6 +23,9 @@ public class LanzouFile implements Parcelable {
     @SerializedName("downs")
     private int downloadCount;
 
+    @SerializedName("folder_des")
+    private String desc;
+
     private boolean isSelected = false;
 
     public LanzouFile() {}
@@ -36,6 +39,7 @@ public class LanzouFile implements Parcelable {
         size = in.readString();
         name = in.readString();
         name_all = in.readString();
+        desc = in.readString();
     }
 
     @Override
@@ -48,6 +52,7 @@ public class LanzouFile implements Parcelable {
         dest.writeString(size);
         dest.writeString(name);
         dest.writeString(name_all);
+        dest.writeString(desc);
     }
 
     @Override
@@ -142,6 +147,14 @@ public class LanzouFile implements Parcelable {
 
     public String getFileName() {
         return isFolder() ? name : name_all;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
     public void setSelected(boolean selected) {
