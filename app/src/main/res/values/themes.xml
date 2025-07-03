@@ -11,5 +11,7 @@
         <!--<item name="appBarLayoutStyle">@style/Widget.MaterialComponents.AppBarLayout.Surface</item>-->
 
         <!--<item name="android:windowBackground">@color/window_background</item>-->
+
+        <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Filled</item>
     </style>
 </resources>

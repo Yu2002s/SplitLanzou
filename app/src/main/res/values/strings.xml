@@ -20,4 +20,9 @@
     <string name="file_pwd">文件密码</string>
     <string name="share_file">分享文件</string>
     <string name="close">关闭</string>
+    <string name="manger_account">管理账号</string>
+    <string name="resolve_file">解析文件</string>
+    <string name="recycle_bin">回收站</string>
+    <string name="restore_all">恢复所有</string>
+    <string name="delete_all">删除所有</string>
 </resources>

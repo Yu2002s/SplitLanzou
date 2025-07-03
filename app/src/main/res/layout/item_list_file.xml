@@ -14,6 +14,7 @@
         android:orientation="vertical">
 
         <TextView
+            android:drawablePadding="4dp"
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -120,16 +120,20 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             if (result.getResultCode() == Activity.RESULT_OK) {
                 // 开始加载文件
                 fileAction.getFiles();
-                // 选择上传目录
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setCancelable(false)
-                        .setTitle("选择缓存位置")
-                        .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处")
-                        .setNegativeButton("先不选", null)
-                        .setPositiveButton("去选择", (dialog, which) ->
-                                uploadPathLauncher.launch(new Intent(requireContext(), FolderSelectorActivity.class))).show();
+                showTipsDialog();
             }
         });
+    }
+
+    private void showTipsDialog() {
+        // 选择上传目录
+        new MaterialAlertDialogBuilder(requireContext())
+                .setCancelable(false)
+                .setTitle("选择缓存位置")
+                .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处\n【不要设置为根目录】")
+                .setNegativeButton("先不选", null)
+                .setPositiveButton("去选择", (dialog, which) ->
+                        uploadPathLauncher.launch(new Intent(requireContext(), FolderSelectorActivity.class))).show();
     }
 
     @Override
@@ -170,10 +174,9 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         fileAdapter.setOnItemClickListener((position, v) -> {
             LanzouFile lanzouFile = fileAdapter.getItem(position);
             if (isMultiMode()) {
-                v.setSelected(!v.isSelected());
-                lanzouFile.setSelected(v.isSelected());
+                lanzouFile.setSelected(!lanzouFile.isSelected());
                 fileAdapter.notifySelect(position);
-                if (v.isSelected()) {
+                if (lanzouFile.isSelected()) {
                     selectCount++;
                 } else {
                     selectCount--;
@@ -192,11 +195,10 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         });
 
         fileAdapter.setLongClickListener((position, v) -> {
-            v.setSelected(!v.isSelected());
             LanzouFile lanzouFile = fileAdapter.getItem(position);
-            lanzouFile.setSelected(v.isSelected());
+            lanzouFile.setSelected(!lanzouFile.isSelected());
             fileAdapter.notifySelect(position);
-            if (v.isSelected()) {
+            if (lanzouFile.isSelected()) {
                 selectCount++;
             } else {
                 selectCount--;
@@ -398,10 +400,13 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            // 点击返回
             clearSelect();
         } else if (item.getItemId() == R.id.delete) {
+            // 删除文件
             fileAction.deleteFiles(this::clearSelect);
         } else if (item.getItemId() == R.id.download) {
+            // 下载
             for (LanzouFile lanzouFile : lanzouFiles) {
                 if (lanzouFile.isSelected() && !lanzouFile.isFolder()) {
                     downloadService.addDownload(lanzouFile.getFileId(), lanzouFile.getName_all());
@@ -409,8 +414,10 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             }
             clearSelect();
         } else if (item.getItemId() == R.id.move) {
+            // 移动文件
             fileAction.moveFiles();
         } else if (item.getItemId() == R.id.create_folder) {
+            // 创建文件夹
             fileAction.createFolder();
         } else if (item.getItemId() == R.id.detail) {
             // 显示详情对话框

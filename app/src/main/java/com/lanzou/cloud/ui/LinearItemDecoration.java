@@ -6,12 +6,14 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.lanzou.cloud.utils.DensityUtils;
+
 public class LinearItemDecoration extends RecyclerView.ItemDecoration {
 
-    private int size;
+    private final int size;
 
     public LinearItemDecoration() {
-        this.size = 20;
+        this.size = DensityUtils.dp2px(16);
     }
 
     public LinearItemDecoration(int size) {

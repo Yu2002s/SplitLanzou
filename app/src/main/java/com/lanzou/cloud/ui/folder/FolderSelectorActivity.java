@@ -63,7 +63,7 @@ public class FolderSelectorActivity extends BaseActivity {
 
         folderListAdapter.setOnItemClickListener((position, view) -> {
             Intent intent = new Intent();
-            // id 选择都文件夹 id
+            // id 选择的文件夹 id
             intent.putExtra("id", folderListAdapter.getCurrentList().get(position).getFolder_id());
             // lanzouFile 需要移动的文件对象
             LanzouFile lanzouFile = getIntent().getParcelableExtra("lanzouFile");

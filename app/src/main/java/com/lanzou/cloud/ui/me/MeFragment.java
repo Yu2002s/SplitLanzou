@@ -14,6 +14,7 @@ import com.lanzou.cloud.data.User;
 import com.lanzou.cloud.databinding.FragmentMeBinding;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.ui.dialog.UserDialog;
+import com.lanzou.cloud.ui.recycle.RecycleFileActivity;
 import com.lanzou.cloud.ui.resolve.ResolveFileActivity;
 
 public class MeFragment extends Fragment {
@@ -39,6 +40,10 @@ public class MeFragment extends Fragment {
 
         binding.btnResolve.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), ResolveFileActivity.class))
+        );
+
+        binding.btnRecycle.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), RecycleFileActivity.class))
         );
     }
 

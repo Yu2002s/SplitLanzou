@@ -24,13 +24,19 @@
     <Button
         android:layout_marginTop="10dp"
         android:id="@+id/btn_manager"
-        android:text="管理账号"
+        android:text="@string/manger_account"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <Button
         android:id="@+id/btn_resolve"
-        android:text="解析文件"
+        android:text="@string/resolve_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btn_recycle"
+        android:text="@string/recycle_bin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 

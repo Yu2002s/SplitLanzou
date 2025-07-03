@@ -44,7 +44,7 @@ public class ResolveFileActivity extends AppCompatActivity implements ServiceCon
         Uri data = getIntent().getData();
         if (data != null) {
             String pwd = data.getQueryParameter("pwd");
-            if (!TextUtils.isEmpty(pwd)) {
+            if (!TextUtils.isEmpty(pwd) && !"null".equals(pwd)) {
                 binding.editPwd.setText(pwd);
             }
             String url = "https://" + data.getHost() + data.getPath();

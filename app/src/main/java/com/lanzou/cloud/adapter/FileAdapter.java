@@ -1,6 +1,6 @@
 package com.lanzou.cloud.adapter;
 
-import android.text.TextUtils;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +9,7 @@ import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.lanzou.cloud.R;
@@ -28,6 +29,8 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
 
     private OnItemClickListener listener;
 
+    private Drawable folderIcon;
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
@@ -45,6 +48,12 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
 
     public void notifySelect(int position) {
         notifyItemChanged(position, 0);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        folderIcon = ContextCompat.getDrawable(recyclerView.getContext(), R.drawable.baseline_folder_24);
     }
 
     @NonNull
@@ -68,13 +77,15 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         ItemListFileBinding binding = holder.binding;
         TextView name = binding.tvName;
         if (lanzouFile.isFolder()) {
-            binding.tvDesc.setText(lanzouFile.getDesc().replaceFirst("([\\[\\]])+", ""));
-            binding.tvDesc.setVisibility(TextUtils.isEmpty(lanzouFile.getDesc()) ? View.GONE : View.VISIBLE);
-            name.setTextSize(18);
+            // binding.tvDesc.setText(lanzouFile.getDesc().replaceFirst("([\\[\\]])+", ""));
+            binding.tvDesc.setVisibility(View.GONE);
+            name.setTextSize(16);
             name.setText(lanzouFile.getName());
+            name.setCompoundDrawablesWithIntrinsicBounds(folderIcon, null, null, null);
         } else {
             name.setTextSize(14);
             name.setText(lanzouFile.getName_all());
+            name.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
             String time = lanzouFile.getTime();
             if (time.length() > 6) {
                 time = time.substring(2);

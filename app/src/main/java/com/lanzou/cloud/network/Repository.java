@@ -25,12 +25,19 @@ import com.lanzou.cloud.event.OnFileIOListener;
 import com.lanzou.cloud.service.LanzouService;
 import com.lanzou.cloud.service.UploadService;
 import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.GsonConverterFactory;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.litepal.LitePal;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +53,6 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Repository {
 
@@ -108,8 +114,14 @@ public class Repository {
             })
             .build();
 
+    private static final String BASE_URL = "https://up.woozooo.com";
+
+    private static final String RECYCLE_BIN_URL = BASE_URL + "/mydisk.php?item=recycle";
+
+    private static final String RECYCLE_BIN_FILES_URL = RECYCLE_BIN_URL + "&action=files";
+
     private final Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("https://up.woozooo.com")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(
                     new GsonBuilder().setVersion(1.0).create()))
@@ -437,6 +449,144 @@ public class Repository {
         return get(lanzouService.editFilePassword(16, fileId, enable ? 1 : 0, pwd));
     }
 
+    public List<LanzouFile> getRecycleFiles() {
+        try {
+            String html = get(lanzouService.getRecycleFiles());
+            if (html == null) {
+                return Collections.emptyList();
+            }
+            Document document = Jsoup.parse(html);
+            Elements elements = document.select("#container div.n1 table tr");
+            if (elements.isEmpty()) {
+                return Collections.emptyList();
+            }
+            elements.remove(0);
+            elements.remove(elements.size() - 1);
+            List<LanzouFile> lanzouFiles = new ArrayList<>();
+            for (Element element : elements) {
+                LanzouFile lanzouFile = new LanzouFile();
+                Elements tds = element.select("td");
+                String id = tds.get(0).selectFirst("input").attr("value");
+                Element a = tds.get(0).selectFirst("a");
+                boolean isFolder = a.selectFirst("img")
+                        .attr("src").equals("images/folder.gif");
+                String name = a.text();
+                lanzouFile.setName(name);
+                lanzouFile.setName_all(name);
+                lanzouFile.setSize(tds.get(1).text());
+                lanzouFile.setTime(tds.get(2).text());
+                int index = name.lastIndexOf(".");
+                String extension = null;
+                if (index != -1) {
+                    extension = name.substring(index + 1);
+                }
+                lanzouFile.setExtension(extension);
+                if ("apk".equals(lanzouFile.getExtension())) {
+                    getRealFile(lanzouFile);
+                } else if (UploadService.SPLIT_FILE_EXTENSION.equals(lanzouFile.getExtension())) {
+                    getRealSplitFile(lanzouFile);
+                }
+                if (isFolder) {
+                    lanzouFile.setFolderId(Long.parseLong(id));
+                } else {
+                    lanzouFile.setFileId(Long.parseLong(id));
+                }
+                lanzouFiles.add(lanzouFile);
+            }
+            return lanzouFiles;
+        } catch (Exception e) {
+            Log.e(TAG, "getRecycleFiles:" + e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 删除回收站文件
+     *
+     * @param fileId    文件 id
+     * @param isFolder  是否是文件夹
+     * @param isRestore 是否恢复文件
+     * @return true 删除成功 false 失败
+     */
+    public boolean deleteRecycleFile(long fileId, boolean isFolder, boolean isRestore) {
+        try {
+            String html;
+
+            String action;
+
+            if (isRestore) {
+                if (isFolder) {
+                    action = "folder_restore";
+                } else {
+                    action = "file_restore";
+                }
+            } else {
+                if (isFolder) {
+                    action = "folder_delete_complete";
+                } else {
+                    action = "file_delete_complete";
+                }
+            }
+
+            if (isFolder) {
+                html = get(lanzouService.requestHandleRecycleFolder(action, fileId));
+            } else {
+                html = get(lanzouService.requestHandleRecycleFile(action, fileId));
+            }
+
+            Map<String, Object> formData = getFormData(html);
+
+            Log.d(TAG, "params: " + formData);
+
+            get(lanzouService.handleRecycleFile(formData));
+            // FIXME: 2025/7/2 不校验是否成功，默认即成功
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "deleteRecycleFile:" + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 对回收站文件执行操作
+     *
+     * @param action 具体操作 action
+     * @return 执行结果
+     */
+    public boolean handleRecycleFiles(String action) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("action", action);
+
+        try {
+            String html = get(lanzouService.handleRecycleFile(map));
+
+            if (TextUtils.isEmpty(html)) {
+                return false;
+            }
+
+            Map<String, Object> formData = getFormData(html);
+            get(lanzouService.handleRecycleFile(formData));
+            // FIXME: 2025/7/3 不校验操作结果
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private Map<String, Object> getFormData(String html) {
+        Document document = Jsoup.parse(html);
+        Element form = document.selectFirst("form");
+        if (form == null) {
+            return Collections.emptyMap();
+        }
+        Elements elements = form.select("input");
+        Map<String, Object> map = new HashMap<>();
+        for (Element element : elements) {
+            map.put(element.attr("name"), element.attr("value"));
+        }
+        return map;
+    }
+
     private Request.Builder createRequest(String url) {
         return new Request.Builder()
                 .url(url)
@@ -489,6 +639,7 @@ public class Repository {
         try {
             return call.execute().body();
         } catch (Exception e) {
+            Log.e(TAG, "get error: " + e.getMessage());
             return null;
         }
     }

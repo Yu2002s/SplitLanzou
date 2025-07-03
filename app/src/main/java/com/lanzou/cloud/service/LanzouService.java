@@ -16,6 +16,7 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -162,4 +163,46 @@ public interface LanzouService {
             @Field("shows") int enablePwd,
             @Field("shownames") String password
     );
+
+    /**
+     * 获取回收站文件列表
+     *
+     * @return 网页内容
+     */
+    @GET("/mydisk.php?item=recycle&action=files")
+    Call<String> getRecycleFiles();
+
+    /**
+     * 请求删除文件夹
+     *
+     * @param folderId 文件夹 id
+     * @return 删除结果网页内容
+     */
+    @GET("/mydisk.php?item=recycle")
+    Call<String> requestHandleRecycleFolder(
+            @Query("action") String action,
+            @Query("folder_id") long folderId
+    );
+
+    /**
+     * 请求删除文件
+     *
+     * @param fileId 文件 id
+     * @return 网页内容
+     */
+    @GET("/mydisk.php?item=recycle")
+    Call<String> requestHandleRecycleFile(
+            @Query("action") String action,
+            @Query("file_id") long fileId
+    );
+
+    /**
+     * 处理回收站文件
+     *
+     * @param map 所需参数
+     * @return 结果
+     */
+    @POST("mydisk.php?item=recycle")
+    @FormUrlEncoded
+    Call<String> handleRecycleFile(@FieldMap Map<String, Object> map);
 }

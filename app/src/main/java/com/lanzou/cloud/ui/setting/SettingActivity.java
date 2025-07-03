@@ -51,7 +51,7 @@ public class SettingActivity extends BaseActivity {
 
         List<String> list = new ArrayList<>();
         list.add("获取权限");
-        list.add("修改路径");
+        list.add("缓存路径");
         list.add("一些问题");
         list.add("获取更新");
         list.add("关于APP");
@@ -88,9 +88,11 @@ public class SettingActivity extends BaseActivity {
         arrayAdapter.setItemClickListener((position, view) -> {
             switch (position) {
                 case 0:
+                    // 请求权限
                     requestPermission();
                     break;
                 case 1:
+                    // 设置缓存路径
                     showUploadDialog();
                     break;
                 case 2:
@@ -98,6 +100,7 @@ public class SettingActivity extends BaseActivity {
                     startActivity(new Intent(SettingActivity.this, QuestionActivity.class));
                     break;
                 case 3:
+                    // 去 github 首页
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(LanzouApplication.GITHUB_HOME));
                     startActivity(intent);
                     break;
@@ -106,6 +109,7 @@ public class SettingActivity extends BaseActivity {
                     showAboutDialog();
                     break;
                 case 5:
+                    // 退出登录
                     Repository.getInstance().logout();
                     System.exit(0);
                     startActivity(new Intent(SettingActivity.this, MainActivity.class));
@@ -130,7 +134,7 @@ public class SettingActivity extends BaseActivity {
         // 未选择上传目录
         new MaterialAlertDialogBuilder(this)
                 .setTitle("选择缓存位置")
-                .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处")
+                .setMessage("选择缓存上传文件的位置，这是必须设置项，注意，此目录必须为不使用目录，因为将会上传大量缓存文件到此处\n【不要设置为根目录】")
                 .setNegativeButton("先不选", null)
                 .setPositiveButton("去选择", (dialog, which)
                         -> launcher.launch(new Intent(SettingActivity.this, FolderSelectorActivity.class))).show();
@@ -147,6 +151,8 @@ public class SettingActivity extends BaseActivity {
                     startActivity(intent);
                 } catch (Exception ignore) {
                 }
+            } else {
+                Toast.makeText(this, "权限已授权", Toast.LENGTH_SHORT).show();
             }
         } else {
             int granted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -154,6 +160,8 @@ public class SettingActivity extends BaseActivity {
                 String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE};
                 ActivityCompat.requestPermissions(this, permissions, 1);
+            } else {
+                Toast.makeText(this, "权限已授权", Toast.LENGTH_SHORT).show();
             }
         }
     }
