@@ -1,17 +1,24 @@
 pluginManagement {
     repositories {
+        maven { setUrl("https://jitpack.io") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/groups/public/") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/repositories/jcenter") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/repositories/google") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/repositories/gradle-plugin") }
         google()
         mavenCentral()
         gradlePluginPortal()
-        /*maven { url 'https://maven.aliyun.com/repository/jcenter' }*/
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { setUrl("https://jitpack.io") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/groups/public/") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/repositories/jcenter") }
+        maven { setUrl("https://maven.aliyun.com/nexus/content/repositories/google") }
         google()
         mavenCentral()
-        maven { url 'https://maven.aliyun.com/repository/jcenter' }
     }
 }
 rootProject.name = "SplitLanzou"
