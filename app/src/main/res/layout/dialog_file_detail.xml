@@ -6,8 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/tv_name"
+        tools:text="@string/app_name"
+        android:textSize="19sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <EditText
+        android:layout_marginTop="10dp"
         tools:text="https://www.baidu.com/123"
         android:id="@+id/edit_url"
         android:layout_width="match_parent"
@@ -38,8 +45,20 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/btn_save"
+        android:text="@string/save_setting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
         android:id="@+id/btn_share"
         android:text="@string/share_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btn_share_download"
+        android:text="@string/copy_download_url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

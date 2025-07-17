@@ -157,9 +157,26 @@ public interface LanzouService {
      */
     @POST("doupload.php")
     @FormUrlEncoded
-    Call<LanzouSimpleResponse> editFilePassword(
+    Call<LanzouSimpleResponse> editFolderPassword(
             @Field("task") int task,
             @Field("folder_id") long fileId,
+            @Field("shows") int enablePwd,
+            @Field("shownames") String password
+    );
+
+    /**
+     * 修改文件密码
+     *
+     * @param task      23 修改文件密码，16 修改文件夹密码
+     * @param fileId    文件 id
+     * @param enablePwd 是否开启密码，1开启，0不开启
+     * @param password  文件密码
+     */
+    @POST("doupload.php")
+    @FormUrlEncoded
+    Call<LanzouSimpleResponse> editFilePassword(
+            @Field("task") int task,
+            @Field("file_id") long fileId,
             @Field("shows") int enablePwd,
             @Field("shownames") String password
     );

@@ -369,7 +369,7 @@ public class FileActionImpl implements FileAction {
     @Override
     public void shareFile(int position) {
         LanzouFile lanzouFile = lanzouFiles.get(position);
-        CharSequence[] items = new CharSequence[]{"自定义分享(支持分享100M+文件)", "普通分享(原始分享地址)"};
+        CharSequence[] items = new CharSequence[]{"自定义分享(支持分享100M+文件)", "自定义分享2(支持分享100M+文件)", "普通分享(原始分享地址)", "下载直链"};
         new MaterialAlertDialogBuilder(mActivity)
                 .setTitle("选择分享")
                 .setSingleChoiceItems(items, -1, (dialog, which) -> new Thread(() -> {
@@ -381,18 +381,25 @@ public class FileActionImpl implements FileAction {
                         return;
                     }
                     mActivity.runOnUiThread(() -> {
+                        String url = lanzouUrl.getHost() + "/" + lanzouUrl.getFileId();
+                        if (lanzouUrl.getHasPwd() == 1) {
+                            url += "&pwd=" + lanzouUrl.getPwd();
+                        }
                         String str;
                         if (which == 0) {
-                            str = LanzouApplication.SHARE_URL + "?url=" + lanzouUrl.getHost()
-                                    + "/" + lanzouUrl.getFileId();
+                            str = LanzouApplication.SHARE_URL2 + lanzouUrl.getFileId();
                             if (lanzouUrl.getHasPwd() == 1) {
-                                str += "&pwd=" + lanzouUrl.getPwd();
+                                str += "/" + lanzouUrl.getPwd();
                             }
-                        } else {
+                        } else if (which == 1) {
+                            str = LanzouApplication.SHARE_URL + "?url=" + url;
+                        } else if (which == 2) {
                             str = lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId();
                             if (lanzouUrl.getHasPwd() == 1) {
                                 str += "\n密码: " + lanzouUrl.getPwd();
                             }
+                        } else {
+                            str = "http://api.jdynb.xyz:6400/parser?url=" + url;
                         }
                         clipboardManager.setPrimaryClip(ClipData.newPlainText("url", str));
                         Toast.makeText(mActivity, "分享链接已复制", Toast.LENGTH_SHORT).show();

@@ -241,7 +241,8 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         pathAdapter.setListener((position, view1) -> {
             if (!fileAction.navigateTo(position)) {
                 // 显示详情对话框
-                new FileDetailDialog(requireContext(), getCurrentPage().getFolderId());
+                new FileDetailDialog(requireContext(), getCurrentPage().getFolderId())
+                        .setFileName(getCurrentPage().getName());
             }
         });
 
@@ -293,6 +294,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         list.add(new SimpleItem("下载", R.drawable.baseline_get_app_24));
         list.add(new SimpleItem("分享", R.drawable.baseline_share_24));
         list.add(new SimpleItem("移动", R.drawable.baseline_sync_alt_24));
+        list.add(new SimpleItem("详情", R.drawable.baseline_settings_24));
         list.add(new SimpleItem("删除", R.drawable.baseline_delete_outline_24));
         GridView gridView = new GridView(requireContext());
         gridView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
@@ -315,6 +317,10 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
                     fileAction.moveFile(lanzouFile);
                     break;
                 case 3:
+                    new FileDetailDialog(requireContext(), lanzouFile.getFileId(), true)
+                            .setFileName(lanzouFile.getFileName());
+                    break;
+                case 4:
                     fileAction.deleteFile(itemPosition);
                     break;
             }
@@ -421,7 +427,8 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             fileAction.createFolder();
         } else if (item.getItemId() == R.id.detail) {
             // 显示详情对话框
-            new FileDetailDialog(requireContext(), getCurrentPage().getFolderId());
+            new FileDetailDialog(requireContext(), getCurrentPage().getFolderId())
+                    .setFileName(getCurrentPage().getName());
         }
         return super.onOptionsItemSelected(item);
     }

@@ -34,8 +34,10 @@
         android:layout_height="wrap_content"/>
 
     <TextView
+        android:autoLink="all"
         android:padding="16dp"
-        android:text="注意：可能下载后文件名不对，记得自己改后缀，请输入蓝奏云原始的分享地址"
+        android:textIsSelectable="true"
+        android:text="@string/resolve_tips"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

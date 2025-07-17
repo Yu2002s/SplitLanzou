@@ -441,12 +441,21 @@ public class Repository {
         return get(lanzouService.moveFile(20, fileId, targetFolder));
     }
 
-    public LanzouUrlResponse getFolder(long folderId) {
-        return get(lanzouService.getFolder(18, folderId));
+    @Nullable
+    public LanzouUrl getFolder(long folderId) {
+        LanzouUrlResponse lanzouUrlResponse = get(lanzouService.getFolder(18, folderId));
+        if (lanzouUrlResponse != null && lanzouUrlResponse.getStatus() == 1) {
+            return lanzouUrlResponse.getInfo();
+        }
+        return null;
+    }
+
+    public LanzouSimpleResponse editFolderPassword(long fileId, boolean enable, String pwd) {
+        return get(lanzouService.editFolderPassword(16, fileId, enable ? 1 : 0, pwd));
     }
 
     public LanzouSimpleResponse editFilePassword(long fileId, boolean enable, String pwd) {
-        return get(lanzouService.editFilePassword(16, fileId, enable ? 1 : 0, pwd));
+        return get(lanzouService.editFilePassword(23, fileId, enable ? 1 : 0, pwd));
     }
 
     public List<LanzouFile> getRecycleFiles() {
