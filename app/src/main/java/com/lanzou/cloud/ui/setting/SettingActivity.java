@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.MainActivity;
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.databinding.ActivitySettingBinding;
 import com.lanzou.cloud.databinding.ItemListSettingBinding;
 import com.lanzou.cloud.event.OnItemClickListener;

@@ -1,0 +1,61 @@
+[versions]
+agp = "8.11.0"
+kotlin = "2.2.0"
+coreKtx = "1.16.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.1"
+material = "1.12.0"
+activity = "1.10.1"
+constraintlayout = "2.2.1"
+kotlinxCoroutines = "1.10.2"
+netExp4j = "0.4.8"
+preference = "1.2.1"
+litepal = "3.2.3"
+brv = "1.6.1"
+okhttp = "4.11.0"
+net = "3.7.0"
+kotlinSerialization = "1.9.0"
+glide = "4.16.0"
+permissionX = "1.8.1"
+engine = "0.0.74"
+fileCore = "3.9.8"
+retrofit = "2.9.0"
+swiperefreshlayout = "1.1.0"
+jsoup = "1.18.3"
+tooltip = "1.2.3"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+net-exp4j = { module = "net.objecthunter:exp4j", version.ref = "netExp4j" }
+preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+brv = { group = "com.github.liangjingkanji", name = "BRV", version.ref = "brv" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+net = { group = "com.github.liangjingkanji", name = "Net", version.ref = "net" }
+engine = { group = "com.github.liangjingkanji", name = "Engine", version.ref = "engine" }
+kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.ref = "glide" }
+litepal = { group = "org.litepal.guolindev", name = "core", version.ref = "litepal" }
+permissionX = { group = "com.guolindev.permissionx", name = "permissionx", version.ref = "permissionX" }
+fileCore = { group = "com.github.javakam", name = "file.core", version.ref = "fileCore" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+tooltip = { group = "com.github.liangjingkanji", name = "Tooltip", version.ref = "tooltip" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+

@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.FileAdapter;
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.databinding.ActivityRecycleFileBinding;
 import com.lanzou.cloud.network.Repository;

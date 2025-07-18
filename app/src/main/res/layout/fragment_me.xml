@@ -1,43 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:padding="10dp"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<layout>
 
-    <com.google.android.material.card.MaterialCardView
-        app:contentPadding="10dp"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dp">
 
-        <TextView
-            android:id="@+id/tv_username"
-            tools:text="@string/app_name"
-            android:textSize="19sp"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            app:contentPadding="10dp">
 
-    </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:id="@+id/tv_username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="19sp"
+                tools:text="@string/app_name" />
 
-    <Button
-        android:layout_marginTop="10dp"
-        android:id="@+id/btn_manager"
-        android:text="@string/manger_account"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        </com.google.android.material.card.MaterialCardView>
 
-    <Button
-        android:id="@+id/btn_resolve"
-        android:text="@string/resolve_file"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btn_manager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/manger_account" />
 
-    <Button
-        android:id="@+id/btn_recycle"
-        android:text="@string/recycle_bin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/btn_resolve"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/resolve_file" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/btn_recycle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/recycle_bin" />
+
+    </LinearLayout>
+
+</layout>

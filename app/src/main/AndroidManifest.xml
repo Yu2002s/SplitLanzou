@@ -78,8 +78,7 @@
         <activity
             android:name=".ui.resolve.ResolveFileActivity"
             android:exported="true"
-            android:label="解析文件"
-            android:parentActivityName=".MainActivity">
+            android:label="解析文件">
             <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -94,6 +93,9 @@
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.activity.ResolveFolderActivity"
+            android:label="@string/title_resolve_folder" />
         <activity
             android:name=".ui.selector.FileSelectorActivity"
             android:label="上传文件" />

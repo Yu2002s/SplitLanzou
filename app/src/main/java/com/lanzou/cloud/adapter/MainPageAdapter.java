@@ -7,7 +7,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.lanzou.cloud.ui.file.FileFragment;
-import com.lanzou.cloud.ui.me.MeFragment;
+import com.lanzou.cloud.ui.fragment.MeFragment;
 import com.lanzou.cloud.ui.transmission.TransmissionFragment;
 
 public class MainPageAdapter extends FragmentStateAdapter {

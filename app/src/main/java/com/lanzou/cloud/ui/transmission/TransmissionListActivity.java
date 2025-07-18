@@ -11,7 +11,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayoutMediator;
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.databinding.ActivityTransmissionListBinding;
 import com.lanzou.cloud.ui.download.DownloadListFragment;
 import com.lanzou.cloud.ui.upload.UploadListFragment;

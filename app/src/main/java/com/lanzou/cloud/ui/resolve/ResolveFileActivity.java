@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.lanzou.cloud.databinding.ActivityResolveFileBinding;
 import com.lanzou.cloud.service.DownloadService;
+import com.lanzou.cloud.ui.activity.ResolveFolderActivity;
 
 public class ResolveFileActivity extends AppCompatActivity implements ServiceConnection {
 
@@ -36,7 +37,7 @@ public class ResolveFileActivity extends AppCompatActivity implements ServiceCon
         });
 
         CharSequence charSequenceExtra = getIntent().getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
-        boolean readonly = getIntent().getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false);
+        // boolean readonly = getIntent().getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false);
         if (charSequenceExtra != null) {
             binding.editUrl.setText(charSequenceExtra);
         }
@@ -50,6 +51,10 @@ public class ResolveFileActivity extends AppCompatActivity implements ServiceCon
             String url = "https://" + data.getHost() + data.getPath();
             binding.editUrl.setText(url);
         }
+
+        binding.btnResolveFolder.setOnClickListener(view -> {
+            startActivity(new Intent(this, ResolveFolderActivity.class));
+        });
     }
 
     private void resolveFile(String url, @Nullable String pwd) {

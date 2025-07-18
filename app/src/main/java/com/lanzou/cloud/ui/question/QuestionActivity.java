@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.lanzou.cloud.R;
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.data.Question;
 import com.lanzou.cloud.databinding.ActivityQuestionBinding;
 

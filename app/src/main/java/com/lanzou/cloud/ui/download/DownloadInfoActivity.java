@@ -18,7 +18,7 @@ import androidx.core.view.OnApplyWindowInsetsListener;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.data.Download;
 import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.databinding.ActivityDownloadInfoBinding;

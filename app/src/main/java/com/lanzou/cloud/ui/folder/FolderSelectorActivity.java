@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.FolderListAdapter;
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouFolder;
 import com.lanzou.cloud.databinding.ActivityFolderSelectorBinding;

@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.lanzou.cloud.R;
 import com.lanzou.cloud.adapter.FileSelectorAdapter;
-import com.lanzou.cloud.base.BaseActivity;
+import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.data.FileInfo;
 import com.lanzou.cloud.databinding.ActivityPhoneFileBinding;
 import com.lanzou.cloud.utils.FileUtils;

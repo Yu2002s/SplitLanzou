@@ -31,6 +31,9 @@ public class FileDetailDialog extends MaterialAlertDialogBuilder {
     private ClipboardManager clipboardManager;
 
     public FileDetailDialog setFileName(String name) {
+        if (this.fileId <= 0) {
+            return this;
+        }
         binding.tvName.setText(name);
         return this;
     }

@@ -28,4 +28,16 @@
     <string name="save_setting">保存设置</string>
     <string name="copy_download_url">复制直链</string>
     <string name="resolve_tips">注意：可能下载后文件名不对，记得自己改后缀，请输入蓝奏云原始的分享地址。这里不支持文件夹解析，要解析文件夹请使用网页分享地址(http://lzy.jdynb.xyz/share/folder/文件id/文件密码(可留空)，文件id是lanzou.com/后面内容。)示例：http://lzy.jdynb.xyz/share/folder/b02jsznha/5sjj   (长按可复制)</string>
+
+    <!-- 界面状态 -->
+    <string name="empty">空空如也</string>
+    <string name="error">加载失败，可能网络问题或服务器维护中，请尝试点击刷新，如多次失败请切换线路或换源</string>
+    <string name="reload">重载</string>
+    <string name="error_tips">加载失败了，请稍后重试，点击刷新</string>
+    <string name="empty_tips">这里空空如也哦！</string>
+    <string name="refresh_tips">点击刷新</string>
+
+    <!-- activity -->
+    <string name="title_resolve_folder">解析文件夹</string>
+
 </resources>
