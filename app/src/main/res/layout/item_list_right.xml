@@ -7,6 +7,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
+        android:autoLink="all"
+        android:textColorLink="?attr/colorSurface"
+        android:textIsSelectable="true"
         android:paddingHorizontal="16dp"
         android:paddingVertical="10dp"
         android:background="@drawable/ic_corner_right"

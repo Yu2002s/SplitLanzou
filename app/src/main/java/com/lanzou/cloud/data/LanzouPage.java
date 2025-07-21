@@ -10,7 +10,7 @@ import java.util.List;
 
 public class LanzouPage extends LitePalSupport implements Parcelable {
 
-    private long folderId;
+    private long folderId = -1;
 
     private String name;
 
@@ -20,6 +20,13 @@ public class LanzouPage extends LitePalSupport implements Parcelable {
     private boolean isNull = false;
 
     public LanzouPage() {
+    }
+
+    public static LanzouPage createUploadPage(long folderId, String folderName) {
+        LanzouPage lanzouPage = new LanzouPage();
+        lanzouPage.setFolderId(folderId);
+        lanzouPage.setName(folderName);
+        return lanzouPage;
     }
 
     protected LanzouPage(Parcel in) {

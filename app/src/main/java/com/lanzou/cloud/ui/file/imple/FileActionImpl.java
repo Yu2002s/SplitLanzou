@@ -35,8 +35,8 @@ import com.lanzou.cloud.data.LanzouUrl;
 import com.lanzou.cloud.databinding.DialogCreateFolderBinding;
 import com.lanzou.cloud.event.FileActionListener;
 import com.lanzou.cloud.network.Repository;
+import com.lanzou.cloud.ui.activity.FolderSelectorActivity;
 import com.lanzou.cloud.ui.file.FileAction;
-import com.lanzou.cloud.ui.folder.FolderSelectorActivity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -120,6 +120,11 @@ public class FileActionImpl implements FileAction {
     }
 
     @Override
+    public void init(AppCompatActivity context) {
+        mActivity = context;
+    }
+
+    @Override
     public void bindView(RecyclerView rv, FileActionListener fileActionListener) {
         if (mActivity == null) {
             throw new NullPointerException("请先调用 observable 方法");
@@ -127,14 +132,14 @@ public class FileActionImpl implements FileAction {
         adapter = (FileAdapter) rv.getAdapter();
         this.fileActionListener = fileActionListener;
 
-        addBackCallback();
+        // addBackCallback();
 
         initView(rv);
     }
 
     private void addBackCallback() {
         OnBackPressedDispatcher backPressedDispatcher = mActivity.getOnBackPressedDispatcher();
-        backPressedDispatcher.addCallback(new OnBackPressedCallback(true) {
+        backPressedDispatcher.addCallback(mFragment, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 onBackPressed();
@@ -302,6 +307,7 @@ public class FileActionImpl implements FileAction {
     public void createFolder() {
         LayoutInflater layoutInflater = mActivity.getLayoutInflater();
         DialogCreateFolderBinding folderBinding = DialogCreateFolderBinding.inflate(layoutInflater);
+        folderBinding.editName.post(folderBinding.editName::requestFocus);
         Thread thread = new Thread(() -> {
             String name = folderBinding.editName.getText().toString();
             String desc = folderBinding.editDesc.getText().toString();
@@ -310,13 +316,17 @@ public class FileActionImpl implements FileAction {
                     .createFolder(currentPage.getFolderId(), name, desc);
             mActivity.runOnUiThread(() -> {
                 if (id != null) {
-                    LanzouFile lanzouFile = new LanzouFile();
-                    lanzouFile.setName(name);
-                    lanzouFile.setFolderId(id);
-                    lanzouFiles.add(0, lanzouFile);
-                    adapter.notifyItemInserted(0);
-                    mRecyclerView.scrollToPosition(0);
-                    Toast.makeText(mActivity, "文件夹已新建", Toast.LENGTH_SHORT).show();
+                    if (mRecyclerView != null) {
+                        LanzouFile lanzouFile = new LanzouFile();
+                        lanzouFile.setName(name);
+                        lanzouFile.setFolderId(id);
+                        lanzouFiles.add(0, lanzouFile);
+                        adapter.notifyItemInserted(0);
+                        mRecyclerView.scrollToPosition(0);
+                        Toast.makeText(mActivity, "文件夹已新建", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(mActivity, "文件夹已新建，请下拉刷新", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(mActivity, "新建文件夹失败", Toast.LENGTH_SHORT).show();
                 }

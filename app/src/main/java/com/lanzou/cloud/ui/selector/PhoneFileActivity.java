@@ -19,7 +19,7 @@ import com.lanzou.cloud.adapter.FileSelectorAdapter;
 import com.lanzou.cloud.base.java.BaseActivity;
 import com.lanzou.cloud.data.FileInfo;
 import com.lanzou.cloud.databinding.ActivityPhoneFileBinding;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -134,7 +134,7 @@ public class PhoneFileActivity extends BaseActivity {
         toolBar.setSubtitle(path);
         binding.refreshLayout.setRefreshing(true);
         new Thread(() -> {
-            List<FileInfo> fileInfoList = FileUtils.getFileInfosForPath(file, selectedFileInfos::contains);
+            List<FileInfo> fileInfoList = FileJavaUtils.getFileInfosForPath(file, selectedFileInfos::contains);
             fileInfos.clear();
             fileInfos.addAll(fileInfoList);
             runOnUiThread(() -> {

@@ -5,21 +5,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:inputType="text"
-        android:id="@+id/edit_name"
+    <com.google.android.material.textfield.TextInputLayout
         android:hint="请输入名称"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:importantForAutofill="no" />
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:inputType="textMultiLine"
-        android:id="@+id/edit_desc"
+        <com.google.android.material.textfield.TextInputEditText
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:inputType="text"
+            android:id="@+id/edit_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginTop="10dp"
         android:hint="请输入描述信息"
-        android:minLines="3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:importantForAutofill="no" />
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:inputType="textMultiLine"
+            android:id="@+id/edit_desc"
+            android:minLines="3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

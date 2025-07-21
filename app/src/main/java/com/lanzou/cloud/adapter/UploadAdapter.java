@@ -4,10 +4,9 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.lanzou.cloud.R;
 import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.databinding.ItemListTransmissionBinding;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 import java.util.List;
 
@@ -39,8 +38,8 @@ public class UploadAdapter extends TransmissionAdapter {
     }
 
     private void updateView(ItemListTransmissionBinding binding, Upload upload) {
-        binding.tvDesc.setText(upload.getStatusStr() + " " + FileUtils.toSize(upload.getCurrent())
-                + "/" + FileUtils.toSize(upload.getLength()) + " " + FileUtils.toSize(upload.getSpeed()) + "/s");
+        binding.tvDesc.setText(upload.getStatusStr() + " " + FileJavaUtils.toSize(upload.getCurrent())
+                + "/" + FileJavaUtils.toSize(upload.getLength()) + " " + FileJavaUtils.toSize(upload.getSpeed()) + "/s");
         binding.progressBar.setProgress(upload.getProgress());
         binding.progressBar.setVisibility(upload.isComplete() ? View.GONE: View.VISIBLE);
         binding.btnToggle.setVisibility(upload.isComplete() ? View.GONE: View.VISIBLE);

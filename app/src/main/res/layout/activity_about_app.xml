@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+    </data>
+
+    <FrameLayout
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_marginTop="150dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:src="@mipmap/ic_launcher_foreground"
+                android:layout_width="150dp"
+                android:layout_height="150dp" />
+
+            <TextView
+                android:textStyle="bold"
+                android:layout_marginTop="-40dp"
+                android:gravity="center_horizontal"
+                android:textSize="19sp"
+                android:text="@string/app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tv_version"
+                tools:text="v1.0.0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                hit="@{true}"
+                android:textStyle="bold"
+                android:id="@+id/check_update"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_marginTop="10dp"
+                android:text="@string/check_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:textSize="13sp"
+                android:text="@string/dev"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_marginBottom="50dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textStyle="bold"
+                hit="@{true}"
+                android:id="@+id/tv_github"
+                android:textColor="?attr/colorPrimary"
+                android:text="@string/github"
+                android:linksClickable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:textStyle="bold"
+                hit="@{true}"
+                android:id="@+id/tv_gitee"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginStart="16dp"
+                android:text="@string/gitee"
+                android:linksClickable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:textStyle="bold"
+                hit="@{true}"
+                android:id="@+id/tv_donate"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginStart="16dp"
+                android:text="@string/donate"
+                android:linksClickable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</layout>

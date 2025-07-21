@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.lanzou.cloud.utils.databinding.CommonDataBindingAdapter" />
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+        <import type="com.lanzou.cloud.model.FileInfoModel" />
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.model.FileInfoModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foreground="?attr/selectableItemBackground"
+        android:background="@{m.itemBg}"
+        android:padding="4dp">
+
+        <ImageView
+            android:scaleType="centerCrop"
+            tools:src="@drawable/baseline_folder_24"
+            android:id="@+id/iv_icon"
+            fileIcon="@{m}"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+            android:textSize="12sp"
+            android:textColor="@{m.nameTextColor}"
+            android:id="@+id/tv_name"
+            android:layout_marginStart="4dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{m.name}"
+            app:layout_constraintBottom_toTopOf="@id/tv_desc"
+            app:layout_constraintEnd_toStartOf="@id/cb"
+            app:layout_constraintStart_toEndOf="@id/iv_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/app_name" />
+
+        <TextView
+            gone="@{m.size.length() > 0}"
+            android:id="@+id/tv_desc"
+            app:layout_constraintBottom_toBottomOf="@id/iv_icon"
+            android:textSize="10sp"
+            app:layout_constraintEnd_toEndOf="@id/tv_name"
+            tools:text="100.22M 2024-12-12 12下载"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            app:layout_constraintStart_toStartOf="@id/tv_name"
+            android:text="@{m.fileDesc}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:clickable="false"
+            android:checked="@{m.checked}"
+            gone="@{false}"
+            android:id="@+id/cb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

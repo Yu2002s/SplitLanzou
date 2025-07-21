@@ -1,5 +1,6 @@
 package com.lanzou.cloud.ui.file;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,6 +14,8 @@ import java.util.List;
  * 文件操作相关的接口
  */
 public interface FileAction {
+
+    void init(AppCompatActivity context);
 
     /**
      * 执行刷新操作，刷新文件列表

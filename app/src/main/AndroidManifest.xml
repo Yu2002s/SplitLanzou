@@ -58,7 +58,7 @@
         </activity>
         <activity android:name=".ui.web.WebActivity" />
         <activity
-            android:name=".ui.folder.FolderSelectorActivity"
+            android:name=".ui.activity.FolderSelectorActivity"
             android:label="选择文件夹" />
         <activity
             android:name=".ui.transmission.TransmissionListActivity"
@@ -67,16 +67,16 @@
             android:name=".ui.upload.UploadInfoActivity"
             android:label="上传信息" />
         <activity
-            android:name=".ui.setting.SettingActivity"
+            android:name=".ui.activity.SettingActivity"
             android:label="设置" />
         <activity
-            android:name=".ui.question.QuestionActivity"
+            android:name=".ui.activity.QuestionActivity"
             android:label="一些问题" />
         <activity
             android:name=".ui.download.DownloadInfoActivity"
             android:label="下载信息" />
         <activity
-            android:name=".ui.resolve.ResolveFileActivity"
+            android:name=".ui.activity.ResolveFileActivity"
             android:exported="true"
             android:label="解析文件">
             <intent-filter>
@@ -119,8 +119,13 @@
             android:name=".ui.selector.PhoneFileActivity"
             android:label="选择手机文件上传" />
         <activity
-            android:name=".ui.recycle.RecycleFileActivity"
+            android:name=".ui.activity.RecycleFileActivity"
             android:label="回收站" />
+        <activity android:name=".ui.activity.WebActivity" />
+        <activity android:name=".ui.activity.UserProfileActivity" />
+        <activity android:name=".ui.activity.AboutAppActivity" />
+        <activity android:name=".ui.activity.QRCodeScanActivity" />
+        <activity android:name=".ui.activity.SwitchUserActivity" />
 
         <service android:name=".service.DownloadService" />
         <service android:name=".service.UploadService" />

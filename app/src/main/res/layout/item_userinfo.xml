@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.model.UserInfoModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            tools:text="冬"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:id="@+id/iv_avatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/bg_round"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="@{m.avatar}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_username"
+            gone="@{m.login}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@{m.username}"
+            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+            app:layout_constraintBottom_toTopOf="@id/tv_info"
+            app:layout_constraintEnd_toStartOf="@id/tv_profile"
+            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            tools:text="@string/app_name"
+            tools:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_info"
+            gone="@{m.login &amp;&amp; m.phone.length() > 0}"
+            android:text="@{m.phone + ` ` + m.permission + ` ` + m.level}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+            app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_username"
+            app:layout_constraintTop_toBottomOf="@id/tv_username"
+            tools:text="15279164185 普 LO"
+            tools:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_login"
+            gone="@{!m.login}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/login_or_sign"
+            app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
+            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            tools:visibility="visible" />
+
+        <Button
+            android:id="@+id/tv_profile"
+            style="?attr/buttonBarButtonStyle"
+            gone="@{m.login &amp;&amp; m.showProfile}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_user_center"
+            android:drawableTint="?attr/colorPrimary"
+            android:textSize="17sp"
+            app:drawableEndCompat="@drawable/baseline_chevron_right_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

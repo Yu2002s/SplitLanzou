@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,8 +23,9 @@ import com.lanzou.cloud.data.LanzouUrl;
 import com.lanzou.cloud.data.SplitFile;
 import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.event.OnDownloadListener;
+import com.lanzou.cloud.model.FileInfoModel;
 import com.lanzou.cloud.network.Repository;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
@@ -188,7 +190,7 @@ public class DownloadService extends Service {
      */
     private void openFile(Download download) {
         String path = download.getPath();
-        if (!FileUtils.openFile(path)) {
+        if (!FileJavaUtils.openFile(path)) {
             Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();
         }
     }
@@ -245,6 +247,35 @@ public class DownloadService extends Service {
         addDownload(fileId, null);
     }
 
+    public void addDownload(List<FileInfoModel> files) {
+        if (files.isEmpty()) {
+            return;
+        }
+        Toast.makeText(this, files.size() + "个文件已加入下载任务", Toast.LENGTH_SHORT).show();
+        executorService.execute(() -> {
+            files.forEach(fileInfoModel -> {
+                long id = Long.parseLong(fileInfoModel.getId());
+                LanzouUrl lanzouUrl = repository.getLanzouUrl(id);
+                if (lanzouUrl == null) {
+                    return;
+                }
+                String pwd = lanzouUrl.getHasPwd() == 1 ? lanzouUrl.getPwd() : null;
+
+                String showName = fileInfoModel.getName();
+                String url = lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId();
+
+                downloadMap.put(url, executorService.submit(() -> {
+                    Download download = createDownload(url, showName, pwd, fileInfoModel.getPath(), false);
+                    if (download == null) {
+                        return;
+                    }
+                    prepareDownload(download);
+                }));
+                // addDownload(, fileInfoModel.getName(), pwd, fileInfoModel.getPath());
+            });
+        });
+    }
+
     /**
      * 通过 fileId 和名称添加下载
      *
@@ -263,6 +294,21 @@ public class DownloadService extends Service {
         });
     }
 
+    public void addDownload(String url, @Nullable String name, @Nullable String pwd) {
+        addDownload(url, name, pwd, null);
+    }
+
+    public void addDownloadWithPath(long fileId, String name, String path) {
+        executorService.execute(() -> {
+            LanzouUrl lanzouUrl = repository.getLanzouUrl(fileId);
+            if (lanzouUrl == null) {
+                return;
+            }
+            String pwd = lanzouUrl.getHasPwd() == 1 ? lanzouUrl.getPwd() : null;
+            addDownload(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId(), name, pwd, path);
+        });
+    }
+
     /**
      * 通过 url、name、pwd 添加下载
      *
@@ -270,7 +316,7 @@ public class DownloadService extends Service {
      * @param name 文件名称
      * @param pwd  文件分享密码
      */
-    public void addDownload(String url, @Nullable String name, @Nullable String pwd) {
+    public void addDownload(String url, @Nullable String name, @Nullable String pwd, @Nullable String path) {
         if (downloadMap.containsKey(url)) {
             // 任务已存在
             Log.d(TAG, "下载任务已存在");
@@ -280,40 +326,54 @@ public class DownloadService extends Service {
         String showName = name == null ? url : name;
 
         downloadMap.put(url, executorService.submit(() -> {
-            Download download;
-
-            Download queryDownload = LitePal
-                    .where("url = ?", url)
-                    .findFirst(Download.class, true);
-            if (queryDownload == null) {
-                download = new Download();
-                download.setUrl(url);
-                download.setTime(System.currentTimeMillis());
-                download.setName(showName);
-                download.setPwd(pwd);
-                if (!download.insert()) {
-                    download.error();
-                    updateDownloadStatus(download);
-                    return;
-                }
-            } else {
-                download = queryDownload;
-                Upload upload = download.getUpload();
-                if (upload != null) {
-                    List<SplitFile> files = LitePal.where("upload_id = ?", String.valueOf(upload.getId()))
-                            .find(SplitFile.class);
-                    upload.setFiles(files);
-                }
-                if (download.isComplete()) {
-                    mHandler.post(() -> Toast.makeText(DownloadService.this, showName + "任务已存在", Toast.LENGTH_SHORT).show());
-                    openFile(download);
-                    return;
-                }
+            Download download = createDownload(url, showName, pwd, path, true);
+            if (download == null) {
+                return;
             }
-            // updateDownloadStatus(download);
             mHandler.post(() -> Toast.makeText(DownloadService.this, showName + "已加入下载任务", Toast.LENGTH_SHORT).show());
             prepareDownload(download);
         }));
+    }
+
+    @Nullable
+    public Download createDownload(String url, String showName, String pwd, String path, boolean open) {
+        Download download;
+
+        Download queryDownload = LitePal
+                .where("url = ?", url)
+                .findFirst(Download.class, true);
+        if (queryDownload == null || !TextUtils.isEmpty(path)) {
+            download = new Download();
+            download.setUrl(url);
+            download.setTime(System.currentTimeMillis());
+            download.setName(showName);
+            download.setPwd(pwd);
+            if (!TextUtils.isEmpty(path)) {
+                download.setPath(path);
+            }
+            if (!download.insert()) {
+                download.error();
+                updateDownloadStatus(download);
+                return null;
+            }
+        } else {
+            download = queryDownload;
+            Upload upload = download.getUpload();
+            if (upload != null) {
+                List<SplitFile> files = LitePal.where("upload_id = ?", String.valueOf(upload.getId()))
+                        .find(SplitFile.class);
+                upload.setFiles(files);
+            }
+            if (download.isComplete()) {
+                mHandler.post(() -> Toast.makeText(DownloadService.this, showName + "任务已存在", Toast.LENGTH_SHORT).show());
+                if (open) {
+                    openFile(download);
+                }
+                return null;
+            }
+        }
+
+        return download;
     }
 
     /**
@@ -343,15 +403,19 @@ public class DownloadService extends Service {
             // 如果文件已经下载完成了，就对下载队列进行删除
             // 这里表示下载过程结束了
             if (download.isComplete()) {
-                // 这里需要对文件进行移动操作
-                try {
-                    File target = new File(externalDownloadPath, download.getName());
-                    // 忽略文件已存在
-                    if (new File(downloadPath, download.getName()).renameTo(target)) {
-                        download.setPath(target.getPath());
+                String path = download.getPath();
+                File file = new File(path);
+                if (!downloadPath.getParent().equals(file.getParentFile())) {
+                    // 这里需要对文件进行移动操作
+                    try {
+                        File target = new File(externalDownloadPath, download.getName());
+                        // 忽略文件已存在
+                        if (new File(downloadPath, download.getName()).renameTo(target)) {
+                            download.setPath(target.getPath());
+                        }
+                    } catch (Exception ignore) {
+                        // 可能出现的一些异常，不过这里忽略
                     }
-                } catch (Exception ignore) {
-                    // 可能出现的一些异常，不过这里忽略
                 }
                 // 对当前下载队列执行删除操作
                 downloadMap.remove(download.getUrl());
@@ -505,9 +569,14 @@ public class DownloadService extends Service {
     private void writeSingleFile(Download download, int len, InputStream inputStream) throws IOException {
         // 进入下载文件状态
         download.progress();
-        File file = new File(downloadPath, download.getName());
+        File file;
+        if (download.getPath() == null) {
+            file = new File(downloadPath, download.getName());
+            download.setPath(file.getPath());
+        } else {
+            file = new File(download.getPath());
+        }
         Log.i(TAG, "downloadPath: " + file.getPath());
-        download.setPath(file.getPath());
         RandomAccessFile raf = new RandomAccessFile(file, "rwd");
         raf.seek(download.getCurrent());
         raf.write(len);
@@ -551,8 +620,13 @@ public class DownloadService extends Service {
     private void handleSplitFiles(Download download) throws IOException {
         Upload upload = download.getUpload();
         download.setLength(upload.getLength());
-        File file = new File(downloadPath, upload.getName());
-        download.setPath(file.getPath());
+        File file;
+        if (download.getPath() == null) {
+            file = new File(downloadPath, upload.getName());
+            download.setPath(file.getPath());
+        } else {
+            file = new File(download.getPath());
+        }
         List<SplitFile> splitFiles = upload.getFiles();
         if (splitFiles == null || splitFiles.isEmpty()) {
             throw new IllegalStateException("资源异常");
@@ -650,8 +724,13 @@ public class DownloadService extends Service {
      * @throws Exception 读写出现的异常
      */
     private void writeTextFileToLocal(Download download, String content) throws Exception {
-        File file = new File(downloadPath, download.getName());
-        download.setPath(file.getPath());
+        File file;
+        if (download.getPath() == null) {
+            file = new File(downloadPath, download.getName());
+            download.setPath(file.getPath());
+        } else {
+            file = new File(download.getPath());
+        }
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         writer.write(content);
         writer.close();

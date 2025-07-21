@@ -22,7 +22,7 @@ import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.databinding.ActivityUploadInfoBinding;
 import com.lanzou.cloud.event.OnUploadListener;
 import com.lanzou.cloud.service.UploadService;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 public class UploadInfoActivity extends BaseActivity implements ServiceConnection, OnUploadListener {
 
@@ -84,7 +84,7 @@ public class UploadInfoActivity extends BaseActivity implements ServiceConnectio
             }
             addLog("->->-> 开始第[" + currentIndex + "]区块上传 <-<-<-" +
                     "\n=> start: " + splitFile.getStart() + " -> " + splitFile.getEnd() +
-                    "\n=> 区块大小: " + splitFile.getLength() + "(" + FileUtils.toSize(splitFile.getLength()) + ")" +
+                    "\n=> 区块大小: " + splitFile.getLength() + "(" + FileJavaUtils.toSize(splitFile.getLength()) + ")" +
                     "\n===============================\n");
         }
         if (upload.isComplete()) {
@@ -96,12 +96,12 @@ public class UploadInfoActivity extends BaseActivity implements ServiceConnectio
         SplitFile prevSplitFile = upload.getFiles().get(index);
         addLog("->->-> 已结束[" + index + "]区块上传 <-<-<-" +
                 "\n=> 下载地址: " + prevSplitFile.getUrl()
-                + "\n=> 累计上传: " + upload.getCurrent() + "("+ FileUtils.toSize(upload.getCurrent()) + ")\n");
+                + "\n=> 累计上传: " + upload.getCurrent() + "(" + FileJavaUtils.toSize(upload.getCurrent()) + ")\n");
     }
 
     private void updateStatus() {
         toolbar.setSubtitle(upload.getStatusStr() + " "
-                +  FileUtils.toSize(upload.getSpeed())
+                + FileJavaUtils.toSize(upload.getSpeed())
                 + "/s " + upload.getProgress() + "% " + upload.getSize());
         if (currentStatus != upload.getStatus()) {
             // 状态变更了

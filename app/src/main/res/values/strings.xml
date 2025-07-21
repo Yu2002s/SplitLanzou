@@ -27,7 +27,7 @@
     <string name="delete_all">删除所有</string>
     <string name="save_setting">保存设置</string>
     <string name="copy_download_url">复制直链</string>
-    <string name="resolve_tips">注意：可能下载后文件名不对，记得自己改后缀，请输入蓝奏云原始的分享地址。这里不支持文件夹解析，要解析文件夹请使用网页分享地址(http://lzy.jdynb.xyz/share/folder/文件id/文件密码(可留空)，文件id是lanzou.com/后面内容。)示例：http://lzy.jdynb.xyz/share/folder/b02jsznha/5sjj   (长按可复制)</string>
+    <string name="resolve_tips">注意：可能下载后文件名不对，记得自己改后缀，请输入蓝奏云原始的分享地址。</string>
 
     <!-- 界面状态 -->
     <string name="empty">空空如也</string>
@@ -39,5 +39,17 @@
 
     <!-- activity -->
     <string name="title_resolve_folder">解析文件夹</string>
+    <string name="title_user_center">个人中心</string>
+    <string name="login_or_sign">登录/注册</string>
+    <string name="logout">退出登录</string>
+    <string name="switch_user">切换账号</string>
+    <string name="github"><u>Github</u></string>
+    <string name="gitee"><u>Gitee</u></string>
+    <string name="delete_file">删除文件</string>
+    <string name="scan_code">扫码</string>
+    <string name="share_qrcode">分享二维码</string>
+    <string name="donate"><u>捐赠</u></string>
+    <string name="check_update">检查更新</string>
+    <string name="dev">作者: 冬日暖雨</string>
 
 </resources>

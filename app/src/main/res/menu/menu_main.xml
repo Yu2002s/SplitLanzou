@@ -32,4 +32,11 @@
         android:id="@+id/delete"
         android:title="@string/delete"
         android:visible="false" />
+
+    <item
+        android:id="@+id/scan"
+        android:icon="@drawable/baseline_qr_code_scanner_24"
+        app:showAsAction="ifRoom"
+        android:title="@string/scan_code"
+        android:visible="false" />
 </menu>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="上传">
+
+        <SwitchPreferenceCompat
+            app:key="big_file_upload"
+            app:defaultValue="true"
+            app:icon="@drawable/baseline_download_for_offline_24"
+            app:iconSpaceReserved="false"
+            app:summary="开启大文件上传功能，文件将被切割"
+            app:title="大文件上传" />
+
+        <SeekBarPreference
+            app:min="52428800"
+            android:max="524288000"
+            app:key="upload_file_size"
+            app:showSeekBarValue="true"
+            app:dependency="big_file_upload"
+            app:defaultValue="103809024"
+            app:seekBarIncrement="10485760"
+            app:summary="限制单个文件在切割时的大小(单位：字节)"
+            app:iconSpaceReserved="false"
+            app:icon="@drawable/baseline_content_cut_24"
+            app:title="分割文件大小" />
+
+        <Preference
+            android:title="缓存路径"
+            app:icon="@drawable/baseline_drive_folder_upload_24"
+            app:iconSpaceReserved="false"
+            app:key="upload_cache_path"
+            app:summary="根目录" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="其他">
+
+        <SwitchPreferenceCompat
+            app:key="check_update"
+            app:defaultValue="true"
+            app:icon="@drawable/baseline_download_for_offline_24"
+            app:iconSpaceReserved="false"
+            app:summary="是否在打开App时检查更新"
+            app:title="自动检查更新" />
+
+        <Preference
+            android:title="关于App"
+            app:icon="@drawable/baseline_logo_dev_24"
+            app:iconSpaceReserved="false"
+            app:key="about_app"
+            app:summary="App相关的一些信息">
+
+            <intent
+                android:targetClass="com.lanzou.cloud.ui.activity.AboutAppActivity"
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.lanzou.cloud" />
+
+        </Preference>
+
+
+    </PreferenceCategory>
+
+
+</androidx.preference.PreferenceScreen>

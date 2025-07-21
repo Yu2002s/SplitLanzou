@@ -62,7 +62,7 @@ android {
 > 解决办法: 使用外部文件管理器分享(可多选)文件，选择 SplitLanzou 上传文件。
 > 或者使用 [雨盘下载](https://jdy2002.lanzoue.com/b040cdb5g) (密码: hyf3)
 
-2. 文件列表没有图标
+~~2. 文件列表没有图标~~
 
 > 懒得做了
 
@@ -85,11 +85,23 @@ android {
 App 内置了自定义分享功能，由于目前蓝奏云限制手机端分享文件，需要开通会员，
 再加上**100M以上文件不能直接通过分享文件方式下载**，所以需要使用内置的分享地址
 
-分享地址参考: `http://lz.jdynb.xyz/index.html?url=分享地址&pwd=分享密码(没有留空)`
+分享地址参考: `http://lzy.jdynb.xyz/share/file/分享id/分享密码(没有留空)`
 
-> 参考实际地址: http://lz.jdynb.xyz/index.html?url=https://jdy2002.lanzoub.com/ik9Af2y9iaji
+> 分享id：原始分享地址末尾最后的几个字符(最后/后面的字符)
+
+> 参考实际地址: http://lzy.jdynb.xyz/share/file/ik9Af2y9iaji
 
 > 注意：这里的分享可能**不太稳定**，还是建议接收者也下载 `SplitLanzou`
+
+## 分享文件夹
+
+文件夹目前也支持
+
+分享地址参考: `http://lzy.jdynb.xyz/share/folder/分享id/分享密码(没有留空)`
+
+> 分享id：原始分享地址末尾最后的几个字符(最后/后面的字符)
+
+> 参考实际地址: http://lzy.jdynb.xyz/share/folder/ik9Af2y9iaji
 
 ## 关于
 

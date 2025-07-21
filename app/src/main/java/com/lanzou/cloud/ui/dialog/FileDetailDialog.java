@@ -5,6 +5,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +15,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.king.zxing.util.CodeUtils;
 import com.lanzou.cloud.LanzouApplication;
+import com.lanzou.cloud.R;
 import com.lanzou.cloud.data.LanzouSimpleResponse;
 import com.lanzou.cloud.data.LanzouUrl;
 import com.lanzou.cloud.databinding.DialogFileDetailBinding;
+import com.lanzou.cloud.databinding.DialogShareQrcodeBinding;
 import com.lanzou.cloud.network.Repository;
+import com.lanzou.cloud.utils.DisplayUtilsKt;
 
 public class FileDetailDialog extends MaterialAlertDialogBuilder {
 
@@ -157,6 +164,39 @@ public class FileDetailDialog extends MaterialAlertDialogBuilder {
             String downloadUrl = "http://api.jdynb.xyz:6400/parser?url=" + url;
             clipboardManager.setPrimaryClip(ClipData.newPlainText("url", downloadUrl));
             Toast.makeText(context, "下载直链已复制到剪切板", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnDelete.setOnClickListener(view -> new Thread(() -> {
+            LanzouSimpleResponse lanzouSimpleResponse = Repository
+                    .getInstance().deleteFile(fileId, isFile);
+            Looper.prepare();
+            String str = lanzouSimpleResponse.getStatus() == 1 ? "成功，请返回并刷新" : "失败";
+            Toast.makeText(context, "删除" + str, Toast.LENGTH_SHORT).show();
+            Looper.loop();
+        }).start());
+
+        binding.btnQrcode.setOnClickListener(view -> {
+            alertDialog.dismiss();
+            DialogShareQrcodeBinding qrcodeBinding = DialogShareQrcodeBinding.inflate(inflater);
+            String url = binding.editUrl.getText().toString();
+            String pwd = binding.editPwd.getText().toString();
+            if (binding.swPwd.isChecked()) {
+                url += "?pwd=" + pwd;
+                qrcodeBinding.tvTips.setText(url + "\n密码: " + pwd);
+            } else {
+                qrcodeBinding.tvTips.setText(url);
+            }
+            int size = DisplayUtilsKt.dp2px(150, context);
+            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_foreground);
+            Bitmap qrCode = CodeUtils.createQRCode(url, size, bitmap);
+            Glide.with(qrcodeBinding.qrcode)
+                    .load(qrCode)
+                    .into(qrcodeBinding.qrcode);
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("分享二维码")
+                    .setView(qrcodeBinding.getRoot())
+                    .setPositiveButton("关闭", null)
+                    .show();
         });
     }
 }

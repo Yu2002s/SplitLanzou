@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.lanzou.cloud.data.Download;
 import com.lanzou.cloud.databinding.ItemListTransmissionBinding;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 import java.util.List;
 
@@ -39,8 +39,8 @@ public class DownloadAdapter extends TransmissionAdapter {
     }
 
     private void updateView(ItemListTransmissionBinding binding, Download download) {
-        binding.tvDesc.setText(download.getStatusStr() + " " + FileUtils.toSize(download.getCurrent())
-                + "/" + FileUtils.toSize(download.getLength()) + " " + FileUtils.toSize(download.getSpeed()) + "/s");
+        binding.tvDesc.setText(download.getStatusStr() + " " + FileJavaUtils.toSize(download.getCurrent())
+                + "/" + FileJavaUtils.toSize(download.getLength()) + " " + FileJavaUtils.toSize(download.getSpeed()) + "/s");
         binding.progressBar.setVisibility(download.isComplete() ? View.GONE: View.VISIBLE);
         binding.progressBar.setProgress(download.getProgress());
         binding.btnToggle.setVisibility(download.isComplete() ? View.GONE: View.VISIBLE);

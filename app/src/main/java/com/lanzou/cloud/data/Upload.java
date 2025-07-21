@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Since;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
@@ -162,7 +162,7 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
     }
 
     public String getSize() {
-        return FileUtils.toSize(length);
+        return FileJavaUtils.toSize(length);
     }
 
     public void setLength(long length) {

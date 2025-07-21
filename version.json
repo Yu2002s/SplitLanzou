@@ -1,7 +1,7 @@
 {
-  "version": "1.7.5",
-  "versionCode": 14,
-  "content": "1.支持修改文件密码\n2.支持分享文件夹\n3.支持复制直链\n\n【如有问题可前往github首页反馈】",
-  "url": "http://lzy.jdynb.xyz/share/file/iBa9Z319jpyh",
-  "date": "2025-07-17"
+  "version": "1.8.0-beta01",
+  "versionCode": 15,
+  "content": "1.全新首页，上传下载文件更方便\n2.支持分享二维码\n3.界面改版，增加更多功能\n\n【如有问题可前往github首页反馈】",
+  "url": "http://lzy.jdynb.xyz/share/file/ixW9u31jutcf",
+  "date": "2025-07-21"
 }

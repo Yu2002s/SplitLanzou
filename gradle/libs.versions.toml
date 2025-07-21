@@ -21,13 +21,16 @@ glide = "4.16.0"
 permissionX = "1.8.1"
 engine = "0.0.74"
 fileCore = "3.9.8"
+recyclerview = "1.4.0"
 retrofit = "2.9.0"
 swiperefreshlayout = "1.1.0"
 jsoup = "1.18.3"
 tooltip = "1.2.3"
+zxingLite = "3.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -54,6 +57,7 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 tooltip = { group = "com.github.liangjingkanji", name = "Tooltip", version.ref = "tooltip" }
+zxing-lite = { module = "com.github.jenly1314:zxing-lite", version.ref = "zxingLite" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

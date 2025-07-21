@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -29,8 +30,10 @@ import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.adapter.MainPageAdapter;
+import com.lanzou.cloud.config.SPConfig;
 import com.lanzou.cloud.data.LanzouPage;
 import com.lanzou.cloud.databinding.ActivityMainBinding;
 import com.lanzou.cloud.network.Repository;
@@ -39,7 +42,7 @@ import com.lanzou.cloud.service.UploadService;
 import com.lanzou.cloud.ui.file.FileFragment;
 import com.lanzou.cloud.ui.selector.FileSelectorActivity;
 import com.lanzou.cloud.ui.selector.PhoneFileActivity;
-import com.lanzou.cloud.ui.setting.SettingActivity;
+import com.lanzou.cloud.utils.SpJavaUtils;
 import com.lanzou.cloud.utils.UpdateUtils;
 
 import java.util.ArrayList;
@@ -73,19 +76,33 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         ViewPager2 viewPager2 = binding.viewpager2;
         viewPager2.setUserInputEnabled(false);
-        viewPager2.setOffscreenPageLimit(3);
+        viewPager2.setOffscreenPageLimit(5);
         viewPager2.setAdapter(new MainPageAdapter(getSupportFragmentManager(), getLifecycle()));
 
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                binding.fab.setVisibility(position == 1 ? View.VISIBLE : View.INVISIBLE);
+            }
+        });
+
+        binding.bottomNav.setLabelVisibilityMode(BottomNavigationView.LABEL_VISIBILITY_LABELED);
         binding.bottomNav.setOnItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.nav_home:
-                    binding.viewpager2.setCurrentItem(0, false);
+                    viewPager2.setCurrentItem(0, false);
+                    break;
+                case R.id.nav_file:
+                    viewPager2.setCurrentItem(1, false);
                     break;
                 case R.id.nav_transmission:
-                    binding.viewpager2.setCurrentItem(1, false);
+                    viewPager2.setCurrentItem(2, false);
                     break;
                 case R.id.nav_me:
-                    binding.viewpager2.setCurrentItem(2, false);
+                    viewPager2.setCurrentItem(3, false);
+                    break;
+                case R.id.nav_setting:
+                    viewPager2.setCurrentItem(4, false);
                     break;
             }
             invalidateMenu();
@@ -102,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
                 for (CharSequence uri : files) {
                     LanzouPage currentPage = getFileFragment().getCurrentPage();
-                    uploadService.uploadFile(uri.toString(), currentPage);
+                    uploadService.uploadFile(uri.toString(), currentPage.getFolderId(), currentPage.getName());
                 }
             }
         };
@@ -113,7 +130,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         binding.fab.setOnClickListener(view -> showUploadDialog(selectFileLauncher));
 
         requestPermission();
-        UpdateUtils.checkUpdate(this);
+
+        if (SpJavaUtils.getBoolean(SPConfig.CHECK_UPDATE, true)) {
+            UpdateUtils.checkUpdate(this);
+        }
     }
 
     /**
@@ -123,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      */
     private FileFragment getFileFragment() {
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        Fragment fragment = fragments.get(0);
+        Fragment fragment = fragments.get(1);
         if (!(fragment instanceof FileFragment)) {
             for (Fragment f : fragments) {
                 if (f instanceof FileFragment) {
@@ -184,9 +204,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         int selectedItemId = binding.bottomNav.getSelectedItemId();
-        menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_home);
-        menu.findItem(R.id.action_settings).setVisible(selectedItemId == R.id.nav_me);
-        menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_home);
+        menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_file);
+        menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_file);
+        menu.findItem(R.id.scan).setVisible(selectedItemId == R.id.nav_me);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -198,12 +218,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            // 点击设置
-            startActivity(new Intent(this, SettingActivity.class));
+        /*int id = item.getItemId();
+        if (id == R.id.scan) {
+            startActivity(new Intent(this, QRCodeScanActivity.class));
             return true;
-        }
+        }*/
         return super.onOptionsItemSelected(item);
     }
 

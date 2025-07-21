@@ -24,7 +24,7 @@ import com.lanzou.cloud.data.User;
 import com.lanzou.cloud.event.OnFileIOListener;
 import com.lanzou.cloud.service.LanzouService;
 import com.lanzou.cloud.service.UploadService;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 import com.lanzou.cloud.utils.GsonConverterFactory;
 
 import org.jsoup.Jsoup;
@@ -170,7 +170,7 @@ public class Repository {
 
     @Nullable
     public String getCookie() {
-        return user.getCookie();
+        return user == null ? null : user.getCookie();
     }
 
     @Nullable
@@ -242,7 +242,7 @@ public class Repository {
             String size = matcher.group(3);
             String ext = matcher.group(2);
             if (size != null) {
-                file.setSize(FileUtils.toSize(Long.parseLong(size)));
+                file.setSize(FileJavaUtils.toSize(Long.parseLong(size)));
             }
             file.setExtension(ext);
             file.setName_all(name + "." + ext);

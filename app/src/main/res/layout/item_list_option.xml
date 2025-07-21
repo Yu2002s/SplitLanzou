@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.model.OptionItem" />
+
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/item_card"
+        android:layout_width="match_parent"
+        app:contentPadding="14dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            tools:drawableStart="@drawable/baseline_settings_24"
+            android:drawablePadding="10dp"
+            rightDrawable="@{m.rightIcon}"
+            android:gravity="center_vertical"
+            leftDrawable="@{m.icon}"
+            android:text="@{m.title}"
+            tools:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+</layout>

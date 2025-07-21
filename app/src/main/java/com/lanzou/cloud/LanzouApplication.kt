@@ -57,6 +57,17 @@ class LanzouApplication : Application() {
 
     const val GITHUB_HOME = "https://github.com/Yu2002s/SplitLanzou"
 
+    const val GITEE_HOME = "https://gitee.com/jdy2002/SplitLanzou"
+
+    const val APP_SHARE_URL = "https://jdy2002.lanzoue.com/b041xpw2d"
+
+    const val APP_SHARE_PWD = "2fgt"
+
+    /**
+     * 捐赠页，开发不易
+     */
+    const val APP_DONATE = "http://lzy.jdynb.xyz/donate"
+
   }
 
   override fun onCreate() {
@@ -120,10 +131,10 @@ class LanzouApplication : Application() {
         startAnimation()
       }
       onContent {
-        startAnimation()
+        // startAnimation()
       }
       onLoading {
-        startAnimation()
+        // startAnimation()
       }
     }
   }

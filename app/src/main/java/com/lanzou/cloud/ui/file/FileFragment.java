@@ -44,9 +44,9 @@ import com.lanzou.cloud.databinding.FragmentFileBinding;
 import com.lanzou.cloud.event.FileActionListener;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.service.DownloadService;
+import com.lanzou.cloud.ui.activity.FolderSelectorActivity;
 import com.lanzou.cloud.ui.dialog.FileDetailDialog;
 import com.lanzou.cloud.ui.file.imple.FileActionImpl;
-import com.lanzou.cloud.ui.folder.FolderSelectorActivity;
 import com.lanzou.cloud.ui.web.WebActivity;
 
 import java.util.ArrayList;
@@ -96,6 +96,8 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
     public boolean isMultiMode() {
         return selectCount > 0;
     }
+
+    private OnBackPressedCallback onBackPressedCallback;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -212,17 +214,17 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             fileAction.refresh();
         });
 
-        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
-                new OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
-                        if (isMultiMode()) {
-                            clearSelect();
-                        } else {
-                            fileAction.onBackPressed();
-                        }
-                    }
-                });
+        onBackPressedCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isMultiMode()) {
+                    clearSelect();
+                } else {
+                    fileAction.onBackPressed();
+                }
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), onBackPressedCallback);
     }
 
     private void initView() {
@@ -357,6 +359,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
     @Override
     public void onResume() {
         super.onResume();
+        onBackPressedCallback.setEnabled(true);
         boolean isLogin = Repository.getInstance().isLogin();
         int visibility = binding.btnLogin.getVisibility();
         if (isLogin && visibility == View.VISIBLE) {
@@ -368,6 +371,12 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             }
             binding.btnLogin.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        onBackPressedCallback.setEnabled(false);
     }
 
     @Override

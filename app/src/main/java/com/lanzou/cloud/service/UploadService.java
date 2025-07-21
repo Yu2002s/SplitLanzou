@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lanzou.cloud.LanzouApplication;
+import com.lanzou.cloud.config.SPConfig;
 import com.lanzou.cloud.data.LanzouPage;
 import com.lanzou.cloud.data.LanzouUploadResponse;
 import com.lanzou.cloud.data.LanzouUrl;
@@ -27,6 +28,7 @@ import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.event.OnFileIOListener;
 import com.lanzou.cloud.event.OnUploadListener;
 import com.lanzou.cloud.network.Repository;
+import com.lanzou.cloud.utils.SpJavaUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -59,10 +61,12 @@ public class UploadService extends Service {
      */
     private final ExecutorService executor = Executors.newFixedThreadPool(16);
 
+    private static final long MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
+
     /**
      * 单个最大上传文件大小限制
      */
-    private static final int MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
+    private static long maxUploadSize = MAX_UPLOAD_SIZE;
 
     /**
      * 分割文件后缀标识
@@ -169,16 +173,13 @@ public class UploadService extends Service {
         }
     }
 
-    public void uploadFile(String path, LanzouPage lanzouPage) {
+    private Upload createUpload(String path, long folderId, String folderName) {
         // 生成上传文件信息
         Upload upload = new Upload();
         upload.setPath(path);
         upload.setTime(System.currentTimeMillis());
         // 检查所有上传任务中是否存在
-        if (uploadMap.containsKey(upload)) {
-            Toast.makeText(this, "上传任务已存在", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // 校验去除
         String name = path.substring(path.lastIndexOf("/") + 1);
         // 对 qq 的文件进行特殊处理
         if (name.equals("base.apk")) {
@@ -189,12 +190,36 @@ public class UploadService extends Service {
         } else {
             upload.setName(name);
         }
-        upload.setUploadPage(lanzouPage);
+        upload.setUploadPage(LanzouPage.createUploadPage(folderId, folderName));
         // insert upload
         // uploadList.add(upload);
         upload.insert();
         updateUploadStatus(upload);
-        Toast.makeText(this, name + "已加入上传队列", Toast.LENGTH_SHORT).show();
+        maxUploadSize = SpJavaUtils.getLong(SPConfig.UPLOAD_FILE_SIZE, MAX_UPLOAD_SIZE);
+        return upload;
+    }
+
+    public void uploadFiles(List<String> paths, long folderId, String folderName) {
+        if (repository.getUploadPath() == null) {
+            Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        paths.stream().distinct()
+                .forEach(path -> {
+                            Upload upload = createUpload(path, folderId, folderName);
+                            uploadMap.put(upload, prepareUpload(upload));
+                        }
+                );
+        Toast.makeText(this, paths.size() + "个文件已加入上传队列", Toast.LENGTH_SHORT).show();
+    }
+
+    public void uploadFile(String path, long folderId, String folderName) {
+        if (repository.getUploadPath() == null) {
+            Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Upload upload = createUpload(path, folderId, folderName);
+        Toast.makeText(this, upload.getName() + "已加入上传队列", Toast.LENGTH_SHORT).show();
         uploadMap.put(upload, prepareUpload(upload));
     }
 
@@ -249,9 +274,9 @@ public class UploadService extends Service {
             file = new File(path);
         }
         upload.setLength(file.length());
-        int blockSize = (int) (upload.getLength() % MAX_UPLOAD_SIZE == 0
-                ? upload.getLength() / MAX_UPLOAD_SIZE
-                : upload.getLength() / MAX_UPLOAD_SIZE + 1);
+        int blockSize = (int) (upload.getLength() % maxUploadSize == 0
+                ? upload.getLength() / maxUploadSize
+                : upload.getLength() / maxUploadSize + 1);
         upload.setBlockSize(blockSize);
         upload.prepare();
         updateUploadStatus(upload);
@@ -261,7 +286,8 @@ public class UploadService extends Service {
         upload.setProgress(0);
         upload.setCurrent(0);
         File targetUploadFile;
-        if (files.size() == 1) {
+        boolean bigFileUpload = SpJavaUtils.getBoolean(SPConfig.BIG_FILE_UPLOAD, true);
+        if (files.size() == 1 || !bigFileUpload) {
             // 这里处理单个文件进行上传
             targetUploadFile = files.get(0);
         } else {
@@ -290,7 +316,7 @@ public class UploadService extends Service {
             targetUploadFile = createJsonFile(upload);
         }
         // 是否是分割文件
-        boolean isSplitFile = files.size() != 1;
+        boolean isSplitFile = files.size() != 1 && bigFileUpload;
         OnFileIOListener listener = isSplitFile ? null : createFileIOListener(upload);
         // 之后对文件进行生成
         LanzouUploadResponse.UploadInfo uploadInfo = repository
@@ -365,8 +391,9 @@ public class UploadService extends Service {
 
     /**
      * 获取需要分割上传的文件
-     * @param upload 上传文件信息
-     * @param files 文件列表集合
+     *
+     * @param upload   上传文件信息
+     * @param files    文件列表集合
      * @param listener 读写监听
      */
     private void getSplitUploadFiles(Upload upload, List<File> files, OnFileIOListener listener) {
@@ -415,6 +442,7 @@ public class UploadService extends Service {
 
     /**
      * 将多个文件包装为分割文件的集合
+     *
      * @param files 文件列表
      * @return 分割文件集合
      */
@@ -427,7 +455,7 @@ public class UploadService extends Service {
             long length = uploadFile.length();
             SplitFile splitFile = new SplitFile();
             splitFile.setIndex(i);
-            splitFile.setStart((long) i * MAX_UPLOAD_SIZE);
+            splitFile.setStart((long) i * maxUploadSize);
             splitFile.setEnd(splitFile.getStart() + length);
             splitFile.setLength(length);
             splitFiles.add(splitFile);
@@ -447,7 +475,7 @@ public class UploadService extends Service {
     private List<File> getSplitFiles(File file, OnFileIOListener listener) throws Exception {
         List<File> list = new ArrayList<>();
         long fileLength = file.length();
-        if (fileLength < MAX_UPLOAD_SIZE) {
+        if (fileLength < maxUploadSize) {
             // 文件太小，不进行裁剪
             list.add(file);
             return list;
@@ -476,7 +504,7 @@ public class UploadService extends Service {
             FileOutputStream fos = new FileOutputStream(output);
             int len;
             long size = 0;
-            while (size < MAX_UPLOAD_SIZE && (len = fis.read(bytes)) != -1) {
+            while (size < maxUploadSize && (len = fis.read(bytes)) != -1) {
                 size += len;
                 start += len;
                 fos.write(bytes, 0, len);

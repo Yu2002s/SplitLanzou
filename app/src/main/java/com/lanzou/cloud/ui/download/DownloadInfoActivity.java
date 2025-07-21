@@ -24,7 +24,7 @@ import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.databinding.ActivityDownloadInfoBinding;
 import com.lanzou.cloud.event.OnDownloadListener;
 import com.lanzou.cloud.service.DownloadService;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 public class DownloadInfoActivity extends BaseActivity implements OnDownloadListener, ServiceConnection {
 
@@ -91,8 +91,8 @@ public class DownloadInfoActivity extends BaseActivity implements OnDownloadList
             }
         }
         getSupportActionBar().setSubtitle(download.getStatusStr() + " "
-                + FileUtils.toSize(download.getSpeed()) + "/s " + download.getProgress()
-                + "% " + FileUtils.toSize(download.getLength()));
+                + FileJavaUtils.toSize(download.getSpeed()) + "/s " + download.getProgress()
+                + "% " + FileJavaUtils.toSize(download.getLength()));
 
     }
 

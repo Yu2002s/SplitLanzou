@@ -1,51 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <include android:id="@+id/header"
-        layout="@layout/content_header"/>
+    <include
+        android:id="@+id/header"
+        layout="@layout/content_header" />
 
-    <EditText
-        android:layout_marginTop="16dp"
-        android:layout_marginHorizontal="16dp"
-        android:id="@+id/edit_url"
-        android:hint="请输入文件分享地址(原始分享地址)"
-        android:inputType="text|textUri"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:importantForAutofill="no" />
-
-    <EditText
         android:layout_marginHorizontal="16dp"
-        android:id="@+id/edit_pwd"
-        android:hint="请输入文件密码"
-        android:inputType="text"
+        android:hint="请输入文件分享地址(原始分享地址)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="text|textUri" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:importantForAutofill="no" />
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="10dp"
+        android:hint="请输入文件密码(可留空)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_pwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:layout_marginHorizontal="16dp"
         android:id="@+id/btn_resolve"
-        android:text="解析文件"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="20dp"
+        android:text="解析文件" />
 
     <Button
         android:id="@+id/btn_resolve_folder"
-        android:layout_marginHorizontal="16dp"
-        android:text="解析文件夹"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:text="解析文件夹" />
 
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:autoLink="all"
         android:padding="16dp"
-        android:textIsSelectable="true"
         android:text="@string/resolve_tips"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:textIsSelectable="true" />
 
 </LinearLayout>

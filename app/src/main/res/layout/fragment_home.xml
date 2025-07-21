@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.lanzou.cloud.enums.LayoutPosition" />
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.ui.fragment.HomeViewModel" />
+
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/home_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/left_content"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                tools:layout_weight="1">
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_left"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tabContentStart="4dp"
+                    app:tabGravity="start"
+                    app:tabIndicator="@null"
+                    app:tabIndicatorHeight="0dp"
+                    app:tabMinWidth="0dp"
+                    app:tabMode="scrollable"
+                    app:tabPaddingBottom="2dp"
+                    app:tabPaddingEnd="4dp"
+                    app:tabPaddingStart="4dp"
+                    app:tabPaddingTop="2dp" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/vp_left"
+                    selected="@{m.focusedPositionFlow == LayoutPosition.LEFT}"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_focus"
+                    app:layout_constraintBottom_toTopOf="@id/vp_left_bottom"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tab_left" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toTopOf="@id/vp_left_bottom"
+                    app:layout_constraintEnd_toEndOf="@id/vp_left"
+                    app:layout_constraintStart_toStartOf="@id/vp_left" />
+
+                <LinearLayout
+                    android:id="@+id/vp_left_bottom"
+                    selected="@{m.focusedPositionFlow == LayoutPosition.LEFT}"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_focus"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@id/vp_left"
+                    app:layout_constraintStart_toStartOf="@id/vp_left">
+
+                    <com.google.android.material.button.MaterialButton
+                        style="?attr/buttonBarButtonStyle"
+                        android:id="@+id/btn_left_mkdir"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="新建" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_left_search"
+                        style="?attr/buttonBarButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="搜索" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_left_multi"
+                        style="?attr/buttonBarButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@{m.leftMultiBtnText}" />
+
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_left"
+                    android:layout_width="20dp"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="200dp"
+                    android:background="@drawable/bg_semi_circle"
+                    android:src="@drawable/baseline_chevron_left_24"
+                    app:layout_constraintBottom_toTopOf="@id/vp_left_bottom"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:tint="@color/white" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:elevation="2dp" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/right_content"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                tools:layout_weight="1">
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_right"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tabContentStart="4dp"
+                    app:tabGravity="start"
+                    app:tabMinWidth="0dp"
+                    app:tabMode="scrollable"
+                    app:tabPaddingBottom="2dp"
+                    app:tabPaddingEnd="4dp"
+                    app:tabPaddingStart="4dp"
+                    app:tabPaddingTop="2dp" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/vp_right"
+                    selected="@{m.focusedPositionFlow == LayoutPosition.RIGHT}"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_focus"
+                    app:layout_constraintBottom_toTopOf="@id/vp_right_bottom"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tab_right" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toTopOf="@id/vp_right_bottom"
+                    app:layout_constraintEnd_toEndOf="@id/vp_right"
+                    app:layout_constraintStart_toStartOf="@id/vp_right" />
+
+                <LinearLayout
+                    android:id="@+id/vp_right_bottom"
+                    selected="@{m.focusedPositionFlow == LayoutPosition.RIGHT}"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_focus"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@id/vp_right"
+                    app:layout_constraintStart_toStartOf="@id/vp_right">
+
+                    <com.google.android.material.button.MaterialButton
+                        style="?attr/buttonBarButtonStyle"
+                        android:id="@+id/btn_right_mkdir"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="新建" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="?attr/buttonBarButtonStyle"
+                        android:id="@+id/btn_right_search"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="搜索" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_right_multi"
+                        style="?attr/buttonBarButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@{m.rightMultiBtnText}" />
+
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_right"
+                    android:layout_width="20dp"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="200dp"
+                    android:background="@drawable/bg_semi_circle"
+                    android:rotation="180"
+                    android:src="@drawable/baseline_chevron_left_24"
+                    app:layout_constraintBottom_toTopOf="@id/vp_right_bottom"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:tint="@color/white" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_upload"
+            invisible="@{m.rightMultiModeFlow}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="160dp"
+            android:src="@drawable/baseline_arrow_back_24" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            invisible="@{m.leftMultiModeFlow}"
+            android:id="@+id/fab_download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="80dp"
+            android:src="@drawable/outline_arrow_forward_24" />
+
+    </FrameLayout>
+
+</layout>

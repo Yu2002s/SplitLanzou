@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.ui.fragment.HomeViewModel" />
+
+    </data>
+
+    <FrameLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.drake.brv.PageRefreshLayout
+            android:id="@+id/refresh"
+            gone="@{m.loginStateFlow}"
+            app:srlEnableRefresh="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/file_rv"
+                android:paddingBottom="200dp"
+                android:clipToPadding="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </com.drake.brv.PageRefreshLayout>
+
+        <Button
+            gone="@{!m.loginStateFlow}"
+            android:id="@+id/btn_login"
+            android:layout_gravity="center"
+            android:text="@string/go_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </FrameLayout>
+
+</layout>

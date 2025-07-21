@@ -4,9 +4,14 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="bg_dark">#efefef</color>
-    <color name="left_card">#ffffff</color>
+    <color name="left_card">#cccccc</color>
 
     <color name="window_background">#efefef</color>
 
     <color name="card_item">#ffffff</color>
+
+    <color name="highlight">#ff458A49</color>
+    <color name="text_color">#ff000000</color>
+
+    <color name="item_bg">#ff4B9AED</color>
 </resources>

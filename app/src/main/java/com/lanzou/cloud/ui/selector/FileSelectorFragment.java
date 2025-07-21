@@ -28,7 +28,7 @@ import com.lanzou.cloud.adapter.FileSelectorAdapter;
 import com.lanzou.cloud.data.FileInfo;
 import com.lanzou.cloud.databinding.FragmentFileSelectorBinding;
 import com.lanzou.cloud.event.Searchable;
-import com.lanzou.cloud.utils.FileUtils;
+import com.lanzou.cloud.utils.FileJavaUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -263,15 +263,15 @@ public class FileSelectorFragment extends Fragment implements Searchable {
     }
 
     private void getQQFiles() {
-        getFilesForPath(FileUtils.QQ_PATH);
+        getFilesForPath(FileJavaUtils.QQ_PATH);
     }
 
     private void getWeChatFiles() {
-        getFilesForPath(FileUtils.WECHAT_PATH);
+        getFilesForPath(FileJavaUtils.WECHAT_PATH);
     }
 
     private void getFilesForPath(String path) {
-        List<FileInfo> fileInfoList = FileUtils.getFileInfosForPath(path, selectedFiles::contains);
+        List<FileInfo> fileInfoList = FileJavaUtils.getFileInfosForPath(path, selectedFiles::contains);
         files.clear();
         files.addAll(fileInfoList);
         notifyData();
@@ -321,7 +321,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
             fileInfo.setExtension(extension);
             fileInfo.setTime(time);
             fileInfo.setId(id);
-            fileInfo.setFileDesc(FileUtils.toSize(fileInfo.getLength()));
+            fileInfo.setFileDesc(FileJavaUtils.toSize(fileInfo.getLength()));
             selectFile(fileInfo);
             files.add(fileInfo);
         }
@@ -364,7 +364,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
             fileInfo.setTime(packageInfo.lastUpdateTime);
             fileInfo.setPkgName(packageInfo.packageName);
             fileInfo.setExtension("apk");
-            fileInfo.setFileDesc(FileUtils.toSize(length) + " - " + packageInfo.versionName);
+            fileInfo.setFileDesc(FileJavaUtils.toSize(length) + " - " + packageInfo.versionName);
             selectFile(fileInfo);
             files.add(fileInfo);
         }

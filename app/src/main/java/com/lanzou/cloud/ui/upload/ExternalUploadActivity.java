@@ -39,7 +39,7 @@ public class ExternalUploadActivity extends AppCompatActivity implements Service
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         startService(new Intent(this, UploadService.class));
-        bindService(new Intent(this,  UploadService.class), this, BIND_AUTO_CREATE);
+        bindService(new Intent(this, UploadService.class), this, BIND_AUTO_CREATE);
         binding = ActivityExternalUploadBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.header.toolBar);
@@ -66,7 +66,7 @@ public class ExternalUploadActivity extends AppCompatActivity implements Service
 
             Intent intent = getIntent();
             if (intent.getData() != null) {
-                uploadService.uploadFile(intent.getData().toString(), lanzouPage);
+                uploadService.uploadFile(intent.getData().toString(), lanzouPage.getFolderId(), lanzouPage.getName());
                 return;
             }
 
@@ -76,7 +76,7 @@ public class ExternalUploadActivity extends AppCompatActivity implements Service
             }
             for (int i = 0; i < clipData.getItemCount(); i++) {
                 ClipData.Item item = clipData.getItemAt(i);
-                uploadService.uploadFile(item.getUri().toString(), lanzouPage);
+                uploadService.uploadFile(item.getUri().toString(), lanzouPage.getFolderId(), lanzouPage.getName());
             }
 
             finish();

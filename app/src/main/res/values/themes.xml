@@ -3,15 +3,32 @@
     <style name="Theme.SplitLanzou" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <!-- Status bar color. -->
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="29">false</item>
         <!-- Customize your theme here. -->
         <!--<item name="appBarLayoutStyle">@style/Widget.MaterialComponents.AppBarLayout.Surface</item>-->
-
         <!--<item name="android:windowBackground">@color/window_background</item>-->
 
+        <!-- CardView Style -->
         <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Filled</item>
+
+        <!-- Preference Style -->
+        <item name="switchPreferenceCompatStyle">@style/MySwitchPreferenceStyle</item>
+
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.Material3</item>
+        <item name="android:dialogTheme">@style/MaterialAlertDialog.Material3</item>
+        <item name="dialogTheme">@style/Theme.Material3.DayNight.Dialog</item>
+
+    </style>
+
+    <style name="MyDialogTheme" parent="MaterialAlertDialog.Material3">
+
+    </style>
+
+    <style name="MySwitchPreferenceStyle" parent="Preference.SwitchPreferenceCompat.Material">
+        <item name="iconSpaceReserved">false</item>
     </style>
 </resources>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.model.ProfileModel" />
+
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:contentPadding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{m.name}"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                tools:text="个性域名" />
+
+            <TextView
+                android:id="@+id/tv_value"
+                rightDrawable="@{m.rightIcon}"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="10dp"
+                android:gravity="end|center_vertical"
+                android:text="@{m.value}"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="17sp"
+                tools:text="@string/app_name" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</layout>

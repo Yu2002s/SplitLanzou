@@ -1,6 +1,7 @@
 <FrameLayout android:id="@+id/actionbar"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
+    android:layout_height="wrap_content"
+    android:minHeight="56dp"
     android:tag="layout/layout_engine_toolbar_0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,8 +17,8 @@
         android:paddingStart="16dp"
         android:paddingEnd="8dp"
         android:singleLine="true"
-        app:drawableLeftCompat="@drawable/ic_action_left"
-        tools:drawableStart="@drawable/ic_action_left" />
+        app:drawableLeftCompat="@drawable/baseline_arrow_back_24"
+        tools:drawableStart="@drawable/baseline_arrow_back_24" />
 
     <!--android:gravity="center"可居中标题-->
     <TextView
@@ -30,7 +31,6 @@
         android:gravity="center_vertical"
         android:paddingHorizontal="8dp"
         android:singleLine="true"
-        android:textColor="@color/textColor"
         android:textSize="16sp"
         android:textStyle="bold"
         tools:paddingHorizontal="58dp"

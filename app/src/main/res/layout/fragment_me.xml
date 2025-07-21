@@ -1,47 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <com.drake.brv.PageRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/refresh_layout"
+        android:paddingHorizontal="16dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.card.MaterialCardView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/me_rv"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:contentPadding="10dp">
+            android:layout_height="match_parent" />
 
-            <TextView
-                android:id="@+id/tv_username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="19sp"
-                tools:text="@string/app_name" />
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <Button
-            android:id="@+id/btn_manager"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/manger_account" />
-
-        <Button
-            android:id="@+id/btn_resolve"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/resolve_file" />
-
-        <Button
-            android:id="@+id/btn_recycle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/recycle_bin" />
-
-    </LinearLayout>
+    </com.drake.brv.PageRefreshLayout>
 
 </layout>

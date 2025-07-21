@@ -3,10 +3,20 @@
     <item android:id="@+id/nav_home"
         android:title="主页"
         android:icon="@drawable/baseline_home_24"/>
+    <item
+        android:id="@+id/nav_file"
+        android:title="云端"
+        android:icon="@drawable/baseline_cloud_24" />
+
     <item android:id="@+id/nav_transmission"
         android:title="传输"
         android:icon="@drawable/baseline_get_app_24"/>
     <item android:id="@+id/nav_me"
         android:title="我的"
         android:icon="@drawable/baseline_person_24"/>
+
+    <item
+        android:id="@+id/nav_setting"
+        android:title="设置"
+        android:icon="@drawable/baseline_settings_24" />
 </menu>

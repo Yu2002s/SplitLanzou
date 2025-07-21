@@ -30,7 +30,7 @@ fun String?.showToast(duration: Int = Toast.LENGTH_SHORT) {
  * @param args 传递的参数
  */
 inline fun <reified T> startActivity(
-  vararg args: Pair<String, Any>,
+  vararg args: Pair<String, Any?>,
   block: Intent.() -> Unit = {}
 ) {
   val context = LanzouApplication.context
@@ -132,5 +132,5 @@ fun Long.formatBytes(): String {
     unitIndex++
   }
 
-  return "%.2f %s".format(currentBytes, units[unitIndex])
+  return "%.2f%s".format(currentBytes, units[unitIndex])
 }

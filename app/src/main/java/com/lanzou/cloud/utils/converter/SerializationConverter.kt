@@ -9,6 +9,7 @@ import com.drake.net.exception.RequestParamsException
 import com.drake.net.exception.ResponseException
 import com.drake.net.exception.ServerResponseException
 import com.drake.net.request.kType
+import com.lanzou.cloud.model.BaseLanzouResponse
 import com.lanzou.cloud.utils.json
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -17,14 +18,16 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.lang.reflect.Type
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 /**
  * 处理请求的序列化和反序列化
  */
 class SerializationConverter(
-  val success: String = "1", // 成功的状态码
+  val success: Array<String> = arrayOf("1", "2"), // 成功的状态码
   val code: String = "zt", // code 字段名
-  val message: String = "msg", // message 字段名
+  val message: String = "info", // message 字段名
+  val data: String = "text"
 ) : NetConverter {
 
   companion object {
@@ -34,7 +37,7 @@ class SerializationConverter(
 
   override fun <R> onConvert(succeed: Type, response: Response): R? {
     try {
-      return NetConverter.onConvert<R>(succeed, response)
+      return NetConverter.onConvert(succeed, response)
     } catch (e: ConvertException) {
       val code = response.code
       when {
@@ -44,16 +47,16 @@ class SerializationConverter(
             ?: throw ConvertException(response, "Request does not contain KType")
           return try {
             val json = JSONObject(bodyString) // 获取JSON中后端定义的错误码和错误信息
-            when (val srvCode = json.getString(this.code)) {
-              success -> {
-                if (!json.has("body")) {
+            val srvCode = json.getString(this.code)
+            when {
+              success.contains(srvCode) -> {
+                if (!json.has(data)) {
                   return null
                 }
-                json.getString("body").parseBody<R>(kType)
-              }
-
-              "301" -> {
-                throw ResponseException(response, message)
+                if (kType == typeOf<BaseLanzouResponse>()) {
+                  return bodyString.parseBody(kType)
+                }
+                json.getString(data).parseBody(kType)
               }
 
               else -> {
@@ -64,8 +67,8 @@ class SerializationConverter(
                 throw ResponseException(response, errorMessage, tag = srvCode) // 将业务错误码作为tag传递
               }
             }
-          } catch (e: JSONException) { // 固定格式JSON分析失败直接解析JSON
-            bodyString.parseBody<R>(kType)
+          } catch (_: JSONException) { // 固定格式JSON分析失败直接解析JSON
+            bodyString.parseBody(kType)
           }
         }
 

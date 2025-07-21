@@ -63,6 +63,18 @@
         android:layout_height="wrap_content" />
 
     <Button
+        android:id="@+id/btn_delete"
+        android:text="@string/delete_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btn_qrcode"
+        android:text="@string/share_qrcode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
         android:id="@+id/btn_close"
         android:text="@string/close"
         android:layout_width="match_parent"

@@ -6,4 +6,7 @@
     <color name="card_item">#50000000</color>
 
     <color name="window_background">#a0000000</color>
+
+    <color name="text_color">#ffffff</color>
+
 </resources>
