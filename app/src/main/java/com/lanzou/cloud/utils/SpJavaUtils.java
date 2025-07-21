@@ -36,6 +36,9 @@ public class SpJavaUtils {
         return sharedPreferences.getLong(key, def);
     }
 
+    public static int getInt(@NonNull String key, int def) {
+        return sharedPreferences.getInt(key, def);
+    }
 
 
 }

@@ -61,12 +61,12 @@ public class UploadService extends Service {
      */
     private final ExecutorService executor = Executors.newFixedThreadPool(16);
 
-    private static final long MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
+    private static final int MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
 
     /**
      * 单个最大上传文件大小限制
      */
-    private static long maxUploadSize = MAX_UPLOAD_SIZE;
+    private static int maxUploadSize = MAX_UPLOAD_SIZE;
 
     /**
      * 分割文件后缀标识
@@ -195,7 +195,7 @@ public class UploadService extends Service {
         // uploadList.add(upload);
         upload.insert();
         updateUploadStatus(upload);
-        maxUploadSize = SpJavaUtils.getLong(SPConfig.UPLOAD_FILE_SIZE, MAX_UPLOAD_SIZE);
+        maxUploadSize = SpJavaUtils.getInt(SPConfig.UPLOAD_FILE_SIZE, MAX_UPLOAD_SIZE);
         return upload;
     }
 
