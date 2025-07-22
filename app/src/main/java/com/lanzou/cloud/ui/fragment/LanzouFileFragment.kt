@@ -4,7 +4,6 @@ import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.drake.brv.utils.bindingAdapter
-import com.drake.brv.utils.models
 import com.drake.brv.utils.mutable
 import com.drake.net.utils.scopeDialog
 import com.drake.tooltip.toast
@@ -80,8 +79,7 @@ class LanzouFileFragment private constructor() : FileFragment() {
   override fun onMkdir(name: String, path: String) {
     scopeDialog {
       LanzouRepository.mkdirFolder(path, name)
-      val fileRv = binding.fileRv
-      val position = if (fileRv.models.isNullOrEmpty()) 0 else 1
+      val position = getInsertPosition()
       binding.fileRv.mutable.add(position, FileInfoModel(name = name, folderId = path))
       super.onMkdir(name, path)
     }.catch {

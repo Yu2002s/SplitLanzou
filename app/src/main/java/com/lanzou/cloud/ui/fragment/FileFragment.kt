@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.drake.brv.annotaion.AnimationType
+import com.drake.brv.utils.addModels
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.models
 import com.drake.brv.utils.mutable
@@ -93,7 +94,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       }
 
       onToggle { position, toggleMode, end ->
-        val model = getModel<FileInfoModel>(position)
+        val model = getModelOrNull<FileInfoModel>(position) ?: return@onToggle
         model.isCheckable = toggleMode
         if (this@FileFragment.layoutPosition == LayoutPosition.LEFT) {
           viewModel.toggleLeft(toggleMode)
@@ -108,21 +109,24 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       R.id.item.onLongClick {
         if (!toggleMode) {
           toggle()
-          setChecked(modelPosition, true)
+          setChecked(layoutPosition, true)
         }
       }
 
       R.id.item.onFastClick {
         if (toggleMode) {
-          val model = getModel<FileInfoModel>(modelPosition)
-          setChecked(modelPosition, !model.isChecked)
+          val model = getModel<FileInfoModel>(layoutPosition)
+          setChecked(layoutPosition, !model.isChecked)
           return@onFastClick
         }
         viewModel.focusPosition(this@FileFragment.layoutPosition)
-        onItemClick(getModel(), modelPosition)
+        onItemClick(getModel(), layoutPosition)
       }
 
       R.id.header.onFastClick {
+        if (toggleMode) {
+          return@onFastClick
+        }
         onBack()
       }
     }
@@ -269,8 +273,9 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
   override fun onMkdir(name: String, path: String) {
     val fileRv = binding.fileRv
-    val position = if (fileRv.models.isNullOrEmpty()) 0 else 1
+    val position = getInsertPosition()
     fileRv.bindingAdapter.notifyItemInserted(position)
+    fileRv.bindingAdapter.notifyItemRangeChanged(position, models.size - position)
     fileRv.scrollToPosition(position)
   }
 
@@ -302,6 +307,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   override fun addFile(position: Int, fileInfoModel: FileInfoModel) {
     binding.fileRv.mutable.add(position, fileInfoModel)
     binding.fileRv.bindingAdapter.notifyItemInserted(position)
+    binding.fileRv.bindingAdapter.notifyItemRangeChanged(position, models.size - position)
     binding.fileRv.scrollToPosition(position)
   }
 
@@ -310,8 +316,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       return
     }
     val position = getInsertPosition()
-    binding.fileRv.mutable.addAll(position, files)
-    binding.fileRv.bindingAdapter.notifyItemRangeInserted(position, files.size)
+    binding.fileRv.addModels(files, true, position)
     binding.fileRv.post {
       scrollToPosition(position)
     }

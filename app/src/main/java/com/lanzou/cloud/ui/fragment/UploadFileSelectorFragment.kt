@@ -3,7 +3,6 @@ package com.lanzou.cloud.ui.fragment
 import android.os.Environment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.drake.brv.utils.models
 import com.drake.brv.utils.mutable
 import com.drake.engine.utils.FileUtils
 import com.drake.tooltip.toast
@@ -107,8 +106,7 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
       return
     }
     if (file.mkdir()) {
-      val fileRv = binding.fileRv
-      val position = if (fileRv.models.isNullOrEmpty()) 0 else 1
+      val position = getInsertPosition()
       binding.fileRv.mutable.add(position, FileInfoModel(name = name, path = path))
       super.onMkdir(name, path)
     } else {
