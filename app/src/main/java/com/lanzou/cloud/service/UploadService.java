@@ -335,6 +335,7 @@ public class UploadService extends Service {
                 upload.setProgress(100);
                 upload.setCurrent(upload.getLength());
             }
+            upload.setFileId(uploadInfo.getId());
             upload.complete();
         } else {
             // 上传失败

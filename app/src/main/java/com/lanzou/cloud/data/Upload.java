@@ -66,6 +66,8 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
     @Since(1.1)
     private Long time;
 
+    private long fileId;
+
     private List<SplitFile> files;
 
     private final String comment = "如需完整下载此文件，请下载app（https://github.com/Yu2002s/SplitLanzou）";
@@ -105,6 +107,7 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
         speed = in.readInt();
         blockSize = in.readInt();
         time = in.readLong();
+        fileId = in.readLong();
         if (files == null) {
             files = new ArrayList<>();
         }
@@ -125,6 +128,7 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
         dest.writeInt(speed);
         dest.writeInt(blockSize);
         dest.writeLong(time == null ? 0 : time);
+        dest.writeLong(fileId);
         dest.writeList(files);
     }
 
@@ -215,6 +219,14 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public long getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(long fileId) {
+        this.fileId = fileId;
     }
 
     public int getSpeed() {
@@ -349,8 +361,10 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
     @Override
     public String toString() {
         return "Upload{" +
-                "id='" + id + '\'' +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", download_id=" + download_id +
+                ", index=" + index +
+                ", name='" + name + '\'' +
                 ", length=" + length +
                 ", progress=" + progress +
                 ", path='" + path + '\'' +
@@ -358,8 +372,11 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
                 ", uploadPage=" + uploadPage +
                 ", status=" + status +
                 ", speed=" + speed +
+                ", blockSize=" + blockSize +
+                ", time=" + time +
+                ", fileId=" + fileId +
                 ", files=" + files +
-                ", comment=" + comment +
+                ", comment='" + comment + '\'' +
                 '}';
     }
 }

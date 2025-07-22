@@ -42,4 +42,6 @@ interface FileAction : Searchable {
   fun showDetail(position: Int, file: FileInfoModel)
 
   fun sort(filterSortModel: FilterSortModel)
+
+  fun getFile(path: String): FileInfoModel?
 }

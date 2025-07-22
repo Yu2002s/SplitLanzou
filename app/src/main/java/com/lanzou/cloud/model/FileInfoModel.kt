@@ -12,7 +12,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class FileInfoModel(
-  val id: String = "",
+  var id: String = "",
   @SerialName("fol_id")
   var folderId: String = "",
   @SerialName("name_all")

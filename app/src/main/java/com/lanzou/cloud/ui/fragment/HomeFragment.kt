@@ -466,6 +466,10 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     // TODO: 暂时不对其他状态做出判断
     if (upload.status == Upload.ERROR) {
       currentLeftFileFragment.refresh()
+    } else if (upload.status == Upload.COMPLETE) {
+      currentLeftFileFragment.getFile(upload.path)?.let {
+        it.id = upload.fileId.toString()
+      }
     }
   }
 

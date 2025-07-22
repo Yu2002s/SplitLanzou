@@ -90,6 +90,8 @@ class LanzouFileFragment private constructor() : FileFragment() {
   override fun deleteFile(position: Int, file: FileInfoModel) {
     scopeDialog {
       LanzouRepository.deleteFile(file.fileId, file.isFile)
+      mData.removeAt(position)
+      binding.fileRv.mutable.removeAt(position)
       binding.fileRv.bindingAdapter.notifyItemRemoved(position)
     }.catch {
       toast(it.message)
@@ -103,6 +105,8 @@ class LanzouFileFragment private constructor() : FileFragment() {
       positions.sortedDescending().forEach {
         val file = models[it]
         LanzouRepository.deleteFile(file.fileId, file.isFile)
+        mData.removeAt(it)
+        binding.fileRv.mutable.removeAt(it)
         binding.fileRv.bindingAdapter.notifyItemRemoved(it)
         delay(100)
       }

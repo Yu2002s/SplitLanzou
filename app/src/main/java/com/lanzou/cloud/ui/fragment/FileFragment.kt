@@ -305,7 +305,9 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   }
 
   override fun addFile(position: Int, fileInfoModel: FileInfoModel) {
-    binding.fileRv.mutable.add(position, fileInfoModel)
+    val newFile = fileInfoModel.copy()
+    binding.fileRv.mutable.add(position, newFile)
+    mData.add(position, newFile)
     binding.fileRv.bindingAdapter.notifyItemInserted(position)
     binding.fileRv.bindingAdapter.notifyItemRangeChanged(position, models.size - position)
     binding.fileRv.scrollToPosition(position)
@@ -317,6 +319,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     }
     val position = getInsertPosition()
     binding.fileRv.addModels(files, true, position)
+    mData.addAll(position, files)
     binding.fileRv.post {
       scrollToPosition(position)
     }
@@ -349,6 +352,10 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     binding.refresh.refresh()
   }
 
+  override fun getFile(path: String): FileInfoModel? {
+    return mData.find { it.path == path }
+  }
+
   override fun deleteFile(position: Int, file: FileInfoModel) {
     if (file.path.isEmpty()) {
       return
@@ -359,6 +366,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       .setPositiveButton("确认") { dialog, _ ->
         scopeDialog {
           File(file.path).deleteRecursively()
+          mData.removeAt(position)
+          binding.fileRv.mutable.removeAt(position)
           binding.fileRv.bindingAdapter.notifyItemRemoved(position)
         }.finally {
           toggleMulti(false)
@@ -376,6 +385,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
         }
       }
       positions.sortedDescending().forEach {
+        mData.removeAt(it)
+        binding.fileRv.mutable.removeAt(it)
         binding.fileRv.bindingAdapter.notifyItemRemoved(it)
       }
     }.finally {
