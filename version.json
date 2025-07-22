@@ -2,6 +2,6 @@
   "version": "1.8.0-beta01",
   "versionCode": 16,
   "content": "1.优化首页文件操作\n2.一些细节调整\n3.添加更多文件操作\n\n【如有问题可前往github首页反馈】",
-  "url": "http://lzy.jdynb.xyz/share/file/iPJzn31mduid",
+  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/iPJzn31mduid",
   "date": "2025-07-22"
 }
