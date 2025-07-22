@@ -22,6 +22,7 @@ permissionX = "1.8.1"
 engine = "0.0.74"
 fileCore = "3.9.8"
 recyclerview = "1.4.0"
+refreshHeaderRadar = "2.1.1"
 retrofit = "2.9.0"
 swiperefreshlayout = "1.1.0"
 jsoup = "1.18.3"
@@ -53,6 +54,7 @@ glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.re
 litepal = { group = "org.litepal.guolindev", name = "core", version.ref = "litepal" }
 permissionX = { group = "com.guolindev.permissionx", name = "permissionx", version.ref = "permissionX" }
 fileCore = { group = "com.github.javakam", name = "file.core", version.ref = "fileCore" }
+refresh-header-radar = { module = "io.github.scwang90:refresh-header-radar", version.ref = "refreshHeaderRadar" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }

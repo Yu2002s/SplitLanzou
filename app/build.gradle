@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.tooltip)
     implementation(libs.zxing.lite)
+    implementation(libs.refresh.header.radar)
 
     ksp(libs.glide.compiler)
 

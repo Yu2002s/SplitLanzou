@@ -25,7 +25,7 @@ import com.lanzou.cloud.config.Api
 import com.lanzou.cloud.utils.converter.SerializationConverter
 import com.lanzou.cloud.utils.interceptor.AppRequestInterceptor
 import com.scwang.smart.refresh.footer.ClassicsFooter
-import com.scwang.smart.refresh.header.MaterialHeader
+import com.scwang.smart.refresh.header.BezierRadarHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import org.litepal.LitePal
 import java.util.concurrent.TimeUnit
@@ -164,7 +164,7 @@ class LanzouApplication : Application() {
   }
 
   private fun initSmartRefreshLayout() {
-    SmartRefreshLayout.setDefaultRefreshHeaderCreator { _, _ -> MaterialHeader(this) }
+    SmartRefreshLayout.setDefaultRefreshHeaderCreator { _, _ -> BezierRadarHeader(this) }
     SmartRefreshLayout.setDefaultRefreshFooterCreator { _, _ -> ClassicsFooter(this) }
   }
 

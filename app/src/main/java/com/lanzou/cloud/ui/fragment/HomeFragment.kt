@@ -292,7 +292,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
             uploadService.uploadFiles(
               checkedFiles
                 .map {
-                  it.highlight = true
                   it.path
                 }, currentPath.toLong(), currentFolderName
             )
@@ -319,7 +318,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           .setPositiveButton("执行下载") { dialog, _ ->
             homeViewModel.toggleLeft(false)
             checkedFiles.forEach {
-              it.highlight = true
               it.path = currentPath + File.separator + it.name
             }
             currentRightFileFragment.addFiles(ArrayList(checkedFiles))
@@ -489,9 +487,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
     when (homeViewModel.focusedPositionFlow.value) {
       LayoutPosition.LEFT -> currentLeftFileFragment.onMenuItemSelected(menuItem)
-      LayoutPosition.RIGHT -> {
-        rightFragments.forEach { it.onMenuItemSelected(menuItem) }
-      }
+      LayoutPosition.RIGHT -> currentRightFileFragment.onMenuItemSelected(menuItem)
 
       else -> throw IllegalStateException()
     }

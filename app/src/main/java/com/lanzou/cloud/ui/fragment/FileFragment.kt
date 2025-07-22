@@ -306,6 +306,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
   override fun addFile(position: Int, fileInfoModel: FileInfoModel) {
     val newFile = fileInfoModel.copy()
+    newFile.highlight = true
     binding.fileRv.mutable.add(position, newFile)
     mData.add(position, newFile)
     binding.fileRv.bindingAdapter.notifyItemInserted(position)
@@ -317,6 +318,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     if (files.isEmpty()) {
       return
     }
+    files.forEach { it.highlight = true }
     val position = getInsertPosition()
     binding.fileRv.addModels(files, true, position)
     mData.addAll(position, files)
@@ -485,15 +487,12 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
       else -> {
         menuItem.isChecked = true
-        try {
-          when (menuItem.itemId) {
-            R.id.sort_name -> viewModel.sortField(FileSortField.NAME)
-            R.id.sort_time -> viewModel.sortField(FileSortField.TIME)
-            R.id.sort_size -> viewModel.sortField(FileSortField.SIZE)
-            R.id.sort_asc -> viewModel.sortRule(FileSortRule.ASC)
-            R.id.sort_desc -> viewModel.sortRule(FileSortRule.DESC)
-          }
-        } catch (_: Exception) {
+        when (menuItem.itemId) {
+          R.id.sort_name -> viewModel.sortField(FileSortField.NAME)
+          R.id.sort_time -> viewModel.sortField(FileSortField.TIME)
+          R.id.sort_size -> viewModel.sortField(FileSortField.SIZE)
+          R.id.sort_asc -> viewModel.sortRule(FileSortRule.ASC)
+          R.id.sort_desc -> viewModel.sortRule(FileSortRule.DESC)
         }
       }
     }
