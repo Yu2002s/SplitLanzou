@@ -37,16 +37,18 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
       val ext = if (it.isFile) FileUtils.getFileExtension(it.path) else null
       FileInfoModel(
         name = it.name,
+        length = it.length(),
         size = it.length().formatBytes(),
         updateTimeStr = time,
+        updateTime = it.lastModified(),
         extension = ext,
         path = it.path
       )
-    }?.sorted()?.toMutableList()?.also {
-      if (path != ROOT.path) {
-        it.add(0, FileInfoModel(name = "..."))
-      }
     }
+  }
+
+  override fun showBackItem(): Boolean {
+    return currentPath.path != ROOT.path
   }
 
   override fun onLoadEnd(data: List<FileInfoModel>?) {
@@ -60,15 +62,10 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
       super.onItemClick(model, position)
       return
     }
-    if (position == 0 && model.path.isEmpty()) {
-      // 返回
-      onBack()
-      return
-    }
     val currentScrollPosition = getFirstVisiblePosition()
     pathList[pathList.lastIndex].scrollPosition = currentScrollPosition
     pathList.add(FilePathModel(model.path))
-    binding.refresh.refreshing()
+    binding.refresh.showLoading()
   }
 
   private fun getFirstVisiblePosition(): Int {

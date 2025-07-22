@@ -6,6 +6,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <View
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_line"
+        android:layout_width="150dp"
+        android:layout_height="10dp" />
+
     <TextView
         android:id="@+id/tv_name"
         tools:text="@string/app_name"
@@ -13,30 +20,46 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
+        android:hint="分享地址"
         android:layout_marginTop="10dp"
-        tools:text="https://www.baidu.com/123"
-        android:id="@+id/edit_url"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textUri"
-        tools:ignore="Autofill,LabelFor" />
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            tools:text="https://www.baidu.com/123"
+            android:id="@+id/edit_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textUri"
+            tools:ignore="Autofill,LabelFor" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
+        android:layout_marginTop="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <EditText
-            tools:text="1234"
-            android:inputType="text"
-            android:id="@+id/edit_pwd"
-            android:layout_weight="1"
+        <com.google.android.material.textfield.TextInputLayout
+            android:hint="分享密码"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            tools:ignore="Autofill,LabelFor" />
+            android:layout_weight="1"
+            android:layout_height="wrap_content">
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+            <com.google.android.material.textfield.TextInputEditText
+                tools:text="1234"
+                android:inputType="text"
+                android:id="@+id/edit_pwd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:ignore="Autofill,LabelFor" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:layout_marginStart="10dp"
             android:id="@+id/sw_pwd"
             android:text="@string/file_pwd"
             android:layout_width="wrap_content"
@@ -44,17 +67,28 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_save"
-        android:text="@string/save_setting"
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/btn_share"
-        android:text="@string/share_file"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btn_share"
+            android:text="@string/share_file"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:layout_marginStart="10dp"
+            android:id="@+id/btn_qrcode"
+            android:text="@string/share_qrcode"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_share_download"
@@ -69,8 +103,8 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/btn_qrcode"
-        android:text="@string/share_qrcode"
+        android:id="@+id/btn_save"
+        android:text="@string/save_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

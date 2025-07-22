@@ -105,6 +105,17 @@ object LanzouRepository {
     }.await().zt == 1
   }
 
+  suspend fun deleteFile(fileId: String, isFile: Boolean = true) = coroutineScope {
+    Post<BaseLanzouResponse>(Api.FILE_PHP) {
+      param("task", if (isFile) 6 else 3)
+      if (isFile) {
+        param("file_id", fileId)
+      } else {
+        param("folder_id", fileId)
+      }
+    }.await().zt == 1
+  }
+
   /**
    * 通过文件夹分享地址获取到文件列表（暂时不支持分页）
    *

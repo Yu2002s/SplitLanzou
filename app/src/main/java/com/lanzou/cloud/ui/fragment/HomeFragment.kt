@@ -7,10 +7,14 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -20,6 +24,7 @@ import com.drake.engine.base.EngineNavFragment
 import com.drake.engine.utils.dp
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.lanzou.cloud.R
 import com.lanzou.cloud.data.Upload
@@ -31,6 +36,7 @@ import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LanzouPathModel
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
+import com.lanzou.cloud.ui.dialog.FileActionDialog
 import com.lanzou.cloud.ui.dialog.FileMkdirDialog
 import com.lanzou.cloud.ui.dialog.FileSearchDialog
 import com.lanzou.cloud.utils.getWindowWidth
@@ -38,7 +44,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_home),
-  OnFileNavigateListener, ServiceConnection, OnUploadListener {
+  OnFileNavigateListener, ServiceConnection, OnUploadListener, MenuProvider {
 
   private val leftFragments = mutableListOf<FileFragment>()
 
@@ -131,6 +137,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     binding.btnRightMulti.setOnClickListener(this)
     binding.fabUpload.setOnClickListener(this)
     binding.fabDownload.setOnClickListener(this)
+    requireActivity().addMenuProvider(this, viewLifecycleOwner)
 
     val contentWidth = (windowWidth - 1.dp) / 2
     leftLp.width = contentWidth
@@ -169,9 +176,24 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         if (currentFileFragment.onBack()) {
           requireActivity().finish()
         } else {
-          onBack()
+          // onNavigateUp()
         }
       }
+
+    val onTabSelectedListener = object : TabLayout.OnTabSelectedListener {
+      override fun onTabReselected(tab: TabLayout.Tab?) {
+        currentFileFragment.scrollToPosition(0)
+      }
+
+      override fun onTabSelected(tab: TabLayout.Tab?) {
+      }
+
+      override fun onTabUnselected(tab: TabLayout.Tab?) {
+      }
+    }
+
+    binding.tabLeft.addOnTabSelectedListener(onTabSelectedListener)
+    binding.tabRight.addOnTabSelectedListener(onTabSelectedListener)
   }
 
   private fun eachFragment(block: (FileFragment) -> Unit) {
@@ -198,13 +220,16 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         val value = it.animatedValue as Int
         when (position) {
           LayoutPosition.LEFT -> {
-            leftLp.width = currentLeftWidth - value
+            val letWidth = currentLeftWidth - value
+            leftLp.width = if (letWidth <= 1) 1 else letWidth
             rightLp.width = currentRightWidth + value
           }
 
           LayoutPosition.RIGHT -> {
-            leftLp.width = currentLeftWidth + value
-            rightLp.width = currentRightWidth - value
+            val leftWidth = currentLeftWidth + value
+            val rightWidth = currentRightWidth - value
+            leftLp.width = leftWidth
+            rightLp.width = if (rightWidth <= 1) 1 else rightWidth
           }
 
           else -> throw IllegalStateException()
@@ -335,22 +360,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
-  private fun onBack() {
-
-    if (currentFileFragment !is LanzouFileFragment) {
-      // 过滤掉其他fragment执行返回
-      return
-    }
-
-    if (lanzouFilePaths.size == 1) {
-      requireActivity().finish()
-      return
-    }
-    lanzouFilePaths.removeLastOrNull()
-    leftFragments.removeLastOrNull()
-    vpLeftAdapter.notifyItemRemoved(lanzouFilePaths.size)
-  }
-
   override fun onResume() {
     super.onResume()
     onBackPressedCallback.isEnabled = true
@@ -371,17 +380,25 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
     message += fileInfoModel.name
 
+    var currentFolderName = ""
+    var currentPath: String
+    if (isUpload) {
+      currentFolderName = lanzouFilePaths[binding.vpLeft.currentItem].name
+      currentPath = currentLeftFileFragment.getCurrentPath() ?: return
+      message += "\n\n上传到: $currentFolderName"
+    } else {
+      currentPath = currentRightFileFragment.getCurrentPath() ?: return
+      message += "\n\n下载到: $currentPath"
+    }
+
     MaterialAlertDialogBuilder(requireContext())
-      .setTitle("操作")
+      .setTitle(if (isUpload) "上传" else "下载")
       .setMessage("$message\n\n注意：【暂时不能显示实时进度】")
       .setPositiveButton("执行") { dialog, _ ->
         if (isUpload) {
-          val currentPath = currentLeftFileFragment.getCurrentPath() ?: return@setPositiveButton
-          val currentFolderName = lanzouFilePaths[binding.vpLeft.currentItem].name
           currentLeftFileFragment.addFile(fileInfoModel.copy())
           uploadService.uploadFile(fileInfoModel.path, currentPath.toLong(), currentFolderName)
         } else {
-          val currentPath = currentRightFileFragment.getCurrentPath() ?: return@setPositiveButton
           val filePath = currentPath + File.separator + fileInfoModel.name
           currentRightFileFragment.addFile(fileInfoModel)
           downloadService.addDownloadWithPath(
@@ -395,13 +412,21 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       .show()
   }
 
+  private fun showFileActionDialog(fileInfoModel: FileInfoModel, position: Int) {
+    FileActionDialog(requireContext(), homeViewModel.focusedPositionFlow.value)
+      .onItemClick = { itemPosition ->
+      when (itemPosition) {
+        0 -> showTransmissionDialog(fileInfoModel, position)
+        1 -> currentFileFragment.deleteFile(position, fileInfoModel)
+        2 -> currentFileFragment.renameFile(position, fileInfoModel)
+        3 -> currentFileFragment.showDetail(position, fileInfoModel)
+      }
+    }
+  }
+
   override fun navigate(fileInfoModel: FileInfoModel, position: Int) {
     if (fileInfoModel.isFile) {
-      showTransmissionDialog(fileInfoModel, position)
-      return
-    }
-    if (position == 0 && fileInfoModel.folderId.isEmpty()) {
-      onBack()
+      showFileActionDialog(fileInfoModel, position)
       return
     }
     lanzouFilePaths.add(LanzouPathModel(fileInfoModel.folderId, fileInfoModel.name))
@@ -411,6 +436,16 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     binding.vpLeft.post {
       binding.vpLeft.setCurrentItem(insertPosition, true)
     }
+  }
+
+  override fun onNavigateUp(): Boolean {
+    if (lanzouFilePaths.size == 1) {
+      return true
+    }
+    lanzouFilePaths.removeLastOrNull()
+    leftFragments.removeLastOrNull()
+    vpLeftAdapter.notifyItemRemoved(lanzouFilePaths.size)
+    return false
   }
 
   override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
@@ -427,11 +462,36 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   }
 
   override fun onUpload(upload: Upload?) {
-
     upload ?: return
+    // TODO: 暂时不对其他状态做出判断
     if (upload.status == Upload.ERROR) {
       currentLeftFileFragment.refresh()
     }
+  }
+
+  override fun onPrepareMenu(menu: Menu) {
+    super.onPrepareMenu(menu)
+  }
+
+  override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+  }
+
+  override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+    if (menuItem.itemId == R.id.show_system_app) {
+      menuItem.isChecked = !menuItem.isChecked
+      homeViewModel.showSystemApp(menuItem.isChecked)
+      currentRightFileFragment.refresh()
+      return true
+    }
+    when (homeViewModel.focusedPositionFlow.value) {
+      LayoutPosition.LEFT -> currentLeftFileFragment.onMenuItemSelected(menuItem)
+      LayoutPosition.RIGHT -> {
+        rightFragments.forEach { it.onMenuItemSelected(menuItem) }
+      }
+
+      else -> throw IllegalStateException()
+    }
+    return true
   }
 
   override fun onDestroy() {

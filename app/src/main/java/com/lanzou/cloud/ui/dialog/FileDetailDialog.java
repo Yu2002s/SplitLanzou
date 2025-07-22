@@ -13,9 +13,9 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.king.zxing.util.CodeUtils;
 import com.lanzou.cloud.LanzouApplication;
@@ -27,7 +27,7 @@ import com.lanzou.cloud.databinding.DialogShareQrcodeBinding;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.utils.DisplayUtilsKt;
 
-public class FileDetailDialog extends MaterialAlertDialogBuilder {
+public class FileDetailDialog extends BottomSheetDialog {
 
     private final long fileId;
 
@@ -58,7 +58,7 @@ public class FileDetailDialog extends MaterialAlertDialogBuilder {
         }
         LayoutInflater inflater = LayoutInflater.from(context);
         binding = DialogFileDetailBinding.inflate(inflater);
-        setView(binding.getRoot());
+        setContentView(binding.getRoot());
         setTitle("文件详情");
         binding.btnShareDownload.setVisibility(isFile ? View.VISIBLE : View.GONE);
 
@@ -86,10 +86,9 @@ public class FileDetailDialog extends MaterialAlertDialogBuilder {
             });
         }).start();
 
-        AlertDialog alertDialog = create();
-        alertDialog.show();
+        show();
 
-        binding.btnClose.setOnClickListener(v -> alertDialog.dismiss());
+        binding.btnClose.setOnClickListener(v -> dismiss());
 
         binding.btnShare.setOnClickListener(v -> {
             DialogInterface.OnClickListener clickListener = (dialog, which) -> {
@@ -176,7 +175,7 @@ public class FileDetailDialog extends MaterialAlertDialogBuilder {
         }).start());
 
         binding.btnQrcode.setOnClickListener(view -> {
-            alertDialog.dismiss();
+            dismiss();
             DialogShareQrcodeBinding qrcodeBinding = DialogShareQrcodeBinding.inflate(inflater);
             String url = binding.editUrl.getText().toString();
             String pwd = binding.editPwd.getText().toString();

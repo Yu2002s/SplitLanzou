@@ -207,6 +207,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_file);
         menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_file);
         menu.findItem(R.id.scan).setVisible(selectedItemId == R.id.nav_me);
+        menu.findItem(R.id.delete).setVisible(selectedItemId == R.id.nav_home);
+        menu.findItem(R.id.sort).setVisible(selectedItemId == R.id.nav_home);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -218,11 +220,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        /*int id = item.getItemId();
-        if (id == R.id.scan) {
-            startActivity(new Intent(this, QRCodeScanActivity.class));
-            return true;
-        }*/
         return super.onOptionsItemSelected(item);
     }
 

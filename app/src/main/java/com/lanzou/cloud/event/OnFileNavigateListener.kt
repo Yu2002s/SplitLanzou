@@ -5,4 +5,6 @@ import com.lanzou.cloud.model.FileInfoModel
 interface OnFileNavigateListener {
 
   fun navigate(fileInfoModel: FileInfoModel, position: Int)
+
+  fun onNavigateUp(): Boolean
 }

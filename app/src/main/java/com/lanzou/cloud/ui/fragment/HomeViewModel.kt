@@ -2,11 +2,15 @@ package com.lanzou.cloud.ui.fragment
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lanzou.cloud.enums.FileSortField
+import com.lanzou.cloud.enums.FileSortRule
 import com.lanzou.cloud.enums.LayoutPosition
+import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.model.HomeModel
 import com.lanzou.cloud.network.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
@@ -37,6 +41,10 @@ class HomeViewModel : ViewModel() {
 
   private val _loginStatusFlow = MutableStateFlow(true)
   val loginStateFlow: StateFlow<Boolean> = _loginStatusFlow
+
+  private val _filterSortFlow = MutableStateFlow(FilterSortModel())
+
+  val filterSortModel get() = _filterSortFlow
 
   init {
 
@@ -97,5 +105,25 @@ class HomeViewModel : ViewModel() {
 
   fun refreshLogin() {
     _loginStatusFlow.value = Repository.getInstance().isLogin
+  }
+
+  fun sort(filterSortModel: FilterSortModel) {
+    _filterSortFlow.value = filterSortModel
+  }
+
+  fun sortField(field: FileSortField) {
+    _filterSortFlow.update {
+      FilterSortModel(it.rule, field, it.showSystemApp)
+    }
+  }
+
+  fun sortRule(rule: FileSortRule) {
+    _filterSortFlow.update {
+      FilterSortModel(rule, it.field, it.showSystemApp)
+    }
+  }
+
+  fun showSystemApp(isShow: Boolean = false) {
+    _filterSortFlow.value.showSystemApp = isShow
   }
 }

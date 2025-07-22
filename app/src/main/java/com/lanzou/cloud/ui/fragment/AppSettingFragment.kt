@@ -7,10 +7,14 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SeekBarPreference
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.R
+import com.lanzou.cloud.config.SPConfig
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.FolderSelectorActivity
 import com.lanzou.cloud.utils.SpJavaUtils
+import com.lanzou.cloud.utils.formatBytes
 
 class AppSettingFragment : PreferenceFragmentCompat() {
 
@@ -43,9 +47,24 @@ class AppSettingFragment : PreferenceFragmentCompat() {
       summary = uploadCachePathName
       onPreferenceClickListener =
         Preference.OnPreferenceClickListener {
-          launcher.launch(Intent(requireContext(), FolderSelectorActivity::class.java))
+          MaterialAlertDialogBuilder(requireContext())
+            .setTitle("设置缓存目录")
+            .setMessage("缓存用于分割文件时上传的目录，可以新建一个不使用的目录并设置它，将会上传大量文件到此处\n\n【不要设置到根目录】")
+            .setPositiveButton("去设置") { dialog, _ ->
+              launcher.launch(Intent(requireContext(), FolderSelectorActivity::class.java))
+            }
+            .setNegativeButton("取消", null)
+            .show()
           true
         }
     }
+
+    val uploadFileSizePreference = findPreference<SeekBarPreference>(SPConfig.UPLOAD_FILE_SIZE)
+    uploadFileSizePreference?.onPreferenceChangeListener =
+      Preference.OnPreferenceChangeListener { preference, newValue ->
+        newValue as Int
+        preference.summary = "当前设置: " + newValue.toLong().formatBytes()
+        true
+      }
   }
 }

@@ -1,6 +1,7 @@
 package com.lanzou.cloud.event
 
 import com.lanzou.cloud.model.FileInfoModel
+import com.lanzou.cloud.model.FilterSortModel
 
 interface FileAction : Searchable {
 
@@ -29,4 +30,16 @@ interface FileAction : Searchable {
   fun addFile(position: Int, fileInfoModel: FileInfoModel)
 
   fun refresh()
+
+  fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>)
+
+  fun deleteFile(position: Int, file: FileInfoModel)
+
+  fun renameFile(position: Int, file: FileInfoModel)
+
+  fun scrollToPosition(position: Int)
+
+  fun showDetail(position: Int, file: FileInfoModel)
+
+  fun sort(filterSortModel: FilterSortModel)
 }

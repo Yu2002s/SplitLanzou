@@ -17,7 +17,7 @@
     <string name="move">移动</string>
     <string name="delete">删除</string>
     <string name="go_login">去登录</string>
-    <string name="file_pwd">文件密码</string>
+    <string name="file_pwd">开启密码</string>
     <string name="share_file">分享文件</string>
     <string name="close">关闭</string>
     <string name="manger_account">管理账号</string>
@@ -51,5 +51,6 @@
     <string name="donate"><u>捐赠</u></string>
     <string name="check_update">检查更新</string>
     <string name="dev">作者: 冬日暖雨</string>
+    <string name="sort">排序</string>
 
 </resources>

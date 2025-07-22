@@ -21,7 +21,7 @@ open class BaseEditDialog(context: Context) : MaterialAlertDialogBuilder(context
   var hint: CharSequence = ""
     set(value) {
       field = value
-      binding.editKey.hint = value
+      binding.inputLayout.hint = value
     }
 
   var onConfirm: ((String?) -> Unit)? = null

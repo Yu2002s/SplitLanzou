@@ -3,6 +3,7 @@ package com.lanzou.cloud.model
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
 import com.drake.brv.item.ItemPosition
+import com.drake.engine.utils.PinyinUtils
 import com.lanzou.cloud.BR
 import com.lanzou.cloud.R
 import kotlinx.serialization.SerialName
@@ -76,6 +77,8 @@ data class FileInfoModel(
 
   val isApp get() = pkgName != null
 
+  val fileId get() = if (isFile) id else folderId
+
   override fun compareTo(other: FileInfoModel): Int {
     if (isApp && other.isApp) {
       return other.updateTime.compareTo(updateTime)
@@ -86,7 +89,8 @@ data class FileInfoModel(
       return 1
     }
 
-    return name.compareTo(other.name)
+    return PinyinUtils.getPinyinFirstLetter(name)
+      .compareTo(PinyinUtils.getPinyinFirstLetter(other.name))
   }
 
   override var itemPosition: Int = 0
