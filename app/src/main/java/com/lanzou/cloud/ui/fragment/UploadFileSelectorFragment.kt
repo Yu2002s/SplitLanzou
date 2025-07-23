@@ -80,9 +80,18 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
     }
   }
 
-  // FIXME: 暂时使用父类的
-  override fun getInsertPosition(): Int {
-    return super.getInsertPosition()
+  override fun getInsertPosition(name: String?): Int {
+    // TODO: 有问题，暂时用父类的
+    return super.getInsertPosition(name)
+    /*if (name.isNullOrEmpty() || models.isEmpty()) {
+      return super.getInsertPosition(name)
+    }
+    val namePinyin = PinyinUtils.ccs2Pinyin(name)
+    // 查找第一个拼音大于name的文件（正确比较逻辑）
+    val index = models.indexOfFirst {
+      it.isFile && PinyinUtils.ccs2Pinyin(it.name) > namePinyin
+    }
+    return if (index != -1) index else super.getInsertPosition(name)*/
   }
 
   override fun onBack(): Boolean {
@@ -112,5 +121,14 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
     } else {
       toast("创建失败，请检查App储存权限")
     }
+  }
+
+  override fun onItemLongClick(model: FileInfoModel, position: Int): Boolean {
+    if (model.isDirectory) {
+      // 文件夹重命名
+      renameFile(position, model)
+      return true
+    }
+    return false
   }
 }

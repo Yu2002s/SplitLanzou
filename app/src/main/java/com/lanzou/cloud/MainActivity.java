@@ -209,6 +209,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         menu.findItem(R.id.scan).setVisible(selectedItemId == R.id.nav_me);
         menu.findItem(R.id.delete).setVisible(selectedItemId == R.id.nav_home);
         menu.findItem(R.id.sort).setVisible(selectedItemId == R.id.nav_home);
+        menu.findItem(R.id.delete_download).setVisible(selectedItemId == R.id.nav_transmission);
+        menu.findItem(R.id.clear_download).setVisible(selectedItemId == R.id.nav_transmission);
         return super.onPrepareOptionsMenu(menu);
     }
 

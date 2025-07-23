@@ -108,14 +108,6 @@ class LanzouFileFragment private constructor() : FileFragment() {
         mData.removeAt(it)
         delay(100)
       }
-      /*positions.sortedDescending().forEach {
-        val file = models[it]
-        LanzouRepository.deleteFile(file.fileId, file.isFile)
-        binding.fileRv.removeModels(positions) { index ->
-          mData.removeAt(index)
-        }
-        delay(100)
-      }*/
     }.catch {
       toast(it.message)
     }.finally {

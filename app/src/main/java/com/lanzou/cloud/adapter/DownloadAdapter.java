@@ -1,6 +1,7 @@
 package com.lanzou.cloud.adapter;
 
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
@@ -16,6 +17,14 @@ public class DownloadAdapter extends TransmissionAdapter {
 
     public DownloadAdapter(List<Download> downloads) {
         this.downloads = downloads;
+    }
+
+    @NonNull
+    @Override
+    public TransmissionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        TransmissionViewHolder viewHolder = super.onCreateViewHolder(parent, viewType);
+        viewHolder.binding.select.setVisibility(View.VISIBLE);
+        return viewHolder;
     }
 
     @Override
@@ -45,6 +54,7 @@ public class DownloadAdapter extends TransmissionAdapter {
         binding.progressBar.setProgress(download.getProgress());
         binding.btnToggle.setVisibility(download.isComplete() ? View.GONE: View.VISIBLE);
         binding.btnToggle.setBackground(download.isDownload() ? pause : resume);
+        binding.select.setSelected(download.isChecked());
     }
 
     @Override

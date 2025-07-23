@@ -2,7 +2,6 @@ package com.lanzou.cloud.adapter;
 
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -19,12 +18,18 @@ public class TransmissionAdapter extends RecyclerView.Adapter<TransmissionViewHo
 
     private OnItemClickListener toggleTransmissionListener;
 
+    private OnItemClickListener onItemCheckChangeListener;
+
     public void setToggleTransmissionListener(OnItemClickListener toggleUploadListener) {
         this.toggleTransmissionListener = toggleUploadListener;
     }
 
     public void setItemClickListener(OnItemClickListener itemClickListener) {
         this.itemClickListener = itemClickListener;
+    }
+
+    public void setOnItemCheckChangeListener(OnItemClickListener onItemCheckChangeListener) {
+        this.onItemCheckChangeListener = onItemCheckChangeListener;
     }
 
     Drawable resume;
@@ -43,18 +48,15 @@ public class TransmissionAdapter extends RecyclerView.Adapter<TransmissionViewHo
         ItemListTransmissionBinding binding = ItemListTransmissionBinding
                 .inflate(LayoutInflater.from(parent.getContext()), parent, false);
         TransmissionViewHolder viewHolder = new TransmissionViewHolder(binding);
-        binding.btnToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleTransmissionListener.onItemClick(viewHolder.getAdapterPosition(), v);
-            }
-        });
-        binding.getRoot().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                itemClickListener.onItemClick(viewHolder.getAdapterPosition(), v);
-            }
-        });
+        binding.btnToggle.setOnClickListener(v ->
+                toggleTransmissionListener.onItemClick(viewHolder.getAbsoluteAdapterPosition(), v));
+        binding.getRoot().setOnClickListener(v ->
+                itemClickListener.onItemClick(viewHolder.getAbsoluteAdapterPosition(), v));
+
+        if (onItemCheckChangeListener != null) {
+            binding.select.setOnClickListener(v ->
+                    onItemCheckChangeListener.onItemClick(viewHolder.getAbsoluteAdapterPosition(), v));
+        }
         return viewHolder;
     }
 

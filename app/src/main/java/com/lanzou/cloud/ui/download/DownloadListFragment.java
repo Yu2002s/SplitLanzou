@@ -8,13 +8,18 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,8 +35,9 @@ import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class DownloadListFragment extends Fragment implements ServiceConnection, OnDownloadListener {
+public class DownloadListFragment extends Fragment implements ServiceConnection, OnDownloadListener, MenuProvider {
 
     private DownloadService downloadService;
 
@@ -55,7 +61,8 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
         downloadService = ((DownloadService.DownloadBinder) service).getService();
         downloadService.addDownloadListener(this);
         // downloadList.addAll(downloadService.getDownloadList());
-        List<Download> downloads = LitePal.order("id desc").limit(1000).find(Download.class, true);
+        List<Download> downloads = LitePal.order("id desc")
+                .limit(1000).find(Download.class, true);
         downloads.forEach(download -> {
             if (download.isDownload() && !downloadService.isDownloading(download)) {
                 download.setStatus(Upload.STOP);
@@ -84,6 +91,54 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
         }
     }
 
+    private void deleteFiles(List<Download> downloads) {
+        if (downloads.isEmpty()) {
+            Toast.makeText(requireContext(), "请选择文件", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new Thread(() -> {
+            int size = downloads.size();
+            for (int i = size - 1; i >= 0; i--) {
+                Download download = downloads.get(i);
+                downloadService.removeDownload(download);
+                int index = -1;
+                for (int j = 0; j < downloadList.size(); j++) {
+                    Download localDownload = downloadList.get(j);
+                    if (download.getId() == localDownload.getId()) {
+                        index = j;
+                        break;
+                    }
+                }
+                if (index == -1) {
+                    index = downloadList.indexOf(download);
+                }
+                final int position = index;
+                requireActivity().runOnUiThread(() -> {
+                    downloadList.remove(position);
+                    downloadAdapter.notifyItemRemoved(position);
+                });
+            }
+        }).start();
+    }
+
+    private void clearFiles() {
+        new Thread(new Runnable() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void run() {
+                downloadService.removeAllDownload();
+                downloadList.clear();
+                requireActivity().runOnUiThread(downloadAdapter::notifyDataSetChanged);
+            }
+        }).start();
+    }
+
+    private void deleteFiles() {
+        List<Download> downloads = downloadList.stream()
+                .filter(Download::isChecked).collect(Collectors.toList());
+        deleteFiles(downloads);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -93,12 +148,19 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner());
         RecyclerView recyclerView = (RecyclerView) view;
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(downloadAdapter);
 
         downloadAdapter.setToggleTransmissionListener((position, view1)
                 -> downloadService.toggleDownload(downloadList.get(position)));
+
+        downloadAdapter.setOnItemCheckChangeListener((position, view2) -> {
+            Download download = downloadList.get(position);
+            download.setChecked(!download.isChecked());
+            downloadAdapter.notifyItemChanged(position, 0);
+        });
 
         ActivityResultLauncher<Intent> launcher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -110,9 +172,8 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
                     }
                 });
 
-        downloadAdapter.setItemClickListener((position, view12) -> {
-            DownloadInfoActivity.actionStart(requireContext(), launcher, downloadList.get(position), position);
-        });
+        downloadAdapter.setItemClickListener((position, view12) ->
+                DownloadInfoActivity.actionStart(requireContext(), launcher, downloadList.get(position), position));
     }
 
     @Override
@@ -120,5 +181,25 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
         super.onDestroy();
         requireContext().unbindService(this);
         downloadService.removeDownloadListener(this);
+    }
+
+    @Override
+    public void onCreateMenu(@org.jspecify.annotations.NonNull Menu menu, @org.jspecify.annotations.NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.menu_download, menu);
+        MenuItem menuItem = menu.findItem(R.id.delete_download);
+        menuItem.setOnMenuItemClickListener(item -> {
+            deleteFiles();
+            return true;
+        });
+        menu.findItem(R.id.clear_download).setOnMenuItemClickListener(item -> {
+            clearFiles();
+            return true;
+        });
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onMenuItemSelected(@org.jspecify.annotations.NonNull MenuItem menuItem) {
+        return true;
     }
 }

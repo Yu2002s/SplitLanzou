@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.litepal.annotation.Column;
 import org.litepal.crud.LitePalSupport;
 
 public class Download extends LitePalSupport implements Comparable<Download>, Parcelable {
@@ -57,6 +58,9 @@ public class Download extends LitePalSupport implements Comparable<Download>, Pa
 
   // 获取文件所有的上传信息
   private Upload upload;
+
+    @Column(ignore = true)
+    private boolean isChecked = false;
 
   public Download() {
 
@@ -207,6 +211,14 @@ public class Download extends LitePalSupport implements Comparable<Download>, Pa
   public void setTime(Long time) {
     this.time = time;
   }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }
+
+    public boolean isChecked() {
+        return isChecked;
+    }
 
   public void update() {
     update(id);

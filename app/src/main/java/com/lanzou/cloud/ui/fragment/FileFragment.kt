@@ -1,7 +1,6 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -14,6 +13,7 @@ import com.drake.brv.annotaion.AnimationType
 import com.drake.brv.utils.addModels
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.models
+import com.drake.brv.utils.mutable
 import com.drake.brv.utils.setDifferModels
 import com.drake.brv.utils.setup
 import com.drake.engine.base.EngineFragment
@@ -46,6 +46,7 @@ import com.lanzou.cloud.utils.updateModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Collections
 
 abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutPosition.LEFT) :
   EngineFragment<FragmentFileBaseBinding>(R.layout.fragment_file_base), OnLayoutChangeListener,
@@ -96,7 +97,6 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       onChecked { position, checked, allChecked ->
         val model = getModel<FileInfoModel>(position)
         model.isChecked = checked
-        Log.d("jdy", "checkedPosition: $position")
       }
 
       onToggle { position, toggleMode, end ->
@@ -113,6 +113,9 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       }
 
       R.id.item.onLongClick {
+        if (onItemLongClick(getModel(), modelPosition)) {
+          return@onLongClick
+        }
         if (!toggleMode) {
           toggle()
           setChecked(layoutPosition, true)
@@ -214,6 +217,10 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     navigateTo(model, position)
   }
 
+  protected open fun onItemLongClick(model: FileInfoModel, position: Int): Boolean {
+    return false
+  }
+
   protected open fun showBackItem(): Boolean {
     return false
   }
@@ -250,8 +257,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       } else {
         when (rule) {
           FileSortRule.ASC -> when (field) {
-            FileSortField.NAME -> PinyinUtils.ccs2Pinyin(o1.name).lowercase()
-              .compareTo(PinyinUtils.ccs2Pinyin(o2.name).lowercase())
+            FileSortField.NAME -> PinyinUtils.ccs2Pinyin(o1.name)
+              .compareTo(PinyinUtils.ccs2Pinyin(o2.name))
 
             FileSortField.TIME -> o1.updateTime.compareTo(o2.updateTime)
             FileSortField.SIZE -> o1.length.compareTo(o2.length)
@@ -259,8 +266,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
           FileSortRule.DESC -> when (field) {
             FileSortField.NAME ->
-              PinyinUtils.ccs2Pinyin(o2.name).lowercase()
-                .compareTo(PinyinUtils.ccs2Pinyin(o1.name).lowercase())
+              PinyinUtils.ccs2Pinyin(o2.name)
+                .compareTo(PinyinUtils.ccs2Pinyin(o1.name))
 
             FileSortField.TIME -> o2.updateTime.compareTo(o1.updateTime)
             FileSortField.SIZE -> o2.length.compareTo(o1.length)
@@ -283,7 +290,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
   override fun onMkdir(name: String, path: String) {
     val fileRv = binding.fileRv
-    val position = getInsertPosition()
+    val position = getInsertPosition(name)
     fileRv.bindingAdapter.notifyItemInserted(position)
     fileRv.scrollToPosition(position)
   }
@@ -313,7 +320,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   }
 
   override fun addFile(fileInfoModel: FileInfoModel) {
-    addFile(getInsertPosition(), fileInfoModel)
+    addFile(getInsertPosition(fileInfoModel.name), fileInfoModel)
   }
 
   override fun addFile(position: Int, fileInfoModel: FileInfoModel) {
@@ -330,7 +337,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     if (files.isEmpty()) {
       return
     }
-    val position = getInsertPosition()
+    val position = getInsertPosition(files[0].name)
     val newFiles = files.map { it.copy(highlight = true) }
     binding.fileRv.addModels(newFiles, true, position)
     mData.addAll(position, newFiles)
@@ -342,10 +349,9 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   override fun scrollToPosition(position: Int) {
     val layoutManager = binding.fileRv.layoutManager
     // FIXME: 当切换layoutManager 后可能出现问题
-    if (layoutManager is LinearLayoutManager) {
-      layoutManager.scrollToPositionWithOffset(position, 0)
-    } else if (layoutManager is StaggeredGridLayoutManager) {
-      layoutManager.scrollToPositionWithOffset(position, 0)
+    when (layoutManager) {
+      is LinearLayoutManager -> layoutManager.scrollToPositionWithOffset(position, 0)
+      is StaggeredGridLayoutManager -> layoutManager.scrollToPositionWithOffset(position, 0)
     }
   }
 
@@ -353,7 +359,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
    * 获取准确的插入位置
    */
   @Suppress("unchecked_cast")
-  protected open fun getInsertPosition(): Int {
+  protected open fun getInsertPosition(name: String? = null): Int {
     val fileRv = binding.fileRv
     val models = fileRv.models as? List<FileInfoModel>
     if (models.isNullOrEmpty()) {
@@ -424,6 +430,14 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
           file.path = renamedFile.path
         }
         binding.fileRv.updateModel(position)
+        val targetPosition = getInsertPosition(file.name)
+        if (targetPosition != position) {
+          Collections.swap(binding.fileRv.mutable, position, targetPosition)
+          binding.fileRv.bindingAdapter.let {
+            it.notifyItemMoved(position + it.headerCount, targetPosition + it.headerCount)
+          }
+          scrollToPosition(targetPosition)
+        }
       }
       setNegativeButton("取消", null)
       show()

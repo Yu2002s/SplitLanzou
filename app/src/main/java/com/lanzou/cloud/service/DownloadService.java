@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.drake.engine.utils.FileUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lanzou.cloud.data.Download;
@@ -232,15 +233,29 @@ public class DownloadService extends Service {
         }
         LitePal.delete(Download.class, download.getId());
         download.stop();
-        Future<?> future = downloadMap.remove(download.getUrl());
-        if (future != null) {
-            future.cancel(true);
+        if (!TextUtils.isEmpty(download.getUrl())) {
+            Future<?> future = downloadMap.remove(download.getUrl());
+            if (future != null) {
+                future.cancel(true);
+            }
         }
         if (download.getPath() == null) return;
         File file = new File(download.getPath());
         if (file.exists()) {
             file.delete();
         }
+    }
+
+    public void removeAllDownload() {
+        LitePal.deleteAll(SplitFile.class);
+        LitePal.deleteAll(Download.class);
+        downloadMap.forEach((s, future) -> {
+            if (future == null) {
+                return;
+            }
+            future.cancel(true);
+        });
+        FileUtils.deleteAllInDir(downloadPath);
     }
 
     public void addDownload(long fileId) {
