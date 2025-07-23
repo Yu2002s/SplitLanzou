@@ -33,6 +33,13 @@ interface FileAction : Searchable {
 
   fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>)
 
+  /**
+   * 删除指定文件
+   *
+   * @param position 此 position 为 item 的 modelPosition，数据的实际位置
+   * 不包含 header 区域，删除数据使用此 position，而实际更新 adapter 需要加上 headerCount
+   * 可使用扩展方法 removeModel
+   */
   fun deleteFile(position: Int, file: FileInfoModel)
 
   fun renameFile(position: Int, file: FileInfoModel)

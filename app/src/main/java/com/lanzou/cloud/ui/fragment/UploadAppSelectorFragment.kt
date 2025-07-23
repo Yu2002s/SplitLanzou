@@ -3,12 +3,16 @@ package com.lanzou.cloud.ui.fragment
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import com.drake.engine.utils.AppUtils
+import com.drake.engine.utils.FileUtils
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.lanzou.cloud.LanzouApplication
+import com.lanzou.cloud.base.BaseEditDialog
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.utils.formatBytes
+import com.lanzou.cloud.utils.updateModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -66,7 +70,26 @@ class UploadAppSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
   }
 
   override fun renameFile(position: Int, file: FileInfoModel) {
-    toast("不支持重命名App")
+    BaseEditDialog(requireContext()).apply {
+      setTitle("重命名App")
+      editValue = file.name + ".apk"
+      hint = "新文件名(注意定时清理App缓存)"
+      setPositiveButton("修改") { dialog, _ ->
+        if (editValue.isEmpty()) {
+          toast("请输入文件名称")
+          return@setPositiveButton
+        }
+        file.name = editValue
+        val targetFile = File(file.path)
+        val renamedFile = File(LanzouApplication.context.externalCacheDir, editValue)
+        if (FileUtils.copyFile(targetFile, renamedFile) { true }) {
+          file.path = renamedFile.path
+        }
+        binding.fileRv.updateModel(position)
+      }
+      setNegativeButton("取消", null)
+      show()
+    }
   }
 
   override fun showDetail(position: Int, file: FileInfoModel) {

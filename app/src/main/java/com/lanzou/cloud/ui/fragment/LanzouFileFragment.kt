@@ -13,6 +13,8 @@ import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.ui.dialog.FileDetailDialog
+import com.lanzou.cloud.utils.removeModel
+import com.lanzou.cloud.utils.removeModelsSuspend
 import kotlinx.coroutines.delay
 
 class LanzouFileFragment private constructor() : FileFragment() {
@@ -90,9 +92,7 @@ class LanzouFileFragment private constructor() : FileFragment() {
   override fun deleteFile(position: Int, file: FileInfoModel) {
     scopeDialog {
       LanzouRepository.deleteFile(file.fileId, file.isFile)
-      mData.removeAt(position)
-      binding.fileRv.mutable.removeAt(position)
-      binding.fileRv.bindingAdapter.notifyItemRemoved(position)
+      mData.removeAt(binding.fileRv.removeModel(position))
     }.catch {
       toast(it.message)
     }.finally {
@@ -102,14 +102,20 @@ class LanzouFileFragment private constructor() : FileFragment() {
 
   override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
     scopeDialog {
-      positions.sortedDescending().forEach {
+      binding.fileRv.removeModelsSuspend(positions) {
         val file = models[it]
         LanzouRepository.deleteFile(file.fileId, file.isFile)
         mData.removeAt(it)
-        binding.fileRv.mutable.removeAt(it)
-        binding.fileRv.bindingAdapter.notifyItemRemoved(it)
         delay(100)
       }
+      /*positions.sortedDescending().forEach {
+        val file = models[it]
+        LanzouRepository.deleteFile(file.fileId, file.isFile)
+        binding.fileRv.removeModels(positions) { index ->
+          mData.removeAt(index)
+        }
+        delay(100)
+      }*/
     }.catch {
       toast(it.message)
     }.finally {

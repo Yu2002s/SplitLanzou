@@ -1,6 +1,7 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -13,7 +14,6 @@ import com.drake.brv.annotaion.AnimationType
 import com.drake.brv.utils.addModels
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.models
-import com.drake.brv.utils.mutable
 import com.drake.brv.utils.setDifferModels
 import com.drake.brv.utils.setup
 import com.drake.engine.base.EngineFragment
@@ -39,6 +39,10 @@ import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.WebActivity
 import com.lanzou.cloud.utils.FileJavaUtils
+import com.lanzou.cloud.utils.addModel
+import com.lanzou.cloud.utils.removeModel
+import com.lanzou.cloud.utils.removeModels
+import com.lanzou.cloud.utils.updateModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -85,17 +89,19 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
     binding.fileRv.setup {
       setAnimation(AnimationType.SLIDE_RIGHT)
+      setCheckableType(R.layout.item_list_fileinfo)
       addType<FileInfoModel>(R.layout.item_list_fileinfo)
       addType<String>(R.layout.item_file_parent)
 
       onChecked { position, checked, allChecked ->
         val model = getModel<FileInfoModel>(position)
         model.isChecked = checked
+        Log.d("jdy", "checkedPosition: $position")
       }
 
       onToggle { position, toggleMode, end ->
-        val model = getModelOrNull<FileInfoModel>(position) ?: return@onToggle
-        model.isCheckable = toggleMode
+        // val model = getModelOrNull<FileInfoModel>(position) ?: return@onToggle
+        // model.isCheckable = toggleMode
         if (this@FileFragment.layoutPosition == LayoutPosition.LEFT) {
           viewModel.toggleLeft(toggleMode)
         } else {
@@ -115,12 +121,12 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
       R.id.item.onFastClick {
         if (toggleMode) {
-          val model = getModel<FileInfoModel>(layoutPosition)
+          val model = getModel<FileInfoModel>()
           setChecked(layoutPosition, !model.isChecked)
           return@onFastClick
         }
         viewModel.focusPosition(this@FileFragment.layoutPosition)
-        onItemClick(getModel(), layoutPosition)
+        onItemClick(getModel(), modelPosition)
       }
 
       R.id.header.onFastClick {
@@ -140,9 +146,6 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
         if (index == 1) {
           mData.clear()
         }
-        data?.let {
-          mData.addAll(it)
-        }
 
         val showBackItem = showBackItem()
         if (showBackItem()) {
@@ -150,6 +153,12 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
             removeHeaderAt(0)
             addHeader("...")
           }
+          // FIXME: 防止 mData 与实际索引不匹配的问题
+          // mData.add(FileInfoModel(name = "..."))
+        }
+
+        data?.let {
+          mData.addAll(it)
         }
 
         addData(data, isEmpty = { data.isNullOrEmpty() && !showBackItem }) {
@@ -241,8 +250,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       } else {
         when (rule) {
           FileSortRule.ASC -> when (field) {
-            FileSortField.NAME -> PinyinUtils.getPinyinFirstLetters(o1.name).lowercase()
-              .compareTo(PinyinUtils.getPinyinFirstLetters(o2.name).lowercase())
+            FileSortField.NAME -> PinyinUtils.ccs2Pinyin(o1.name).lowercase()
+              .compareTo(PinyinUtils.ccs2Pinyin(o2.name).lowercase())
 
             FileSortField.TIME -> o1.updateTime.compareTo(o2.updateTime)
             FileSortField.SIZE -> o1.length.compareTo(o2.length)
@@ -250,8 +259,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
 
           FileSortRule.DESC -> when (field) {
             FileSortField.NAME ->
-              PinyinUtils.getPinyinFirstLetters(o2.name).lowercase()
-                .compareTo(PinyinUtils.getPinyinFirstLetters(o1.name).lowercase())
+              PinyinUtils.ccs2Pinyin(o2.name).lowercase()
+                .compareTo(PinyinUtils.ccs2Pinyin(o1.name).lowercase())
 
             FileSortField.TIME -> o2.updateTime.compareTo(o1.updateTime)
             FileSortField.SIZE -> o2.length.compareTo(o1.length)
@@ -266,7 +275,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       binding.fileRv.models = mData
     } else {
       binding.fileRv.setDifferModels(mData.filter {
-        it.name.lowercase().contains(keyWorld.lowercase())
+        PinyinUtils.ccs2Pinyin(it.name).lowercase()
+          .contains(PinyinUtils.ccs2Pinyin(keyWorld).lowercase())
       })
     }
   }
@@ -275,7 +285,6 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     val fileRv = binding.fileRv
     val position = getInsertPosition()
     fileRv.bindingAdapter.notifyItemInserted(position)
-    fileRv.bindingAdapter.notifyItemRangeChanged(position, models.size - position)
     fileRv.scrollToPosition(position)
   }
 
@@ -286,6 +295,9 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     binding.refresh.setEnableRefresh(!isMultiMode)
     binding.refresh.setEnableLoadMore(!isMultiMode)
     binding.fileRv.bindingAdapter.toggle(isMultiMode)
+    if (!isMultiMode) {
+      binding.fileRv.bindingAdapter.checkedPosition.clear()
+    }
   }
 
   protected open fun isLoadMore(data: List<FileInfoModel>?): Boolean {
@@ -307,21 +319,21 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   override fun addFile(position: Int, fileInfoModel: FileInfoModel) {
     val newFile = fileInfoModel.copy()
     newFile.highlight = true
-    binding.fileRv.mutable.add(position, newFile)
     mData.add(position, newFile)
-    binding.fileRv.bindingAdapter.notifyItemInserted(position)
-    binding.fileRv.bindingAdapter.notifyItemRangeChanged(position, models.size - position)
-    binding.fileRv.scrollToPosition(position)
+    binding.fileRv.run {
+      addModel(position, newFile)
+      scrollToPosition(position)
+    }
   }
 
   override fun addFiles(files: List<FileInfoModel>) {
     if (files.isEmpty()) {
       return
     }
-    files.forEach { it.highlight = true }
     val position = getInsertPosition()
-    binding.fileRv.addModels(files, true, position)
-    mData.addAll(position, files)
+    val newFiles = files.map { it.copy(highlight = true) }
+    binding.fileRv.addModels(newFiles, true, position)
+    mData.addAll(position, newFiles)
     binding.fileRv.post {
       scrollToPosition(position)
     }
@@ -368,9 +380,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       .setPositiveButton("确认") { dialog, _ ->
         scopeDialog {
           File(file.path).deleteRecursively()
-          mData.removeAt(position)
-          binding.fileRv.mutable.removeAt(position)
-          binding.fileRv.bindingAdapter.notifyItemRemoved(position)
+          mData.removeAt(binding.fileRv.removeModel(position))
         }.finally {
           toggleMulti(false)
         }
@@ -386,10 +396,8 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
           File(it.path).deleteRecursively()
         }
       }
-      positions.sortedDescending().forEach {
+      binding.fileRv.removeModels(positions) {
         mData.removeAt(it)
-        binding.fileRv.mutable.removeAt(it)
-        binding.fileRv.bindingAdapter.notifyItemRemoved(it)
       }
     }.finally {
       toggleMulti(false)
@@ -406,12 +414,16 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       hint = "新文件名"
       setPositiveButton("修改") { dialog, _ ->
         if (editValue.isEmpty()) {
+          toast("请输入文件名称")
           return@setPositiveButton
         }
         file.name = editValue
         val targetFile = File(file.path)
-        targetFile.renameTo(File(targetFile.parentFile, editValue))
-        binding.fileRv.bindingAdapter.notifyItemChanged(position)
+        val renamedFile = File(targetFile.parentFile, editValue)
+        if (targetFile.renameTo(renamedFile)) {
+          file.path = renamedFile.path
+        }
+        binding.fileRv.updateModel(position)
       }
       setNegativeButton("取消", null)
       show()

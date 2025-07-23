@@ -295,7 +295,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
                   it.path
                 }, currentPath.toLong(), currentFolderName
             )
-            currentLeftFileFragment.addFiles(ArrayList(checkedFiles))
+            currentLeftFileFragment.addFiles(checkedFiles)
           }
           .setNegativeButton("取消", null)
           .show()
@@ -320,7 +320,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
             checkedFiles.forEach {
               it.path = currentPath + File.separator + it.name
             }
-            currentRightFileFragment.addFiles(ArrayList(checkedFiles))
+            currentRightFileFragment.addFiles(checkedFiles)
             downloadService.addDownload(checkedFiles)
           }
           .setNegativeButton("取消", null)
@@ -394,10 +394,11 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       .setMessage("$message\n\n注意：【暂时不能显示实时进度】")
       .setPositiveButton("执行") { dialog, _ ->
         if (isUpload) {
-          currentLeftFileFragment.addFile(fileInfoModel.copy())
+          currentLeftFileFragment.addFile(fileInfoModel)
           uploadService.uploadFile(fileInfoModel.path, currentPath.toLong(), currentFolderName)
         } else {
           val filePath = currentPath + File.separator + fileInfoModel.name
+          fileInfoModel.path = filePath
           currentRightFileFragment.addFile(fileInfoModel)
           downloadService.addDownloadWithPath(
             fileInfoModel.id.toLong(),

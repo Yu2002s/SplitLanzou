@@ -185,8 +185,11 @@ public class UploadService extends Service {
         if (name.equals("base.apk")) {
             PackageManager packageManager = LanzouApplication.context.getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageArchiveInfo(path, 0);
-            assert packageInfo != null;
-            upload.setName(packageInfo.applicationInfo.loadLabel(packageManager) + "-" + packageInfo.versionName + ".apk");
+            if (packageInfo != null) {
+                upload.setName(packageInfo.applicationInfo.loadLabel(packageManager) + "-" + packageInfo.versionName + ".apk");
+            } else {
+                upload.setName(name);
+            }
         } else {
             upload.setName(name);
         }
