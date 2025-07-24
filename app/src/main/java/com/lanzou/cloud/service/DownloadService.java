@@ -262,7 +262,7 @@ public class DownloadService extends Service {
         addDownload(fileId, null);
     }
 
-    public void addDownload(List<FileInfoModel> files) {
+    public void addDownload(List<FileInfoModel> files, @Nullable OnDownloadListener listener) {
         if (files.isEmpty()) {
             return;
         }
@@ -284,6 +284,7 @@ public class DownloadService extends Service {
                     if (download == null) {
                         return;
                     }
+                    download.setListener(listener);
                     prepareDownload(download);
                 }));
                 // addDownload(, fileInfoModel.getName(), pwd, fileInfoModel.getPath());
@@ -310,17 +311,17 @@ public class DownloadService extends Service {
     }
 
     public void addDownload(String url, @Nullable String name, @Nullable String pwd) {
-        addDownload(url, name, pwd, null);
+        addDownload(url, name, pwd, null, null);
     }
 
-    public void addDownloadWithPath(long fileId, String name, String path) {
+    public void addDownloadWithPath(long fileId, String name, String path, @Nullable OnDownloadListener listener) {
         executorService.execute(() -> {
             LanzouUrl lanzouUrl = repository.getLanzouUrl(fileId);
             if (lanzouUrl == null) {
                 return;
             }
             String pwd = lanzouUrl.getHasPwd() == 1 ? lanzouUrl.getPwd() : null;
-            addDownload(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId(), name, pwd, path);
+            addDownload(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId(), name, pwd, path, listener);
         });
     }
 
@@ -331,7 +332,8 @@ public class DownloadService extends Service {
      * @param name 文件名称
      * @param pwd  文件分享密码
      */
-    public void addDownload(String url, @Nullable String name, @Nullable String pwd, @Nullable String path) {
+    public void addDownload(String url, @Nullable String name,
+                            @Nullable String pwd, @Nullable String path, @Nullable OnDownloadListener listener) {
         if (downloadMap.containsKey(url)) {
             // 任务已存在
             Log.d(TAG, "下载任务已存在");
@@ -345,6 +347,7 @@ public class DownloadService extends Service {
             if (download == null) {
                 return;
             }
+            download.setListener(listener);
             mHandler.post(() -> Toast.makeText(DownloadService.this, showName + "已加入下载任务", Toast.LENGTH_SHORT).show());
             prepareDownload(download);
         }));
@@ -611,6 +614,7 @@ public class DownloadService extends Service {
                 start = now;
                 download.setSpeed((int) (current - size));
                 size = current;
+                download.onProgress();
                 updateDownloadStatus(download);
             }
         }
@@ -717,6 +721,7 @@ public class DownloadService extends Service {
                 download.setSpeed((int) (current - size));
                 size = current;
                 splitFile.update();
+                download.onProgress();
                 updateDownloadStatus(download);
             }
         }

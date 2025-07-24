@@ -4,13 +4,15 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import androidx.core.os.bundleOf
+import com.drake.tooltip.toast
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.utils.formatBytes
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UploadClassifySelectorFragment private constructor() : FileFragment(LayoutPosition.RIGHT) {
+class UploadClassifySelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
+  FileFragment(position) {
 
   companion object {
 
@@ -23,8 +25,11 @@ class UploadClassifySelectorFragment private constructor() : FileFragment(Layout
     const val TYPE_VIDEO = 3
 
     @JvmStatic
-    fun newInstance(type: Int): UploadClassifySelectorFragment {
-      val fragment = UploadClassifySelectorFragment()
+    fun newInstance(
+      type: Int,
+      position: LayoutPosition = LayoutPosition.RIGHT
+    ): UploadClassifySelectorFragment {
+      val fragment = UploadClassifySelectorFragment(position)
       fragment.arguments = bundleOf(PARAM_TYPE to type)
       return fragment
     }
@@ -32,6 +37,14 @@ class UploadClassifySelectorFragment private constructor() : FileFragment(Layout
 
   override suspend fun getData(page: Int): List<FileInfoModel>? {
     return getFiles()
+  }
+
+  override fun addFile(fileInfoModel: FileInfoModel) {
+    toast("不能添加到这里")
+  }
+
+  override fun addFiles(files: List<FileInfoModel>) {
+    toast("不能添加到这里")
   }
 
   private fun getMimeTypes(): Array<String> {

@@ -77,6 +77,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            gone="@{m.progress > 0 &amp;&amp; m.progress &lt; 100}"
+            android:progress="@{m.progress}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

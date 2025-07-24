@@ -188,6 +188,14 @@ object LanzouRepository {
     }.await().text
   }
 
+  suspend fun moveFile(fileId: String, folderId: String) = coroutineScope {
+    Post<BaseLanzouResponse>(Api.FILE_PHP) {
+      param("task", 20)
+      param("file_id", fileId)
+      param("folder_id", folderId)
+    }.await().zt == 1
+  }
+
   private fun getFileRealName(fileInfoModel: FileInfoModel) {
     val ext = fileInfoModel.extension
     val name = fileInfoModel.nameAll

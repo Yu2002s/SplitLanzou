@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.Environment
 import android.os.IBinder
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -14,14 +16,18 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.drake.engine.base.EngineNavFragment
 import com.drake.engine.utils.dp
+import com.drake.net.utils.scopeDialog
+import com.drake.net.utils.withIO
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
@@ -29,11 +35,13 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.lanzou.cloud.R
 import com.lanzou.cloud.data.Upload
 import com.lanzou.cloud.databinding.FragmentHomeBinding
+import com.lanzou.cloud.enums.FilePageType
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
-import com.lanzou.cloud.event.OnUploadListener
 import com.lanzou.cloud.model.FileInfoModel
-import com.lanzou.cloud.model.LanzouPathModel
+import com.lanzou.cloud.model.LocalPathModel
+import com.lanzou.cloud.model.PathModel
+import com.lanzou.cloud.model.RemotePathModel
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
 import com.lanzou.cloud.ui.dialog.FileActionDialog
@@ -44,17 +52,36 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_home),
-  OnFileNavigateListener, ServiceConnection, OnUploadListener, MenuProvider {
+  OnFileNavigateListener, ServiceConnection, MenuProvider {
 
-  private val leftFragments = mutableListOf<FileFragment>()
+  companion object {
 
-  private val rightFragments = mutableListOf<FileFragment>()
+    private const val TAG = "HomeFragment"
 
-  private val lanzouFilePaths = mutableListOf(LanzouPathModel(name = "根目录"))
-  private val fileTypes = arrayOf("根目录", "软件", "压缩包", "安装包", "视频")
+  }
 
-  private lateinit var vpLeftAdapter: FilePagerAdapter
-  private lateinit var vpRightAdapter: FilePagerAdapter
+  private val leftPaths = mutableListOf(
+    RemotePathModel(
+      name = "远程",
+      fragment = LanzouFileFragment.newInstance(name = "根目录")
+    ),
+    LocalPathModel(
+      name = "本地",
+      fragment = UploadFileSelectorFragment.newInstance(position = LayoutPosition.LEFT)
+    )
+  )
+
+  private val rightPaths = mutableListOf(
+    RemotePathModel(
+      name = "远程",
+      fragment = LanzouFileFragment.newInstance(position = LayoutPosition.RIGHT, name = "根目录")
+    ),
+    LocalPathModel(
+      name = "本地",
+      fragment = UploadFileSelectorFragment.newInstance()
+    ),
+    LocalPathModel(name = "软件", fragment = UploadAppSelectorFragment()),
+  )
 
   private val windowWidth = getWindowWidth()
 
@@ -68,13 +95,131 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
   private val homeViewModel by viewModels<HomeViewModel>()
 
+  private val currentPaths
+    get() = when (currentFocusedPosition) {
+      LayoutPosition.LEFT -> leftPaths
+      LayoutPosition.RIGHT -> rightPaths
+      else -> throw IllegalStateException()
+    }
+
+  private val currentPathModel get() = currentPaths[currentVp.currentItem]
+
+  private val currentFilePageType get() = currentFileFragment.filePageType
+
+  private val targetFilePageType
+    get() = when (currentFocusedPosition) {
+      LayoutPosition.LEFT -> currentRightFileFragment.filePageType
+      LayoutPosition.RIGHT -> currentLeftFileFragment.filePageType
+      else -> throw IllegalStateException()
+    }
+
   private val currentFileFragment
-    get() = if (homeViewModel.focusedPositionFlow.value == LayoutPosition.LEFT) currentLeftFileFragment
-    else currentRightFileFragment
+    get() = when (currentFocusedPosition) {
+      LayoutPosition.LEFT -> currentLeftFileFragment
+      LayoutPosition.RIGHT -> currentRightFileFragment
+      else -> throw IllegalStateException()
+    }
 
-  private val currentLeftFileFragment get() = leftFragments[binding.vpLeft.currentItem]
+  private val currentLeftFileFragment get() = leftPaths[binding.vpLeft.currentItem].fragment
 
-  private val currentRightFileFragment get() = rightFragments[binding.vpRight.currentItem]
+  private val currentRightFileFragment get() = rightPaths[binding.vpRight.currentItem].fragment
+
+  private val currentFocusedPosition get() = homeViewModel.focusedPositionFlow.value
+
+  private val currentVp
+    get() = when (currentFocusedPosition) {
+      LayoutPosition.LEFT -> binding.vpLeft
+      LayoutPosition.RIGHT -> binding.vpRight
+      else -> throw IllegalStateException()
+    }
+
+  private val currentVpAdapter
+    get() = (when (currentFocusedPosition) {
+      LayoutPosition.LEFT -> binding.vpLeft
+      LayoutPosition.RIGHT -> binding.vpRight
+      else -> throw IllegalStateException()
+    }).adapter as FilePagerAdapter
+
+  private val currentLeftVpAdapter get() = binding.vpLeft.adapter as FilePagerAdapter
+
+  private val currentRightVpAdapter get() = binding.vpRight.adapter as FilePagerAdapter
+
+  /**
+   * 目标 fragment
+   */
+  private val targetFileFragment: FileFragment
+    get() {
+      if (currentFocusedPosition == LayoutPosition.LEFT) {
+        return currentRightFileFragment
+      }
+      return currentLeftFileFragment
+    }
+
+  /**
+   * 目标路径列表
+   */
+  private val targetPaths: List<PathModel>
+    get() {
+      if (currentFocusedPosition == LayoutPosition.LEFT) {
+        return rightPaths
+      }
+      return leftPaths
+    }
+
+  private val targetPathModel: PathModel
+    get() {
+      if (currentFocusedPosition == LayoutPosition.LEFT) {
+        return rightPaths[binding.vpRight.currentItem]
+      }
+      return leftPaths[binding.vpLeft.currentItem]
+    }
+
+  private val targetPosition
+    get() = when (currentFocusedPosition) {
+      LayoutPosition.LEFT -> LayoutPosition.RIGHT
+      LayoutPosition.RIGHT -> LayoutPosition.LEFT
+      else -> throw IllegalStateException()
+    }
+
+  private inner class FilePageChangeCallback(private val paths: List<PathModel>) :
+    ViewPager2.OnPageChangeCallback() {
+    override fun onPageSelected(position: Int) {
+      homeViewModel.focusPosition(paths[position].fragment.layoutPosition)
+      requireActivity().invalidateMenu()
+    }
+  }
+
+  private inner class FileTabSelectedListener(private val position: LayoutPosition) :
+    TabLayout.OnTabSelectedListener {
+    override fun onTabReselected(tab: TabLayout.Tab) {
+      val popupMenu = PopupMenu(requireContext(), tab.view)
+      val menu = popupMenu.menu
+      menu.add(0, 0, 0, "关闭")
+      // menu.add(1, 1, 1, "复制")
+      // menu.add(2, 2, 2,"关闭全部")
+      popupMenu.show()
+      popupMenu.setOnMenuItemClickListener {
+        when (it.itemId) {
+          0 -> removeFilePage(tab.position, position)
+          1 -> {
+            addFilePage(
+              tab.text.toString(),
+              targetFilePageType,
+              currentPathModel.path!!,
+              targetPosition,
+            )
+          }
+        }
+        true
+      }
+    }
+
+    override fun onTabSelected(tab: TabLayout.Tab?) {
+    }
+
+    override fun onTabUnselected(tab: TabLayout.Tab?) {
+    }
+  }
 
   private lateinit var onBackPressedCallback: OnBackPressedCallback
 
@@ -120,6 +265,12 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         currentFileFragment.toggleMulti(it)
       }
     }
+
+    lifecycleScope.launch {
+      homeViewModel.focusedPositionFlow.collect {
+        requireActivity().invalidateMenu()
+      }
+    }
   }
 
   override fun initView() {
@@ -137,68 +288,34 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     binding.btnRightMulti.setOnClickListener(this)
     binding.fabUpload.setOnClickListener(this)
     binding.fabDownload.setOnClickListener(this)
-    requireActivity().addMenuProvider(this, viewLifecycleOwner)
+    requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
     val contentWidth = (windowWidth - 1.dp) / 2
     leftLp.width = contentWidth
     rightLp.width = contentWidth
 
-    vpRightAdapter = FilePagerAdapter(rightFragments, childFragmentManager, lifecycle)
-
-    rightFragments.clear()
-    rightFragments.add(UploadFileSelectorFragment())
-    rightFragments.add(UploadAppSelectorFragment())
-    rightFragments.add(UploadClassifySelectorFragment.newInstance(UploadClassifySelectorFragment.TYPE_ZIP))
-    rightFragments.add(UploadClassifySelectorFragment.newInstance(UploadClassifySelectorFragment.TYPE_APK))
-    rightFragments.add(UploadClassifySelectorFragment.newInstance(UploadClassifySelectorFragment.TYPE_VIDEO))
-
-    vpLeftAdapter = FilePagerAdapter(leftFragments, childFragmentManager, lifecycle)
-    leftFragments.clear()
-    leftFragments.add(LanzouFileFragment.newInstance())
-
-    val leftVp = binding.vpLeft
-    leftVp.isUserInputEnabled = false
-    leftVp.offscreenPageLimit = 2
-    leftVp.adapter = vpLeftAdapter
-
-    TabLayoutMediator(binding.tabLeft, leftVp) { tab, position ->
-      tab.text = lanzouFilePaths[position].name
-    }.attach()
-
-    val rightVp = binding.vpRight
-    rightVp.adapter = vpRightAdapter
-    TabLayoutMediator(binding.tabRight, rightVp) { tab, position ->
-      tab.text = fileTypes[position]
-    }.attach()
+    initPage(binding.tabLeft, binding.vpLeft, leftPaths)
+    initPage(binding.tabRight, binding.vpRight, rightPaths)
 
     onBackPressedCallback =
       requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-        if (currentFileFragment.onBack()) {
+        if (currentFileFragment.onNavigateUp()) {
           requireActivity().finish()
-        } else {
-          // onNavigateUp()
         }
       }
-
-    val onTabSelectedListener = object : TabLayout.OnTabSelectedListener {
-      override fun onTabReselected(tab: TabLayout.Tab?) {
-        currentFileFragment.scrollToPosition(0)
-      }
-
-      override fun onTabSelected(tab: TabLayout.Tab?) {
-      }
-
-      override fun onTabUnselected(tab: TabLayout.Tab?) {
-      }
-    }
-
-    binding.tabLeft.addOnTabSelectedListener(onTabSelectedListener)
-    binding.tabRight.addOnTabSelectedListener(onTabSelectedListener)
   }
 
-  private fun eachFragment(block: (FileFragment) -> Unit) {
-    leftFragments.forEach(block)
-    rightFragments.forEach(block)
+  private fun initPage(tab: TabLayout, pager: ViewPager2, paths: List<PathModel>) {
+    pager.apply {
+      offscreenPageLimit = 3
+      adapter = FilePagerAdapter(paths, childFragmentManager, lifecycle)
+      registerOnPageChangeCallback(FilePageChangeCallback((paths)))
+    }
+    TabLayoutMediator(tab, pager) { tab, position ->
+      tab.text = paths[position].name
+    }.attach()
+    val position = if (pager == binding.vpLeft) LayoutPosition.LEFT else LayoutPosition.RIGHT
+    tab.addOnTabSelectedListener(FileTabSelectedListener((position)))
   }
 
   private fun animChangeContent(position: LayoutPosition) {
@@ -276,52 +393,40 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       R.id.btn_right_multi -> homeViewModel.toggleRight()
 
       R.id.fab_upload -> {
-        val checkedFiles = currentRightFileFragment.getCheckedFiles()
+        val checkedFiles = currentFileFragment.getCheckedFiles()
         if (checkedFiles.isEmpty()) {
           toast("选中文件为空")
           return
         }
-        val currentPath = currentLeftFileFragment.getCurrentPath() ?: return
-        val currentFolderName = lanzouFilePaths[binding.vpLeft.currentItem].name
+        val currentPath = targetFileFragment.getCurrentPath() ?: return
+        val currentFolderName = targetPathModel.name
 
         MaterialAlertDialogBuilder(requireContext())
           .setTitle("上传")
           .setMessage("已选择${checkedFiles.size}个文件，将上传到: $currentFolderName\n\n【暂时不支持选择文件夹、不能显示进度】")
           .setPositiveButton("执行上传") { dialog, _ ->
-            homeViewModel.toggleRight(false)
-            uploadService.uploadFiles(
-              checkedFiles
-                .map {
-                  it.path
-                }, currentPath.toLong(), currentFolderName
-            )
-            currentLeftFileFragment.addFiles(checkedFiles)
+            uploadFiles(currentPath, checkedFiles, currentFolderName)
           }
           .setNegativeButton("取消", null)
           .show()
       }
 
       R.id.fab_download -> {
-        val checkedFiles = currentLeftFileFragment.getCheckedFiles()
+        val checkedFiles = currentFileFragment.getCheckedFiles()
         if (checkedFiles.isEmpty()) {
           toast("选中文件为空")
           return
         }
-        val currentPath = currentRightFileFragment.getCurrentPath()
+        val currentPath = targetFileFragment.getCurrentPath()
         if (currentPath == null) {
-          toast("不能下载到当前位置")
+          toast("不能下载到目标位置")
           return
         }
         MaterialAlertDialogBuilder(requireContext())
           .setTitle("下载")
           .setMessage("已选择${checkedFiles.size}个文件，将下载到: $currentPath\n\n【暂时不支持选择文件夹，不能显示进度】")
           .setPositiveButton("执行下载") { dialog, _ ->
-            homeViewModel.toggleLeft(false)
-            checkedFiles.forEach {
-              it.path = currentPath + File.separator + it.name
-            }
-            currentRightFileFragment.addFiles(checkedFiles)
-            downloadService.addDownload(checkedFiles)
+            downloadFiles(currentPath, checkedFiles)
           }
           .setNegativeButton("取消", null)
           .show()
@@ -337,7 +442,8 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
     FileMkdirDialog(requireContext(), currentPath).apply {
       onConfirm = {
-        val path: String = if (currentPath.startsWith("/storage/emulated")) {
+        val isLocalFile = currentFilePageType == FilePageType.LOCAL
+        val path: String = if (isLocalFile) {
           currentPath + File.separator + it
         } else {
           currentPath
@@ -368,8 +474,17 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     onBackPressedCallback.isEnabled = false
   }
 
-  private fun showTransmissionDialog(fileInfoModel: FileInfoModel, position: Int) {
-    val isUpload = homeViewModel.focusedPositionFlow.value == LayoutPosition.RIGHT
+  private fun showTransmissionDialog(
+    fileInfoModel: FileInfoModel,
+    position: Int,
+    filePageType: FilePageType
+  ) {
+    val currentPath = targetFileFragment.getCurrentPath()
+    if (currentPath == null) {
+      toast("不能传输到目标路径，请更换路径")
+      return
+    }
+    val isUpload = filePageType == FilePageType.LOCAL
     var message = "是否"
     message += if (isUpload) {
       "上传"
@@ -379,13 +494,10 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     message += fileInfoModel.name
 
     var currentFolderName = ""
-    var currentPath: String
     if (isUpload) {
-      currentFolderName = lanzouFilePaths[binding.vpLeft.currentItem].name
-      currentPath = currentLeftFileFragment.getCurrentPath() ?: return
+      currentFolderName = targetPathModel.name
       message += "\n\n上传到: $currentFolderName"
     } else {
-      currentPath = currentRightFileFragment.getCurrentPath() ?: return
       message += "\n\n下载到: $currentPath"
     }
 
@@ -394,56 +506,267 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       .setMessage("$message\n\n注意：【暂时不能显示实时进度】")
       .setPositiveButton("执行") { dialog, _ ->
         if (isUpload) {
-          currentLeftFileFragment.addFile(fileInfoModel)
-          uploadService.uploadFile(fileInfoModel.path, currentPath.toLong(), currentFolderName)
+          uploadFile(fileInfoModel.path, currentPath, currentFolderName)
         } else {
-          val filePath = currentPath + File.separator + fileInfoModel.name
-          fileInfoModel.path = filePath
-          currentRightFileFragment.addFile(fileInfoModel)
-          downloadService.addDownloadWithPath(
-            fileInfoModel.id.toLong(),
-            fileInfoModel.name,
-            filePath
-          )
+          downloadFile(currentPath, fileInfoModel)
         }
+        targetFileFragment.addFile(fileInfoModel)
       }
       .setNegativeButton("取消", null)
       .show()
   }
 
-  private fun showFileActionDialog(fileInfoModel: FileInfoModel, position: Int) {
-    FileActionDialog(requireContext(), homeViewModel.focusedPositionFlow.value)
+  private fun showFileActionDialog(
+    fileInfoModel: FileInfoModel,
+    position: Int,
+    filePageType: FilePageType
+  ) {
+    FileActionDialog(requireContext(), currentFocusedPosition, filePageType, targetFilePageType)
       .onItemClick = { itemPosition ->
       when (itemPosition) {
-        0 -> showTransmissionDialog(fileInfoModel, position)
-        1 -> currentFileFragment.deleteFile(position, fileInfoModel)
-        2 -> currentFileFragment.renameFile(position, fileInfoModel)
-        3 -> currentFileFragment.showDetail(position, fileInfoModel)
+        "上传", "下载" -> showTransmissionDialog(fileInfoModel, position, filePageType)
+        "分享" -> {
+          currentFileFragment.shareFile(position, fileInfoModel)
+        }
+
+        "复制" -> {
+          if (filePageType != FilePageType.REMOTE) {
+            val targetPath = targetFileFragment.getCurrentPath()
+            scopeDialog {
+              // 暂时不显示复制的进度
+              withIO {
+                currentFileFragment.copyFile(position, fileInfoModel, targetPath)
+              }?.let {
+                targetFileFragment.addFile(it)
+              } ?: toast("发生错误或不能复制到这里")
+            }
+          } else {
+            toast("远程路径不支持复制")
+          }
+        }
+
+        "移动" -> {
+          scopeDialog {
+            // FIXME: 目前子 UploadFileSelectorFragment 不会更新 path
+            val currentPath = targetFileFragment.getCurrentPath()
+            withIO {
+              currentFileFragment.moveFile(position, fileInfoModel, currentPath)
+            }?.let {
+              currentFileFragment.removeFile(position, fileInfoModel)
+              targetFileFragment.addFile(it)
+            }
+          }
+        }
+
+        "删除" -> currentFileFragment.deleteFile(position, fileInfoModel)
+        "重命名" -> currentFileFragment.renameFile(position, fileInfoModel)
+        "详情" -> currentFileFragment.showDetail(position, fileInfoModel)
       }
     }
   }
 
-  override fun navigate(fileInfoModel: FileInfoModel, position: Int) {
+  override fun navigate(fileInfoModel: FileInfoModel, position: Int, filePageType: FilePageType) {
     if (fileInfoModel.isFile) {
-      showFileActionDialog(fileInfoModel, position)
+      showFileActionDialog(fileInfoModel, position, filePageType)
       return
     }
-    lanzouFilePaths.add(LanzouPathModel(fileInfoModel.folderId, fileInfoModel.name))
-    leftFragments.add(LanzouFileFragment.newInstance(fileInfoModel.folderId))
-    val insertPosition = lanzouFilePaths.size - 1
-    vpLeftAdapter.notifyItemInserted(insertPosition)
-    binding.vpLeft.post {
-      binding.vpLeft.setCurrentItem(insertPosition, true)
+    val path =
+      if (filePageType == FilePageType.REMOTE) fileInfoModel.folderId else fileInfoModel.path
+    addFilePage(fileInfoModel.name, filePageType, path)
+  }
+
+  private fun addFilePage(
+    name: String,
+    filePageType: FilePageType,
+    path: String? = if (filePageType == FilePageType.REMOTE) "-1"
+    else Environment.getExternalStorageDirectory().path,
+    layoutPosition: LayoutPosition = currentFocusedPosition,
+    fragment: FileFragment = UploadFileSelectorFragment.newInstance(path, layoutPosition)
+  ) {
+    val path = when (filePageType) {
+      FilePageType.REMOTE -> RemotePathModel(
+        path!!, name,
+        LanzouFileFragment.newInstance(path, layoutPosition)
+      )
+
+      FilePageType.LOCAL -> LocalPathModel(path, name, fragment)
+    }
+    Log.i(TAG, "addFilePage: $name, $filePageType, $path $layoutPosition")
+    val insertPosition = currentVp.currentItem + 1
+    when (layoutPosition) {
+      LayoutPosition.LEFT -> {
+        leftPaths.add(insertPosition, path)
+        // val insertPosition = leftPaths.size - 1
+        currentLeftVpAdapter.notifyItemInserted(insertPosition)
+        binding.vpLeft.post {
+          binding.vpLeft.setCurrentItem(insertPosition, true)
+        }
+      }
+
+      LayoutPosition.RIGHT -> {
+        rightPaths.add(insertPosition, path)
+        // val insertPosition = rightPaths.size - 1
+        currentRightVpAdapter.notifyItemInserted(insertPosition)
+        binding.vpRight.post {
+          binding.vpRight.setCurrentItem(insertPosition, true)
+        }
+      }
+
+      else -> throw IllegalStateException()
     }
   }
 
+  private fun removeFilePage(
+    position: Int,
+    layoutPosition: LayoutPosition = currentFocusedPosition
+  ) {
+    if (position < 0) {
+      return
+    }
+    when (layoutPosition) {
+      LayoutPosition.LEFT -> {
+        if (leftPaths.size == 1) {
+          toast("必须保留一个选项卡")
+          return
+        }
+        leftPaths.removeAt(position)
+        currentLeftVpAdapter.notifyItemRemoved(position)
+      }
+
+      LayoutPosition.RIGHT -> {
+        if (rightPaths.size == 1) {
+          toast("必须保留一个选项卡")
+          return
+        }
+        rightPaths.removeAt(position)
+        currentRightVpAdapter.notifyItemRemoved(position)
+      }
+
+      else -> throw IllegalStateException()
+    }
+  }
+
+  /**
+   * 上传文件
+   *
+   * @param path 文件绝对路径
+   * @param folderId 要上传到的文件夹 id
+   * @param folderName 要上传到的文件夹名称
+   */
+  private fun uploadFile(path: String, folderId: String, folderName: String) {
+    val target = targetFileFragment
+    uploadService.uploadFile(
+      path,
+      folderId.toLong(),
+      folderName
+    ) { upload ->
+      if (target != targetFileFragment) {
+        return@uploadFile
+      }
+      when (upload.status) {
+        Upload.COMPLETE -> {
+          target.getFile(upload.path)?.let {
+            it.id = upload.fileId.toString()
+            it.progress = 100
+          }
+        }
+
+        Upload.PROGRESS -> {
+          target.getFile(upload.path)?.let {
+            it.progress = upload.progress
+          }
+        }
+
+        Upload.ERROR -> target.refresh()
+      }
+    }
+  }
+
+  private fun downloadFile(directory: String, fileInfoModel: FileInfoModel) {
+    val filePath = directory + File.separator + fileInfoModel.name
+    val target = targetFileFragment
+    fileInfoModel.path = filePath
+    downloadService.addDownloadWithPath(
+      fileInfoModel.id.toLong(),
+      fileInfoModel.name,
+      filePath
+    ) { download ->
+      if (target != targetFileFragment) {
+        return@addDownloadWithPath
+      }
+      when (download.status) {
+        Upload.PROGRESS, Upload.COMPLETE -> target.getFile(filePath)?.let {
+          it.progress = download.progress
+        }
+
+        Upload.ERROR -> target.getFile(filePath)?.let {
+          target.refresh()
+        }
+      }
+    }
+  }
+
+  private fun uploadFiles(path: String, checkedFiles: List<FileInfoModel>, folderName: String) {
+    homeViewModel.toggleRight(false)
+    val target = targetFileFragment
+    val paths = checkedFiles.map { it.path }
+    uploadService.uploadFiles(paths, path.toLong(), folderName) { upload ->
+      if (target != targetFileFragment) {
+        return@uploadFiles
+      }
+      when (upload.status) {
+        Upload.COMPLETE -> {
+          target.getFile(upload.path)?.let {
+            it.id = upload.fileId.toString()
+          }
+        }
+
+        Upload.PROGRESS -> {
+          target.getFile(upload.path)?.let {
+            it.progress = upload.progress
+          }
+        }
+
+        Upload.ERROR -> {
+          target.refresh()
+        }
+      }
+    }
+    targetFileFragment.addFiles(checkedFiles)
+  }
+
+  private fun downloadFiles(directory: String, checkedFiles: List<FileInfoModel>) {
+    homeViewModel.toggleLeft(false)
+    val target = targetFileFragment
+    checkedFiles.forEach {
+      it.path = directory + File.separator + it.name
+    }
+    downloadService.addDownload(checkedFiles) { download ->
+      if (target != targetFileFragment) {
+        return@addDownload
+      }
+      when (download.status) {
+        Upload.PROGRESS, Upload.COMPLETE -> {
+          target.getFile(download.path)?.let {
+            it.progress = download.progress
+          }
+        }
+
+        Upload.ERROR -> {
+          target.refresh()
+        }
+      }
+    }
+    targetFileFragment.addFiles(checkedFiles)
+  }
+
   override fun onNavigateUp(): Boolean {
-    if (lanzouFilePaths.size == 1) {
+    if (currentPaths.size == 1) {
       return true
     }
-    lanzouFilePaths.removeLastOrNull()
-    leftFragments.removeLastOrNull()
-    vpLeftAdapter.notifyItemRemoved(lanzouFilePaths.size)
+    val position = currentVp.currentItem
+    currentPaths.removeAt(position)
+    currentVpAdapter.notifyItemRemoved(position)
     return false
   }
 
@@ -452,7 +775,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       downloadService = p1.service
     } else if (p1 is UploadService.UploadBinder) {
       uploadService = p1.service
-      uploadService.addUploadListener(this)
     }
   }
 
@@ -460,57 +782,97 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
   }
 
-  override fun onUpload(upload: Upload?) {
-    upload ?: return
-    // TODO: 暂时不对其他状态做出判断
-    if (upload.status == Upload.ERROR) {
-      currentLeftFileFragment.refresh()
-    } else if (upload.status == Upload.COMPLETE) {
-      currentLeftFileFragment.getFile(upload.path)?.let {
-        it.id = upload.fileId.toString()
-      }
-    }
-  }
-
   override fun onPrepareMenu(menu: Menu) {
     super.onPrepareMenu(menu)
+    menu.findItem(R.id.show_system_app).isVisible = currentFileFragment is UploadAppSelectorFragment
+    menu.findItem(R.id.sort).isVisible = currentFilePageType != FilePageType.REMOTE
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+    menuInflater.inflate(R.menu.menu_home, menu)
   }
 
   override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-    if (menuItem.itemId == R.id.show_system_app) {
-      menuItem.isChecked = !menuItem.isChecked
-      homeViewModel.showSystemApp(menuItem.isChecked)
-      currentRightFileFragment.refresh()
-      return true
-    }
-    when (homeViewModel.focusedPositionFlow.value) {
-      LayoutPosition.LEFT -> currentLeftFileFragment.onMenuItemSelected(menuItem)
-      LayoutPosition.RIGHT -> currentRightFileFragment.onMenuItemSelected(menuItem)
+    return when (menuItem.itemId) {
+      R.id.scroll_top -> {
+        currentFileFragment.scrollToPosition(0)
+        true
+      }
 
-      else -> throw IllegalStateException()
+      R.id.show_system_app -> {
+        menuItem.isChecked = !menuItem.isChecked
+        homeViewModel.showSystemApp(menuItem.isChecked)
+        currentRightFileFragment.refresh()
+        true
+      }
+
+      R.id.add_tab -> {
+        // TODO: 这里应该有一层映射关系，这里暂且写死
+        val items = arrayOf("远程", "本地", "软件", "压缩包", "安装包", "视频")
+        var currentPosition = -1
+        MaterialAlertDialogBuilder(requireActivity())
+          .setTitle("添加选项卡到当前聚焦位置")
+          .setSingleChoiceItems(items, 0) { dialog, which ->
+            currentPosition = which
+          }
+          .setPositiveButton("添加") { dialog, which ->
+            val filePageType = if (currentPosition == 0) FilePageType.REMOTE else FilePageType.LOCAL
+            val fragment = when (currentPosition) {
+              0 -> LanzouFileFragment.newInstance(position = currentFocusedPosition)
+              1 -> UploadFileSelectorFragment.newInstance(position = currentFocusedPosition)
+              2 -> UploadAppSelectorFragment(position = currentFocusedPosition)
+              3 -> UploadClassifySelectorFragment.newInstance(
+                UploadClassifySelectorFragment.TYPE_ZIP,
+                currentFocusedPosition
+              )
+
+              4 -> UploadClassifySelectorFragment.newInstance(
+                UploadClassifySelectorFragment.TYPE_APK,
+                currentFocusedPosition
+              )
+
+              5 -> UploadClassifySelectorFragment.newInstance(
+                UploadClassifySelectorFragment.TYPE_VIDEO,
+                currentFocusedPosition
+              )
+
+              else -> throw IllegalStateException()
+            }
+            val path = when (currentPosition) {
+              0 -> "-1"
+              1 -> Environment.getExternalStorageDirectory().path
+              else -> null
+            }
+            addFilePage(items[currentPosition], filePageType, path = path, fragment = fragment)
+          }
+          .setNegativeButton("取消", null)
+          .show()
+        true
+      }
+
+      else -> currentFileFragment.onMenuItemSelected(menuItem)
     }
-    return true
   }
 
   override fun onDestroy() {
     super.onDestroy()
     requireContext().unbindService(this)
-    uploadService.removeUploadListener(this)
+    // uploadService.removeUploadListener(this)
   }
 
   private class FilePagerAdapter(
-    private val fragments: List<FileFragment>,
+    private val paths: List<PathModel>,
     fm: FragmentManager,
     lifecycle: Lifecycle
   ) : FragmentStateAdapter(fm, lifecycle) {
 
-    override fun createFragment(position: Int) = fragments[position]
+    override fun createFragment(position: Int) = paths[position].fragment
 
-    override fun getItemCount() = fragments.size
+    override fun getItemCount() = paths.size
 
+    override fun getItemId(position: Int): Long {
+      return paths[position].id
+    }
   }
 
 }

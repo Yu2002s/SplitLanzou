@@ -61,6 +61,14 @@ data class FileInfoModel(
       notifyPropertyChanged(BR.checkable)
     }
 
+  @Transient
+  @get:Bindable
+  var progress: Int = 0
+    set(value) {
+      field = value
+      notifyPropertyChanged(BR.progress)
+    }
+
   @get:Bindable("isChecked")
   val itemBg get() = if (isChecked) R.color.item_bg else android.R.color.transparent
 
@@ -81,6 +89,11 @@ data class FileInfoModel(
   val isApp get() = pkgName != null
 
   val fileId get() = if (isFile) id else folderId
+
+  /**
+   * 是否是返回文件项
+   */
+  val isDotDot get() = isDirectory && folderId.isEmpty() && path.isEmpty()
 
   override fun compareTo(other: FileInfoModel): Int {
     if (isApp && other.isApp) {

@@ -1,17 +1,12 @@
 package com.lanzou.cloud.ui.transmission;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
@@ -26,7 +21,7 @@ import com.lanzou.cloud.ui.upload.UploadListFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransmissionFragment extends Fragment implements MenuProvider {
+public class TransmissionFragment extends Fragment {
 
     private FragmentTransmissionBinding binding;
 
@@ -42,7 +37,6 @@ public class TransmissionFragment extends Fragment implements MenuProvider {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner());
 
         fragments.add(new DownloadListFragment());
         fragments.add(new UploadListFragment());
@@ -58,17 +52,6 @@ public class TransmissionFragment extends Fragment implements MenuProvider {
             }
 
         }).attach();
-    }
-
-    @Override
-    public void onCreateMenu(@org.jspecify.annotations.NonNull Menu menu, @org.jspecify.annotations.NonNull MenuInflater menuInflater) {
-
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    public boolean onMenuItemSelected(@org.jspecify.annotations.NonNull MenuItem menuItem) {
-        return true;
     }
 
     private class TransmissionAdapter extends FragmentStateAdapter {

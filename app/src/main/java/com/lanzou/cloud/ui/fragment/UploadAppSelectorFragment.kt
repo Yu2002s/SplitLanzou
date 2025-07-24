@@ -10,14 +10,14 @@ import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.base.BaseEditDialog
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.model.FileInfoModel
-import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.utils.formatBytes
 import com.lanzou.cloud.utils.updateModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UploadAppSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
+class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
+  FileFragment(position) {
 
   override suspend fun getData(page: Int): List<FileInfoModel>? {
     val pm = requireContext().packageManager
@@ -44,18 +44,10 @@ class UploadAppSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
         path = File(applicationInfo.sourceDir).path
       )
     }
-
   }
 
-  override fun onBack(): Boolean {
+  override fun onNavigateUp(): Boolean {
     return true
-  }
-
-  override fun onSort(
-    data: List<FileInfoModel>?,
-    filterSortModel: FilterSortModel
-  ): List<FileInfoModel>? {
-    return super.onSort(data, filterSortModel)
   }
 
   override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
@@ -122,5 +114,9 @@ class UploadAppSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
         AppUtils.launchAppDetailsSettings(appInfo.packageName)
       }
       .show()
+  }
+
+  override fun moveFile(position: Int, file: FileInfoModel) {
+    toast("此处不能移动文件")
   }
 }

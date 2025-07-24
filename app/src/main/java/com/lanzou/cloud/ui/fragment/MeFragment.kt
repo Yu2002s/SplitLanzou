@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import com.drake.brv.annotaion.DividerOrientation
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.divider
@@ -61,7 +62,7 @@ class MeFragment : EngineNavFragment<FragmentMeBinding>(R.layout.fragment_me), M
   }
 
   override fun initView() {
-    requireActivity().addMenuProvider(this, viewLifecycleOwner)
+    requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
     binding.meRv.divider {
       includeVisible = true
@@ -162,13 +163,14 @@ class MeFragment : EngineNavFragment<FragmentMeBinding>(R.layout.fragment_me), M
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-
+    menuInflater.inflate(R.menu.menu_me, menu)
   }
 
   override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
     if (menuItem.itemId == R.id.scan) {
       launcher.launch(Intent(requireContext(), QRCodeScanActivity::class.java))
+      return true
     }
-    return true
+    return false
   }
 }
