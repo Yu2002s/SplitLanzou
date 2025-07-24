@@ -22,6 +22,7 @@ import com.drake.net.okhttp.setRequestInterceptor
 import com.drake.statelayout.StateConfig
 import com.drake.tooltip.dialog.BubbleDialog
 import com.lanzou.cloud.config.Api
+import com.lanzou.cloud.utils.VibrationManager
 import com.lanzou.cloud.utils.converter.SerializationConverter
 import com.lanzou.cloud.utils.interceptor.AppRequestInterceptor
 import com.scwang.smart.refresh.footer.ClassicsFooter
@@ -81,6 +82,8 @@ class LanzouApplication : Application() {
     initNetConfig() // 初始化 Net 配置
     initStateConfig() // 初始化 StateLayout 配置
     initSmartRefreshLayout() // 初始化刷新组件
+
+    VibrationManager.init(this);
   }
 
   private fun initNetConfig() {

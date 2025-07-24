@@ -2,7 +2,9 @@ package com.lanzou.cloud.model
 
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
+import com.drake.brv.annotaion.ItemOrientation
 import com.drake.brv.item.ItemPosition
+import com.drake.brv.item.ItemSwipe
 import com.drake.engine.utils.PinyinUtils
 import com.lanzou.cloud.BR
 import com.lanzou.cloud.R
@@ -40,7 +42,8 @@ data class FileInfoModel(
 
   @Transient
   var highlight: Boolean = false,
-) : Comparable<FileInfoModel>, BaseObservable(), ItemPosition {
+  override var itemOrientationSwipe: Int = ItemOrientation.HORIZONTAL
+) : Comparable<FileInfoModel>, BaseObservable(), ItemPosition, ItemSwipe {
 
   @Transient
   @get:Bindable
