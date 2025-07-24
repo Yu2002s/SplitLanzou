@@ -23,12 +23,12 @@ android {
         }
     }
     namespace 'com.lanzou.cloud'
-    compileSdk 36
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.lanzou.cloud"
         minSdk 24
-        targetSdk 36
+        targetSdk 35
         versionCode 17
         versionName "1.8.0-beta03"
 
