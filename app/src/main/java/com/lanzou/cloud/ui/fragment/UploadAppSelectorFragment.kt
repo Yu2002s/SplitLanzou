@@ -116,7 +116,11 @@ class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT)
       .show()
   }
 
-  override fun moveFile(position: Int, file: FileInfoModel) {
-    toast("此处不能移动文件")
+  override suspend fun moveFile(
+    position: Int,
+    current: FileInfoModel,
+    targetPath: String?
+  ): FileInfoModel? {
+    return null
   }
 }
