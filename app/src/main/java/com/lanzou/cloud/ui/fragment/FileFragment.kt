@@ -1,6 +1,7 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -27,6 +28,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.R
 import com.lanzou.cloud.base.BaseEditDialog
 import com.lanzou.cloud.databinding.FragmentFileBaseBinding
+import com.lanzou.cloud.enums.FilePageType
 import com.lanzou.cloud.enums.FileSortField
 import com.lanzou.cloud.enums.FileSortRule
 import com.lanzou.cloud.enums.LayoutPosition
@@ -48,24 +50,57 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Collections
 
-abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutPosition.LEFT) :
+/**
+ * 对文件操作的基类
+ *
+ * @param layoutPosition 布局所在的位置，分为 LEFT、RIGHT
+ */
+abstract class FileFragment(
+  val layoutPosition: LayoutPosition = LayoutPosition.LEFT,
+  val filePageType: FilePageType = FilePageType.LOCAL,
+) :
   EngineFragment<FragmentFileBaseBinding>(R.layout.fragment_file_base), OnLayoutChangeListener,
   Backable, FileAction, MenuProvider {
 
+  companion object {
+
+    private const val TAG = "FileFragment"
+
+  }
+
   protected val viewModel by viewModels<HomeViewModel>(ownerProducer = { requireParentFragment() })
 
+  /**
+   * 快照数据，主要用于搜索过滤使用
+   */
   protected val mData = mutableListOf<FileInfoModel>()
 
+  /**
+   * 实际展示在页面的数据
+   */
   @Suppress("UNCHECKED_CAST")
   protected val models get() = binding.fileRv.models as List<FileInfoModel>
 
+  /**
+   * 获取所需的数据
+   *
+   * @param page 当前页码
+   * @return 返回文件集合
+   */
   abstract suspend fun getData(page: Int): List<FileInfoModel>?
 
+  /**
+   * 是否第一次可见
+   */
   private var isFirst = true
 
+  /**
+   * 初始化数据
+   */
   override fun initData() {
     lifecycleScope.launch {
       viewModel.currentPositionFlow.collect {
+        // 监听布局改变，如果发生改变，则更改 RV 的 layoutManager
         onLayoutChange(it)
       }
     }
@@ -78,6 +113,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
         if (viewModel.focusedPositionFlow.value != layoutPosition) {
           return@collect
         }
+        // 重新进行排序
         sort(it)
       }
     }
@@ -89,23 +125,24 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     binding.lifecycleOwner = this
 
     binding.fileRv.setup {
-      setAnimation(AnimationType.SLIDE_RIGHT)
-      setCheckableType(R.layout.item_list_fileinfo)
-      addType<FileInfoModel>(R.layout.item_list_fileinfo)
-      addType<String>(R.layout.item_file_parent)
+      setAnimation(AnimationType.SLIDE_RIGHT) // 指定动画
+      setCheckableType(R.layout.item_list_fileinfo) // 返回项不需要多选
+      addType<FileInfoModel>(R.layout.item_list_fileinfo) // 文件布局
+      // addType<String>(R.layout.item_file_parent) // 返回布局
 
       onChecked { position, checked, allChecked ->
         val model = getModel<FileInfoModel>(position)
         model.isChecked = checked
       }
 
+      // 监听多选事件
       onToggle { position, toggleMode, end ->
         // val model = getModelOrNull<FileInfoModel>(position) ?: return@onToggle
         // model.isCheckable = toggleMode
         if (this@FileFragment.layoutPosition == LayoutPosition.LEFT) {
-          viewModel.toggleLeft(toggleMode)
+          viewModel.toggleLeft(toggleMode) // 左侧多选
         } else {
-          viewModel.toggleRight(toggleMode)
+          viewModel.toggleRight(toggleMode) // 右侧多选
         }
         if (!toggleMode) {
           checkedAll(false)
@@ -113,30 +150,33 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       }
 
       R.id.item.onLongClick {
+        // 如果支持长按事件，则不进行默认的多选操作
         if (onItemLongClick(getModel(), modelPosition)) {
           return@onLongClick
         }
         if (!toggleMode) {
+          // 切换到多选
           toggle()
-          setChecked(layoutPosition, true)
+          setChecked(modelPosition, true)
         }
       }
 
       R.id.item.onFastClick {
-        if (toggleMode) {
-          val model = getModel<FileInfoModel>()
-          setChecked(layoutPosition, !model.isChecked)
-          return@onFastClick
-        }
+        val model = getModel<FileInfoModel>()
+        // 聚焦当前布局位置
         viewModel.focusPosition(this@FileFragment.layoutPosition)
-        onItemClick(getModel(), modelPosition)
-      }
-
-      R.id.header.onFastClick {
-        if (toggleMode) {
+        if (model.isDotDot) {
+          if (!toggleMode)
+            onNavigateUp()
           return@onFastClick
         }
-        onBack()
+        // 点击事件监听
+        if (toggleMode) {
+          setChecked(modelPosition, !model.isChecked)
+          return@onFastClick
+        }
+        // 执行默认的点击
+        onItemClick(model, modelPosition)
       }
     }
 
@@ -144,23 +184,19 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       scope {
         val data = onSort(withIO {
           getData(index)
-        }, viewModel.filterSortModel.value)
+        }, viewModel.filterSortModel.value)?.toMutableList()
 
         if (index == 1) {
           mData.clear()
         }
 
-        val showBackItem = showBackItem()
-        if (showBackItem()) {
-          binding.fileRv.bindingAdapter.run {
-            removeHeaderAt(0)
-            addHeader("...")
-          }
-          // FIXME: 防止 mData 与实际索引不匹配的问题
-          // mData.add(FileInfoModel(name = "..."))
-        }
+        // 根据子类判断是否显示返回
+        val showBackItem = hasParentDirectory()
 
         data?.let {
+          if (showBackItem) {
+            it.add(0, FileInfoModel(name = ".."))
+          }
           mData.addAll(it)
         }
 
@@ -213,34 +249,63 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     }
   }
 
+  /**
+   * Item 项点击事件监听
+   *
+   * @param model 对应的文件数据
+   * @param position 点击的位置(去掉 header 的位置)
+   */
   protected open fun onItemClick(model: FileInfoModel, position: Int) {
     navigateTo(model, position)
   }
 
+  /**
+   * Item 项长按事件监听
+   */
   protected open fun onItemLongClick(model: FileInfoModel, position: Int): Boolean {
     return false
   }
 
-  protected open fun showBackItem(): Boolean {
+  /**
+   * 是否顶部显示返回项
+   *
+   * @return true 显示 false 不显示
+   */
+  protected open fun hasParentDirectory(): Boolean {
     return false
   }
 
   /**
    * 触发返回事件，当返回 true 时，按下返回键将执行 finish，false 则啥也不做
    */
-  override fun onBack(): Boolean {
+  override fun onNavigateUp(): Boolean {
     return true
   }
 
+  /**
+   * 向上执行导航事件
+   */
   protected fun navigateTo(fileInfoModel: FileInfoModel, position: Int) {
     val parentFragment = parentFragment ?: return
     if (parentFragment is OnFileNavigateListener) {
-      parentFragment.navigate(fileInfoModel, position)
+      parentFragment.navigate(fileInfoModel, position, filePageType)
     }
   }
 
+  /**
+   * 加载结束事件
+   *
+   * @param data 已加载的数据
+   */
   protected open fun onLoadEnd(data: List<FileInfoModel>?) {}
 
+  /**
+   * 定义对数据进行排序的规则
+   *
+   * @param data 数据集合
+   * @param filterSortModel 排序规则
+   * @return 返回过滤后的数据
+   */
   protected open fun onSort(
     data: List<FileInfoModel>?,
     filterSortModel: FilterSortModel,
@@ -289,8 +354,11 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   }
 
   override fun onMkdir(name: String, path: String) {
+    val file = FileInfoModel(name = name, folderId = path)
     val fileRv = binding.fileRv
     val position = getInsertPosition(name)
+    fileRv.mutable.add(position, file)
+    mData.add(position, file)
     fileRv.bindingAdapter.notifyItemInserted(position)
     fileRv.scrollToPosition(position)
   }
@@ -307,10 +375,19 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
     }
   }
 
+  /**
+   * 是否还能加载更多数据
+   *
+   * @param data 当前数据集合
+   * @return true 可以，false 不可以
+   */
   protected open fun isLoadMore(data: List<FileInfoModel>?): Boolean {
     return false
   }
 
+  /**
+   * 获取当前的路径
+   */
   open fun getCurrentPath(): String? {
     return null
   }
@@ -369,11 +446,15 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
   }
 
   override fun refresh() {
-    binding.refresh.refresh()
+    binding.refresh.showLoading()
   }
 
   override fun getFile(path: String): FileInfoModel? {
     return mData.find { it.path == path }
+  }
+
+  override fun removeFile(position: Int, file: FileInfoModel) {
+    mData.removeAt(binding.fileRv.removeModel(position))
   }
 
   override fun deleteFile(position: Int, file: FileInfoModel) {
@@ -386,7 +467,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
       .setPositiveButton("确认") { dialog, _ ->
         scopeDialog {
           File(file.path).deleteRecursively()
-          mData.removeAt(binding.fileRv.removeModel(position))
+          removeFile(position, file)
         }.finally {
           toggleMulti(false)
         }
@@ -433,9 +514,7 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
         val targetPosition = getInsertPosition(file.name)
         if (targetPosition != position) {
           Collections.swap(binding.fileRv.mutable, position, targetPosition)
-          binding.fileRv.bindingAdapter.let {
-            it.notifyItemMoved(position + it.headerCount, targetPosition + it.headerCount)
-          }
+          binding.fileRv.bindingAdapter.notifyItemMoved(position, targetPosition)
           scrollToPosition(targetPosition)
         }
       }
@@ -485,6 +564,40 @@ abstract class FileFragment(private val layoutPosition: LayoutPosition = LayoutP
         mData.addAll(it)
       }
     }
+  }
+
+  override suspend fun moveFile(
+    position: Int,
+    current: FileInfoModel,
+    targetPath: String?
+  ): FileInfoModel? {
+    targetPath ?: return null
+    // FIXME: 不判断存不存在，暂时直接替换文件
+    val targetFilePath = targetPath + File.separator + current.name
+    Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
+    if (FileUtils.moveFile(current.path, targetFilePath) { true }) {
+      return current.copy(path = targetFilePath)
+    }
+    return null
+  }
+
+  override fun shareFile(position: Int, file: FileInfoModel) {
+    toast("没写")
+  }
+
+  override fun copyFile(
+    position: Int,
+    current: FileInfoModel,
+    targetPath: String?
+  ): FileInfoModel? {
+    targetPath ?: return null
+    // FIXME: 不判断存不存在，暂时直接替换文件
+    val targetFilePath = targetPath + File.separator + current.name
+    Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
+    if (FileUtils.copyFile(current.path, targetFilePath) { true }) {
+      return current.copy(path = targetFilePath)
+    }
+    return null
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

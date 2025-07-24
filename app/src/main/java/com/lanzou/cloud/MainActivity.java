@@ -13,8 +13,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -22,7 +20,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -201,29 +198,24 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onServiceDisconnected(ComponentName name) {
     }
 
-    @Override
+    /*@Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         int selectedItemId = binding.bottomNav.getSelectedItemId();
-        menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_file);
-        menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_file);
-        menu.findItem(R.id.scan).setVisible(selectedItemId == R.id.nav_me);
-        menu.findItem(R.id.delete).setVisible(selectedItemId == R.id.nav_home);
+        // menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_file);
+        // menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_file);
+        // menu.findItem(R.id.scan).setVisible(selectedItemId == R.id.nav_me);
+        // menu.findItem(R.id.delete).setVisible(selectedItemId == R.id.nav_home);
         menu.findItem(R.id.sort).setVisible(selectedItemId == R.id.nav_home);
         menu.findItem(R.id.delete_download).setVisible(selectedItemId == R.id.nav_transmission);
         menu.findItem(R.id.clear_download).setVisible(selectedItemId == R.id.nav_transmission);
         return super.onPrepareOptionsMenu(menu);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
+        // getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }*/
 
     @Override
     protected void onDestroy() {

@@ -26,7 +26,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -52,7 +54,7 @@ import com.lanzou.cloud.ui.web.WebActivity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileFragment extends Fragment implements ServiceConnection, FileActionListener {
+public class FileFragment extends Fragment implements ServiceConnection, FileActionListener, MenuProvider {
 
     private static final String TAG = "FileFragment";
 
@@ -157,6 +159,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         initView();
         initEvents();
@@ -380,8 +383,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
     }
 
     @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
+    public void onPrepareMenu(@NonNull Menu menu) {
         boolean multiMode = isMultiMode();
         menu.findItem(R.id.delete).setVisible(multiMode);
         menu.findItem(R.id.download).setVisible(multiMode);
@@ -390,7 +392,8 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.menu_cloud, menu);
         MenuItem search = menu.add("搜索");
         SearchView searchView = new SearchView(requireContext());
         search.setActionView(searchView);
@@ -409,11 +412,10 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
                 return false;
             }
         });
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             // 点击返回
             clearSelect();
@@ -439,7 +441,7 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             new FileDetailDialog(requireContext(), getCurrentPage().getFolderId())
                     .setFileName(getCurrentPage().getName());
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     @Override

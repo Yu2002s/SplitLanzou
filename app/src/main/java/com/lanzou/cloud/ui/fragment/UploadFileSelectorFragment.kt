@@ -1,9 +1,9 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.os.Environment
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.drake.brv.utils.mutable
 import com.drake.engine.utils.FileUtils
 import com.drake.tooltip.toast
 import com.lanzou.cloud.enums.LayoutPosition
@@ -14,15 +14,33 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
+class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
+  FileFragment(position) {
 
   companion object {
     private val ROOT = Environment.getExternalStorageDirectory()
+
+    private const val PARAM_PATH = "path"
+
+    fun newInstance(
+      path: String? = ROOT.path,
+      position: LayoutPosition? = LayoutPosition.RIGHT
+    ): UploadFileSelectorFragment {
+      val fragment = UploadFileSelectorFragment(position ?: LayoutPosition.RIGHT)
+      fragment.arguments = bundleOf(PARAM_PATH to (path ?: ROOT.path))
+      return fragment
+    }
   }
 
-  private val pathList = mutableListOf(FilePathModel(ROOT.path))
+  private val pathList = mutableListOf<FilePathModel>()
 
   private val currentPath get() = pathList.last()
+
+  override fun initData() {
+    super.initData()
+    pathList.clear()
+    pathList.add(FilePathModel(arguments?.getString(PARAM_PATH) ?: ROOT.path))
+  }
 
   override suspend fun getData(page: Int): List<FileInfoModel>? {
     return getFiles(currentPath.path)
@@ -46,7 +64,7 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
     }
   }
 
-  override fun showBackItem(): Boolean {
+  override fun hasParentDirectory(): Boolean {
     return currentPath.path != ROOT.path
   }
 
@@ -94,10 +112,10 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
     return if (index != -1) index else super.getInsertPosition(name)*/
   }
 
-  override fun onBack(): Boolean {
+  override fun onNavigateUp(): Boolean {
     if (pathList.size == 1) {
       // 根目录默认返回
-      return super.onBack()
+      return super.onNavigateUp()
     }
     pathList.removeAt(pathList.lastIndex)
     binding.refresh.showLoading()
@@ -115,8 +133,6 @@ class UploadFileSelectorFragment : FileFragment(LayoutPosition.RIGHT) {
       return
     }
     if (file.mkdir()) {
-      val position = getInsertPosition()
-      binding.fileRv.mutable.add(position, FileInfoModel(name = name, path = path))
       super.onMkdir(name, path)
     } else {
       toast("创建失败，请检查App储存权限")

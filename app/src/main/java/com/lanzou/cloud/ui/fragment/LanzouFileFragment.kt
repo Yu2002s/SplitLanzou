@@ -4,9 +4,9 @@ import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.drake.brv.utils.bindingAdapter
-import com.drake.brv.utils.mutable
 import com.drake.net.utils.scopeDialog
 import com.drake.tooltip.toast
+import com.lanzou.cloud.enums.FilePageType
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.model.FileInfoModel
@@ -17,15 +17,23 @@ import com.lanzou.cloud.utils.removeModel
 import com.lanzou.cloud.utils.removeModelsSuspend
 import kotlinx.coroutines.delay
 
-class LanzouFileFragment private constructor() : FileFragment() {
+class LanzouFileFragment(
+  position: LayoutPosition = LayoutPosition.LEFT,
+  filePageType: FilePageType = FilePageType.REMOTE
+) : FileFragment(position, filePageType) {
 
   companion object {
 
     private const val PARAM_FOLDER_ID = "folderId"
+    private const val PARAM_NAME = "name"
 
-    fun newInstance(folderId: String = "-1"): LanzouFileFragment {
-      val fragment = LanzouFileFragment()
-      fragment.arguments = bundleOf(PARAM_FOLDER_ID to folderId)
+    fun newInstance(
+      folderId: String = "-1",
+      position: LayoutPosition? = LayoutPosition.LEFT,
+      name: String? = null,
+    ): LanzouFileFragment {
+      val fragment = LanzouFileFragment(position ?: LayoutPosition.LEFT)
+      fragment.arguments = bundleOf(PARAM_FOLDER_ID to folderId, PARAM_NAME to name)
       return fragment
     }
   }
@@ -41,8 +49,8 @@ class LanzouFileFragment private constructor() : FileFragment() {
     return LanzouRepository.getFiles(folderId, page)
   }
 
-  override fun showBackItem(): Boolean {
-    return folderId != "-1"
+  override fun hasParentDirectory(): Boolean {
+    return folderId != "-1" && binding.refresh.index == 1
   }
 
   override fun onSort(
@@ -66,7 +74,7 @@ class LanzouFileFragment private constructor() : FileFragment() {
     }
   }
 
-  override fun onBack(): Boolean {
+  override fun onNavigateUp(): Boolean {
     val parentFragment = parentFragment ?: return false
     if (parentFragment is OnFileNavigateListener) {
       return parentFragment.onNavigateUp()
@@ -81,8 +89,6 @@ class LanzouFileFragment private constructor() : FileFragment() {
   override fun onMkdir(name: String, path: String) {
     scopeDialog {
       LanzouRepository.mkdirFolder(path, name)
-      val position = getInsertPosition()
-      binding.fileRv.mutable.add(position, FileInfoModel(name = name, folderId = path))
       super.onMkdir(name, path)
     }.catch {
       toast(it.message)
@@ -125,5 +131,25 @@ class LanzouFileFragment private constructor() : FileFragment() {
     }
     FileDetailDialog(requireContext(), file.id.toLong(), true)
       .setFileName(file.name)
+  }
+
+  override fun copyFile(
+    position: Int,
+    current: FileInfoModel,
+    targetPath: String?
+  ): FileInfoModel? {
+    return null
+  }
+
+  override suspend fun moveFile(
+    position: Int,
+    current: FileInfoModel,
+    targetPath: String?
+  ): FileInfoModel? {
+    targetPath ?: return null
+    if (LanzouRepository.moveFile(current.id, targetPath)) {
+      return current.copy()
+    }
+    return null
   }
 }

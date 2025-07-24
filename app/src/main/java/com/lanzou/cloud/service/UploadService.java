@@ -82,6 +82,9 @@ public class UploadService extends Service {
     private final List<OnUploadListener> uploadListeners = new ArrayList<>();
 
     public void addUploadListener(OnUploadListener listener) {
+        if (uploadListeners.contains(listener)) {
+            return;
+        }
         uploadListeners.add(listener);
     }
 
@@ -202,7 +205,7 @@ public class UploadService extends Service {
         return upload;
     }
 
-    public void uploadFiles(List<String> paths, long folderId, String folderName) {
+    public void uploadFiles(List<String> paths, long folderId, String folderName, @Nullable OnUploadListener listener) {
         if (repository.getUploadPath() == null) {
             Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
             return;
@@ -210,6 +213,7 @@ public class UploadService extends Service {
         paths.stream().distinct()
                 .forEach(path -> {
                             Upload upload = createUpload(path, folderId, folderName);
+                    upload.setListener(listener);
                             uploadMap.put(upload, prepareUpload(upload));
                         }
                 );
@@ -217,11 +221,16 @@ public class UploadService extends Service {
     }
 
     public void uploadFile(String path, long folderId, String folderName) {
+        uploadFile(path, folderId, folderName, null);
+    }
+
+    public void uploadFile(String path, long folderId, String folderName, @Nullable OnUploadListener listener) {
         if (repository.getUploadPath() == null) {
             Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
             return;
         }
         Upload upload = createUpload(path, folderId, folderName);
+        upload.setListener(listener);
         Toast.makeText(this, upload.getName() + "已加入上传队列", Toast.LENGTH_SHORT).show();
         uploadMap.put(upload, prepareUpload(upload));
     }
@@ -311,6 +320,7 @@ public class UploadService extends Service {
                         int speed = (int) (upload.getCurrent() - size);
                         size = upload.getCurrent();
                         upload.setSpeed(speed);
+                        upload.onProgress();
                         updateUploadStatus(upload);
                     }
                 }
@@ -366,6 +376,7 @@ public class UploadService extends Service {
                     int progress = (int) (current * 100 / length);
                     upload.setCurrent(current);
                     upload.setProgress(progress);
+                    upload.onProgress();
                     // Log.i(TAG, "current: " + current + ", length: " + length);
                     updateUploadStatus(upload);
                 }

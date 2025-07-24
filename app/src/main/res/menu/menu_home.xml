@@ -1,4 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/add_tab"
+        app:showAsAction="always"
+        android:icon="@drawable/baseline_add_card_24"
+        android:title="添加选项卡" />
+
+    <item
+        android:id="@+id/delete"
+        android:icon="@drawable/baseline_delete_outline_24"
+        android:title="@string/delete"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/scroll_top"
+        app:showAsAction="never"
+        android:title="滚动到顶部" />
+
+    <item
+        android:id="@+id/sort"
+        android:icon="@drawable/baseline_sort_24"
+        android:title="@string/sort"
+        app:showAsAction="always">
+
+        <menu>
+            <item
+                android:id="@+id/sort_by"
+                android:title="@string/sort">
+                <menu>
+                    <!-- <group android:checkableBehavior="single">
+
+                     </group>-->
+                    <item
+                        android:id="@+id/sort_name"
+                        android:checked="true"
+                        android:title="名称" />
+                    <item
+                        android:id="@+id/sort_time"
+                        android:title="时间" />
+                    <item
+                        android:id="@+id/sort_size"
+                        android:title="大小" />
+                </menu>
+            </item>
+
+            <item
+                android:id="@+id/sort_rule"
+                android:title="规则">
+                <menu>
+                    <!-- <group android:checkableBehavior="single">
+
+                     </group>-->
+                    <item
+                        android:id="@+id/sort_asc"
+                        android:checked="true"
+                        android:title="正序" />
+                    <item
+                        android:id="@+id/sort_desc"
+                        android:title="倒序" />
+                </menu>
+            </item>
+
+            <item
+                android:id="@+id/show_system_app"
+                android:visible="false"
+                android:checkable="true"
+                android:checked="false"
+                android:title="显示系统App" />
+        </menu>
+
+    </item>
 </menu>

@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -148,7 +149,7 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner());
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         RecyclerView recyclerView = (RecyclerView) view;
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(downloadAdapter);
@@ -184,22 +185,21 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
     }
 
     @Override
-    public void onCreateMenu(@org.jspecify.annotations.NonNull Menu menu, @org.jspecify.annotations.NonNull MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.menu_download, menu);
-        MenuItem menuItem = menu.findItem(R.id.delete_download);
-        menuItem.setOnMenuItemClickListener(item -> {
-            deleteFiles();
-            return true;
-        });
-        menu.findItem(R.id.clear_download).setOnMenuItemClickListener(item -> {
-            clearFiles();
-            return true;
-        });
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
-    public boolean onMenuItemSelected(@org.jspecify.annotations.NonNull MenuItem menuItem) {
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.delete_download:
+                deleteFiles();
+                break;
+            case R.id.clear_download:
+                clearFiles();
+                break;
+        }
         return true;
     }
 }

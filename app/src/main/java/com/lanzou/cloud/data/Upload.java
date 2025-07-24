@@ -6,9 +6,11 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Since;
+import com.lanzou.cloud.event.OnUploadListener;
 import com.lanzou.cloud.utils.FileJavaUtils;
 
 import org.litepal.LitePal;
+import org.litepal.annotation.Column;
 import org.litepal.crud.LitePalSupport;
 
 import java.util.ArrayList;
@@ -71,6 +73,9 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
     private List<SplitFile> files;
 
     private final String comment = "如需完整下载此文件，请下载app（https://github.com/Yu2002s/SplitLanzou）";
+
+    @Column(ignore = true)
+    private OnUploadListener listener;
 
     public Upload() {
     }
@@ -269,28 +274,53 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
         this.id = id;
     }
 
+    public void setListener(OnUploadListener listener) {
+        this.listener = listener;
+    }
+
+    public OnUploadListener getListener() {
+        return listener;
+    }
+
     public void insert() {
         status = INSERT;
+        if (listener != null)
+            listener.onUpload(this);
     }
 
     public void prepare() {
         status = PREPARE;
+        if (listener != null)
+            listener.onUpload(this);
+    }
+
+    public void onProgress() {
+        if (listener != null)
+            listener.onUpload(this);
     }
 
     public void progress() {
         status = PROGRESS;
+        if (listener != null)
+            listener.onUpload(this);
     }
 
     public void error() {
         status = ERROR;
+        if (listener != null)
+            listener.onUpload(this);
     }
 
     public void complete() {
         status = COMPLETE;
+        if (listener != null)
+            listener.onUpload(this);
     }
 
     public void stop() {
         status = STOP;
+        if (listener != null)
+            listener.onUpload(this);
     }
 
     public boolean isInsert() {
