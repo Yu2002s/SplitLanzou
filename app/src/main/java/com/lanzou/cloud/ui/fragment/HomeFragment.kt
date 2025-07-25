@@ -319,6 +319,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   private fun initPage(tab: TabLayout, pager: ViewPager2, paths: List<PathModel>) {
     pager.apply {
       offscreenPageLimit = 3
+      isUserInputEnabled = false
       adapter = FilePagerAdapter(paths, childFragmentManager, lifecycle)
       registerOnPageChangeCallback(FilePageChangeCallback((paths)))
     }

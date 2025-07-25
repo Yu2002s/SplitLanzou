@@ -1,7 +1,7 @@
 {
-  "version": "1.8.0-beta03",
-  "versionCode": 17,
-  "content": "1.修复首页文件操作存在的问题\n2.下载支持选择删除\n\n【如有问题可前往github首页反馈】",
-  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/iwrJS31oyipg",
-  "date": "2025-07-23"
+  "version": "1.8.0-beta04",
+  "versionCode": 18,
+  "content": "1.完善首页文件操作\n2.修复存在的bug\n\n【如有问题可前往github首页反馈】",
+  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/iNVN131ttehe",
+  "date": "2025-07-25"
 }
