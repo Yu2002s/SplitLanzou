@@ -8,11 +8,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SeekBarPreference
+import com.drake.net.utils.scopeDialog
+import com.drake.net.utils.withIO
+import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.R
 import com.lanzou.cloud.config.SPConfig
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.FolderSelectorActivity
+import com.lanzou.cloud.utils.FileUtils
 import com.lanzou.cloud.utils.SpJavaUtils
 import com.lanzou.cloud.utils.formatBytes
 
@@ -64,6 +68,24 @@ class AppSettingFragment : PreferenceFragmentCompat() {
       Preference.OnPreferenceChangeListener { preference, newValue ->
         newValue as Int
         preference.summary = "当前设置: " + newValue.toLong().formatBytes()
+        true
+      }
+
+    findPreference<Preference>("share_app")?.onPreferenceClickListener =
+      Preference.OnPreferenceClickListener {
+        FileUtils.shareApp(requireContext(), requireContext().packageName)
+        true
+      }
+
+    findPreference<Preference>("clear_cache")?.onPreferenceClickListener =
+      Preference.OnPreferenceClickListener {
+        scopeDialog {
+          withIO {
+            requireContext().cacheDir?.deleteRecursively()
+            requireContext().externalCacheDir?.deleteRecursively()
+          }
+          toast("清理完成")
+        }
         true
       }
   }

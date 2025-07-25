@@ -6,6 +6,7 @@ import com.lanzou.cloud.config.Api
 import com.lanzou.cloud.model.BaseLanzouResponse
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LanzouShareFolderModel
+import com.lanzou.cloud.model.LanzouUrlModel
 import com.lanzou.cloud.model.ProfileModel
 import com.lanzou.cloud.service.UploadService
 import com.lanzou.cloud.utils.converter.SerializationConverter
@@ -171,6 +172,14 @@ object LanzouRepository {
     }.await()?.onEach {
       getFileRealName(it)
     } ?: emptyList()
+  }
+
+  suspend fun getFileInfo(id: String) = coroutineScope {
+    Post<LanzouUrlModel>(Api.FILE_PHP) {
+      converter = SerializationConverter(message = "text", data = "info")
+      param("file_id", id)
+      param("task", 22)
+    }.await()
   }
 
   /**

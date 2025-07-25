@@ -181,6 +181,9 @@ public class DownloadListFragment extends Fragment implements ServiceConnection,
     public void onDestroy() {
         super.onDestroy();
         requireContext().unbindService(this);
+        if (downloadService == null) {
+            return;
+        }
         downloadService.removeDownloadListener(this);
     }
 

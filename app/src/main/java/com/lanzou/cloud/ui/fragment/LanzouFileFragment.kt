@@ -1,11 +1,13 @@
 package com.lanzou.cloud.ui.fragment
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.drake.brv.utils.bindingAdapter
 import com.drake.net.utils.scopeDialog
 import com.drake.tooltip.toast
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.enums.FilePageType
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
@@ -40,6 +42,10 @@ class LanzouFileFragment(
 
   private var folderId = "-1"
 
+  private val clipboardManager by lazy {
+    requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+  }
+
   override fun initData() {
     super.initData()
     folderId = arguments?.getString(PARAM_FOLDER_ID) ?: "-1"
@@ -65,13 +71,6 @@ class LanzouFileFragment(
 
   override fun isLoadMore(data: List<FileInfoModel>?): Boolean {
     return data != null && data.size >= 18
-  }
-
-  override fun onLayoutChange(positon: LayoutPosition) {
-    binding.fileRv.layoutManager = when (positon) {
-      LayoutPosition.LEFT, LayoutPosition.MIDDLE -> LinearLayoutManager(requireContext())
-      LayoutPosition.RIGHT -> StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-    }
   }
 
   override fun onNavigateUp(): Boolean {
@@ -123,6 +122,35 @@ class LanzouFileFragment(
 
   override fun renameFile(position: Int, file: FileInfoModel) {
     toast("这边重命名还没做")
+  }
+
+  override fun shareFile(position: Int, file: FileInfoModel) {
+    if (file.fileId.isEmpty()) {
+      toast("文件可能未上传，请刷新检查后重试")
+      return
+    }
+    scopeDialog {
+      val fileInfo = LanzouRepository.getFileInfo(file.id)
+      MaterialAlertDialogBuilder(requireContext())
+        .setTitle("分享")
+        .setItems(arrayOf("自定义分享地址", "原始分享地址", "下载直链")) { dialog, which ->
+          clipboardManager.setPrimaryClip(
+            ClipData.newPlainText(
+              "share", when (which) {
+                0 -> fileInfo.customShareText
+                1 -> fileInfo.shareText
+                2 -> fileInfo.downloadUrl
+                else -> fileInfo.shareText
+              }
+            )
+          )
+          toast("已复制到剪切板")
+        }
+        .setPositiveButton("关闭", null)
+        .show()
+    }.catch {
+      toast(it.message)
+    }
   }
 
   override fun showDetail(position: Int, file: FileInfoModel) {

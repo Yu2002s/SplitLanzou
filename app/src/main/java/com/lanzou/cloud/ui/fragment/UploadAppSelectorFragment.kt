@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import com.drake.engine.utils.AppUtils
 import com.drake.engine.utils.FileUtils
+import com.drake.net.utils.scopeDialog
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.LanzouApplication
@@ -12,6 +13,7 @@ import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.utils.formatBytes
 import com.lanzou.cloud.utils.updateModel
+import kotlinx.coroutines.Dispatchers
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -73,7 +75,7 @@ class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT)
         }
         file.name = editValue
         val targetFile = File(file.path)
-        val renamedFile = File(LanzouApplication.context.externalCacheDir, editValue)
+        val renamedFile = File(LanzouApplication.tempPath, editValue)
         if (FileUtils.copyFile(targetFile, renamedFile) { true }) {
           file.path = renamedFile.path
         }
@@ -122,5 +124,12 @@ class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT)
     targetPath: String?
   ): FileInfoModel? {
     return null
+  }
+
+  override fun shareFile(position: Int, file: FileInfoModel) {
+    file.pkgName ?: return
+    scopeDialog(dispatcher = Dispatchers.IO) {
+      com.lanzou.cloud.utils.FileUtils.shareApp(requireContext(), file.pkgName)
+    }
   }
 }

@@ -7,7 +7,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -103,9 +105,11 @@ abstract class FileFragment(
    */
   override fun initData() {
     lifecycleScope.launch {
-      viewModel.currentPositionFlow.collect {
-        // 监听布局改变，如果发生改变，则更改 RV 的 layoutManager
-        onLayoutChange(it)
+      repeatOnLifecycle(Lifecycle.State.RESUMED) {
+        viewModel.currentPositionFlow.collect {
+          // 监听布局改变，如果发生改变，则更改 RV 的 layoutManager
+          onLayoutChange(it)
+        }
       }
     }
 
@@ -192,20 +196,20 @@ abstract class FileFragment(
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
           VibrationManager.get().vibrateOneShot(50)
           val targetPosition = viewHolder.layoutPosition
-          if(!swipeModel) {
+          if (!swipeModel) {
             minPosition = targetPosition
             maxPosition = targetPosition
             swipeModel = true
           } else {
-            if(minPosition > targetPosition) {
+            if (minPosition > targetPosition) {
               minPosition = targetPosition
             }
-            if(targetPosition > maxPosition) {
+            if (targetPosition > maxPosition) {
               maxPosition = targetPosition
             }
             swipeModel = false
           }
-          for(i in minPosition..maxPosition) {
+          for (i in minPosition..maxPosition) {
             setChecked(i, true)
           }
           toggleMulti(true)
@@ -275,9 +279,18 @@ abstract class FileFragment(
 
   override fun onLayoutChange(positon: LayoutPosition) {
     if (view != null) {
-      binding.fileRv.layoutManager = when (positon) {
-        LayoutPosition.RIGHT, LayoutPosition.MIDDLE -> LinearLayoutManager(requireContext())
-        LayoutPosition.LEFT -> StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+      val fileRv = binding.fileRv
+      val layoutManager = when {
+        positon == LayoutPosition.MIDDLE -> LinearLayoutManager(requireContext())
+        positon != layoutPosition -> StaggeredGridLayoutManager(
+          2,
+          StaggeredGridLayoutManager.VERTICAL
+        )
+
+        else -> LinearLayoutManager(requireContext())
+      }
+      if (fileRv.layoutManager?.javaClass != layoutManager.javaClass) {
+        fileRv.layoutManager = layoutManager
       }
     }
   }
@@ -607,6 +620,9 @@ abstract class FileFragment(
     targetPath ?: return null
     // FIXME: 不判断存不存在，暂时直接替换文件
     val targetFilePath = targetPath + File.separator + current.name
+    if (current.path == targetFilePath) {
+      return null
+    }
     Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
     if (FileUtils.moveFile(current.path, targetFilePath) { true }) {
       return current.copy(path = targetFilePath)
@@ -615,7 +631,11 @@ abstract class FileFragment(
   }
 
   override fun shareFile(position: Int, file: FileInfoModel) {
-    toast("没写")
+    if (!FileUtils.isFile(file.path)) {
+      toast("文件可能未下载完成，请刷新检查后重试")
+      return
+    }
+    com.lanzou.cloud.utils.FileUtils.shareFile(requireContext(), file.path)
   }
 
   override fun copyFile(
@@ -626,6 +646,9 @@ abstract class FileFragment(
     targetPath ?: return null
     // FIXME: 不判断存不存在，暂时直接替换文件
     val targetFilePath = targetPath + File.separator + current.name
+    if (current.path == targetFilePath) {
+      return null
+    }
     Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
     if (FileUtils.copyFile(current.path, targetFilePath) { true }) {
       return current.copy(path = targetFilePath)

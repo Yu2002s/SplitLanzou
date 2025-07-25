@@ -69,11 +69,13 @@ class LanzouApplication : Application() {
      */
     const val APP_DONATE = "http://lzy.jdynb.xyz/donate"
 
+    lateinit var tempPath: String
   }
 
   override fun onCreate() {
     super.onCreate()
     context = this
+    tempPath = externalCacheDir!!.path + "/temp"
     LitePal.initialize(this)
     FileOperator.init(this, false)
 
@@ -83,7 +85,7 @@ class LanzouApplication : Application() {
     initStateConfig() // 初始化 StateLayout 配置
     initSmartRefreshLayout() // 初始化刷新组件
 
-    VibrationManager.init(this);
+    VibrationManager.init(this)
   }
 
   private fun initNetConfig() {

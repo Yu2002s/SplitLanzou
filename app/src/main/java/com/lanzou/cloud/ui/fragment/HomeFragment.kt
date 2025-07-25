@@ -26,12 +26,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.drake.engine.base.EngineNavFragment
 import com.drake.engine.utils.dp
+import com.drake.net.utils.scope
 import com.drake.net.utils.scopeDialog
 import com.drake.net.utils.withIO
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
 import com.lanzou.cloud.data.Upload
 import com.lanzou.cloud.databinding.FragmentHomeBinding
@@ -48,6 +50,7 @@ import com.lanzou.cloud.ui.dialog.FileActionDialog
 import com.lanzou.cloud.ui.dialog.FileMkdirDialog
 import com.lanzou.cloud.ui.dialog.FileSearchDialog
 import com.lanzou.cloud.utils.getWindowWidth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -240,6 +243,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       ), this,
       Context.BIND_AUTO_CREATE
     )
+
+    // 清理临时文件
+    scope(Dispatchers.IO) {
+      val file = File(LanzouApplication.tempPath)
+      if (file.exists()) {
+        file.deleteRecursively()
+      }
+    }
   }
 
   override fun initData() {
@@ -554,7 +565,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
             }?.let {
               currentFileFragment.removeFile(position, fileInfoModel)
               targetFileFragment.addFile(it)
-            }
+            } ?: toast("发生错误或不能移动到这里")
           }
         }
 
@@ -583,6 +594,10 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     layoutPosition: LayoutPosition = currentFocusedPosition,
     fragment: FileFragment = UploadFileSelectorFragment.newInstance(path, layoutPosition)
   ) {
+    if (currentPaths.any { it.path == path }) {
+      toast("当前聚焦位置存在相同选项卡")
+      return
+    }
     val path = when (filePageType) {
       FilePageType.REMOTE -> RemotePathModel(
         path!!, name,
@@ -596,20 +611,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     when (layoutPosition) {
       LayoutPosition.LEFT -> {
         leftPaths.add(insertPosition, path)
-        // val insertPosition = leftPaths.size - 1
         currentLeftVpAdapter.notifyItemInserted(insertPosition)
-        binding.vpLeft.post {
-          binding.vpLeft.setCurrentItem(insertPosition, true)
-        }
+        binding.vpLeft.setCurrentItem(insertPosition, true)
       }
 
       LayoutPosition.RIGHT -> {
         rightPaths.add(insertPosition, path)
-        // val insertPosition = rightPaths.size - 1
         currentRightVpAdapter.notifyItemInserted(insertPosition)
-        binding.vpRight.post {
-          binding.vpRight.setCurrentItem(insertPosition, true)
-        }
+        binding.vpRight.setCurrentItem(insertPosition, true)
       }
 
       else -> throw IllegalStateException()
@@ -809,7 +818,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       R.id.add_tab -> {
         // TODO: 这里应该有一层映射关系，这里暂且写死
         val items = arrayOf("远程", "本地", "软件", "压缩包", "安装包", "视频")
-        var currentPosition = -1
+        var currentPosition = 0
         MaterialAlertDialogBuilder(requireActivity())
           .setTitle("添加选项卡到当前聚焦位置")
           .setSingleChoiceItems(items, 0) { dialog, which ->
