@@ -52,6 +52,10 @@ class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT)
     return true
   }
 
+  override fun getFullPath(): String {
+    return "App"
+  }
+
   override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
     toast("不支持多选删除App")
   }

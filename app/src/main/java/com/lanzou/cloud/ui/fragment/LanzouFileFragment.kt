@@ -47,7 +47,7 @@ class LanzouFileFragment(
   override fun initData() {
     super.initData()
     val folderId = arguments?.getString(PARAM_FOLDER_ID) ?: "-1"
-    paths.add(FilePathModel(path = folderId))
+    paths.add(FilePathModel(name = "根目录", path = folderId))
   }
 
   override suspend fun getData(path: String?, page: Int): List<FileInfoModel> {

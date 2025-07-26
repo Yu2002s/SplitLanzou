@@ -32,7 +32,7 @@ class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT
 
   override fun initData() {
     super.initData()
-    paths.add(FilePathModel(arguments?.getString(PARAM_PATH) ?: ROOT.path))
+    paths.add(FilePathModel(name = "根目录", path = arguments?.getString(PARAM_PATH) ?: ROOT.path))
   }
 
   override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {

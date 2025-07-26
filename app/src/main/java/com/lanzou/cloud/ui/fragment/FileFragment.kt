@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -270,6 +271,14 @@ abstract class FileFragment(
     }
   }
 
+  fun refreshPathSubTitle() {
+    val pageType = when (filePageType) {
+      FilePageType.LOCAL -> "本地"
+      FilePageType.REMOTE -> "远程"
+    }
+    (activity as? AppCompatActivity)?.supportActionBar?.subtitle = pageType + " - " + getFullPath()
+  }
+
   override fun onResume() {
     super.onResume()
     viewModel.refreshLogin()
@@ -322,7 +331,8 @@ abstract class FileFragment(
     }
     paths[paths.lastIndex].scrollPosition = getFirstVisiblePosition()
     val path = model.path.ifEmpty { model.folderId }
-    paths.add(FilePathModel(path))
+    paths.add(FilePathModel(path = path, name = model.name))
+    refreshPathSubTitle()
     binding.refresh.showLoading()
   }
 
@@ -350,6 +360,7 @@ abstract class FileFragment(
       return true
     }
     paths.removeAt(paths.lastIndex)
+    refreshPathSubTitle()
     refresh()
     return false
   }
@@ -473,6 +484,8 @@ abstract class FileFragment(
     return paths.lastOrNull()?.path
   }
 
+  open fun getFullPath() = paths.joinToString("/") { it.name }
+
   override fun getCheckedFiles(ignoreDirectory: Boolean): List<FileInfoModel> {
     return models.filter { it.isChecked && (!ignoreDirectory || it.isFile) }
   }
@@ -557,7 +570,9 @@ abstract class FileFragment(
       .setMessage("确认要删除文件: ${file.name}")
       .setPositiveButton("确认") { dialog, _ ->
         scopeDialog {
-          File(file.path).deleteRecursively()
+          withIO {
+            File(file.path).deleteRecursively()
+          }
           removeFile(position, file)
         }.finally {
           toggleMulti(false)
@@ -569,9 +584,11 @@ abstract class FileFragment(
 
   override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
     scopeDialog {
-      files.forEach {
-        if (it.path.isNotEmpty()) {
-          File(it.path).deleteRecursively()
+      withIO {
+        files.forEach {
+          if (it.path.isNotEmpty()) {
+            File(it.path).deleteRecursively()
+          }
         }
       }
       binding.fileRv.removeModels(positions) {
@@ -668,13 +685,13 @@ abstract class FileFragment(
     if (current.path == targetFilePath) {
       return null
     }
-    if (current.isDirectory) {
-      if (FileUtils.moveDir(current.path, targetFilePath) { true }) {
-        return current.copy(path = targetFilePath)
-      }
-      return null
+    val result = if (current.isDirectory) {
+      FileUtils.moveDir(current.path, targetFilePath) { true }
+    } else {
+      FileUtils.moveFile(current.path, targetFilePath) { true }
     }
-    if (FileUtils.moveFile(current.path, targetFilePath) { true }) {
+
+    if (result) {
       return current.copy(path = targetFilePath)
     }
     return null
@@ -694,21 +711,18 @@ abstract class FileFragment(
     targetPath: String?
   ): FileInfoModel? {
     targetPath ?: return null
-    // FIXME: 不判断存不存在，暂时直接替换文件
     val targetFilePath = targetPath + File.separator + current.name
     if (current.path == targetFilePath) {
       return null
     }
-    if (current.isDirectory) {
-      if (FileUtils.copyDir(current.path, targetFilePath) { true }) {
-        return current.copy(path = targetFilePath)
-      }
-    } else {
-      if (FileUtils.copyFile(current.path, targetFilePath) { true }) {
-        return current.copy(path = targetFilePath)
-      }
+    try {
+      val file = File(current.path)
+      val target = File(targetFilePath)
+      file.copyRecursively(target, true)
+      return current.copy(path = targetFilePath)
+    } catch (_: Exception) {
+      return null
     }
-    return null
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

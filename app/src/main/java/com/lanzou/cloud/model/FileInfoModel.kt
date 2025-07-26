@@ -19,7 +19,7 @@ data class FileInfoModel(
   var folderId: String = "",
   @SerialName("name_all")
   val nameAll: String = "",
-  var name: String = nameAll,
+  var name: String = "",
   @Transient
   var path: String = "",
   @Transient

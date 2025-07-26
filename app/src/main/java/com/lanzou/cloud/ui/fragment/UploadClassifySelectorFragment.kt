@@ -39,6 +39,15 @@ class UploadClassifySelectorFragment(position: LayoutPosition = LayoutPosition.R
     return getFiles()
   }
 
+  override fun getFullPath(): String {
+    return when (arguments?.getInt(PARAM_TYPE)) {
+      TYPE_APK -> "安装包"
+      TYPE_VIDEO -> "视频"
+      TYPE_ZIP -> "压缩包"
+      else -> super.getFullPath()
+    }
+  }
+
   override fun addFile(fileInfoModel: FileInfoModel) {
     toast("不能添加到这里")
   }

@@ -19,14 +19,14 @@ object FileUtils {
   }
 
   fun getIcon(ext: String?): Int {
-    return when (ext) {
+    return when (ext?.lowercase()) {
       null -> R.drawable.baseline_folder_24
       "zip", "jar" -> R.drawable.ic_archive
       "exe" -> R.drawable.ic_exe
       "apk" -> R.drawable.ic_apk
       "7z" -> R.drawable.ic_7z
       "rar" -> R.drawable.ic_rar
-      "jpg" -> R.drawable.ic_jpg
+      "jpg", "jpeg" -> R.drawable.ic_jpg
       "png" -> R.drawable.ic_png
       "aac" -> R.drawable.ic_aac
       "mp3" -> R.drawable.ic_mp3

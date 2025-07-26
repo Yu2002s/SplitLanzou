@@ -189,6 +189,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     override fun onPageSelected(position: Int) {
       homeViewModel.focusPosition(paths[position].fragment.layoutPosition)
       requireActivity().invalidateMenu()
+      currentFileFragment.refreshPathSubTitle()
     }
   }
 
@@ -251,8 +252,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         file.deleteRecursively()
       }
     }
-
-    // 加载所需的页面数据
   }
 
   override fun initData() {
@@ -282,6 +281,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     lifecycleScope.launch {
       homeViewModel.focusedPositionFlow.collect {
         requireActivity().invalidateMenu()
+        currentFileFragment.refreshPathSubTitle()
       }
     }
   }
@@ -555,28 +555,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       .onItemClick = { itemPosition ->
       when (itemPosition) {
         "上传", "下载" -> showTransmissionDialog(fileInfoModel, position, filePageType)
-        "分享" -> {
-          currentFileFragment.shareFile(position, fileInfoModel)
-        }
-
-        "复制" -> {
-          if (filePageType != FilePageType.REMOTE) {
-            val targetPath = targetFileFragment.getCurrentPath()
-            scopeDialog {
-              // 暂时不显示复制的进度
-              withIO {
-                currentFileFragment.copyFile(position, fileInfoModel, targetPath)
-              }?.let {
-                targetFileFragment.addFile(it)
-              } ?: toast("发生错误或不能复制到这里")
-            }
-          } else {
-            toast("远程路径不支持复制")
-          }
-        }
-
+        "分享" -> currentFileFragment.shareFile(position, fileInfoModel)
+        "复制" -> copyFile(position, fileInfoModel)
         "移动" -> moveFile(position, fileInfoModel)
-
         "删除" -> currentFileFragment.deleteFile(position, fileInfoModel)
         "重命名" -> currentFileFragment.renameFile(position, fileInfoModel)
         "详情" -> currentFileFragment.showDetail(position, fileInfoModel)
@@ -679,7 +660,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       folderId.toLong(),
       folderName
     ) { upload ->
-      if (target != targetFileFragment) {
+      if (view == null) {
         return@uploadFile
       }
       when (upload.status) {
@@ -696,7 +677,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           }
         }
 
-        Upload.ERROR -> target.refresh()
+        Upload.ERROR -> {}
       }
     }
   }
@@ -710,7 +691,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       fileInfoModel.name,
       filePath
     ) { download ->
-      if (target != targetFileFragment || view == null) {
+      if (view == null) {
         return@addDownloadWithPath
       }
       when (download.status) {
@@ -718,9 +699,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           it.progress = download.progress
         }
 
-        Upload.ERROR -> target.getFile(filePath)?.let {
-          target.refresh()
-        }
+        Upload.ERROR -> {}
       }
     }
   }
@@ -730,7 +709,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     val target = targetFileFragment
     val paths = checkedFiles.map { it.path }
     uploadService.uploadFiles(paths, path.toLong(), folderName) { upload ->
-      if (target != targetFileFragment || view == null) {
+      if (view == null) {
         return@uploadFiles
       }
       when (upload.status) {
@@ -761,7 +740,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       it.path = directory + File.separator + it.name
     }
     downloadService.addDownload(checkedFiles) { download ->
-      if (target != targetFileFragment) {
+      if (view == null) {
         return@addDownload
       }
       when (download.status) {
@@ -795,7 +774,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     scopeDialog {
       val currentPath = targetFileFragment.getCurrentPath()
       checkedFiles.forEachIndexed { position, fileInfoModel ->
-        currentFileFragment.moveFile(position, fileInfoModel, currentPath)?.let {
+        withIO {
+          currentFileFragment.moveFile(position, fileInfoModel, currentPath)
+        }?.let {
           currentFileFragment.removeFile(-1, fileInfoModel)
           targetFileFragment.addFile(it)
         }
@@ -805,12 +786,26 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  private fun copyFile(position: Int, fileInfoModel: FileInfoModel) {
+    val targetPath = targetFileFragment.getCurrentPath()
+    scopeDialog {
+      // 暂时不显示复制的进度
+      withIO {
+        currentFileFragment.copyFile(position, fileInfoModel, targetPath)
+      }?.let {
+        targetFileFragment.addFile(it)
+      } ?: toast("发生错误或不能复制到这里")
+    }
+  }
+
   private fun copyFiles(checkedFiles: List<FileInfoModel>) {
     // 只能本地对本地复制
     scopeDialog {
       val currentPath = targetFileFragment.getCurrentPath()
       checkedFiles.forEachIndexed { position, fileInfoModel ->
-        currentFileFragment.copyFile(position, fileInfoModel, currentPath)?.let {
+        withIO {
+          currentFileFragment.copyFile(position, fileInfoModel, currentPath)
+        }?.let {
           targetFileFragment.addFile(it)
         }
       }

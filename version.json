@@ -1,7 +1,7 @@
 {
-  "version": "1.8.1",
-  "versionCode": 19,
-  "content": "1.多选支持复制、移动\n2.修改首页选项卡逻辑\n\n【如有问题可前往github首页反馈】",
-  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/ieCn631wn5fa",
+  "version": "1.8.1-fix",
+  "versionCode": 20,
+  "content": "1.修复1.8.1存在的问题\n\n【如有问题可前往github首页反馈】",
+  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/i8SRf31xc5lg\n",
   "date": "2025-07-26"
 }
