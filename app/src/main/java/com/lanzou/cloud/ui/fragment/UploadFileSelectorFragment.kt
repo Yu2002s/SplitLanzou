@@ -2,8 +2,6 @@ package com.lanzou.cloud.ui.fragment
 
 import android.os.Environment
 import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.drake.engine.utils.FileUtils
 import com.drake.tooltip.toast
 import com.lanzou.cloud.enums.LayoutPosition
@@ -32,18 +30,13 @@ class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT
     }
   }
 
-  private val pathList = mutableListOf<FilePathModel>()
-
-  private val currentPath get() = pathList.last()
-
   override fun initData() {
     super.initData()
-    pathList.clear()
-    pathList.add(FilePathModel(arguments?.getString(PARAM_PATH) ?: ROOT.path))
+    paths.add(FilePathModel(arguments?.getString(PARAM_PATH) ?: ROOT.path))
   }
 
-  override suspend fun getData(page: Int): List<FileInfoModel>? {
-    return getFiles(currentPath.path)
+  override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {
+    return getFiles(path ?: ROOT.path)
   }
 
   private fun getFiles(path: String): List<FileInfoModel>? {
@@ -65,37 +58,7 @@ class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT
   }
 
   override fun hasParentDirectory(): Boolean {
-    return currentPath.path != ROOT.path
-  }
-
-  override fun onLoadEnd(data: List<FileInfoModel>?) {
-    val scrollPosition = pathList.last().scrollPosition
-    scrollToPosition(scrollPosition)
-  }
-
-  override fun onItemClick(model: FileInfoModel, position: Int) {
-    if (model.isFile) {
-      // 请求上传文件
-      super.onItemClick(model, position)
-      return
-    }
-    val currentScrollPosition = getFirstVisiblePosition()
-    pathList[pathList.lastIndex].scrollPosition = currentScrollPosition
-    pathList.add(FilePathModel(model.path))
-    binding.refresh.showLoading()
-  }
-
-  private fun getFirstVisiblePosition(): Int {
-    val layoutManager = binding.fileRv.layoutManager
-    return when (layoutManager) {
-      is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition()
-      is StaggeredGridLayoutManager -> {
-        val arr = layoutManager.findFirstCompletelyVisibleItemPositions(null)
-        arr[0]
-      }
-
-      else -> 0
-    }
+    return getCurrentPath() != ROOT.path
   }
 
   override fun getInsertPosition(name: String?): Int {
@@ -110,20 +73,6 @@ class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT
       it.isFile && PinyinUtils.ccs2Pinyin(it.name) > namePinyin
     }
     return if (index != -1) index else super.getInsertPosition(name)*/
-  }
-
-  override fun onNavigateUp(): Boolean {
-    if (pathList.size == 1) {
-      // 根目录默认返回
-      return super.onNavigateUp()
-    }
-    pathList.removeAt(pathList.lastIndex)
-    binding.refresh.showLoading()
-    return false
-  }
-
-  override fun getCurrentPath(): String? {
-    return currentPath.path
   }
 
   override fun onMkdir(name: String, path: String) {

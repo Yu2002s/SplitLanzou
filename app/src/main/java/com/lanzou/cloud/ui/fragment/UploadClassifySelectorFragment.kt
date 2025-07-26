@@ -35,7 +35,7 @@ class UploadClassifySelectorFragment(position: LayoutPosition = LayoutPosition.R
     }
   }
 
-  override suspend fun getData(page: Int): List<FileInfoModel>? {
+  override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {
     return getFiles()
   }
 

@@ -21,7 +21,7 @@ import java.util.Locale
 class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
   FileFragment(position) {
 
-  override suspend fun getData(page: Int): List<FileInfoModel>? {
+  override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {
     val pm = requireContext().packageManager
     var packageInfoList =
       requireContext().packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)

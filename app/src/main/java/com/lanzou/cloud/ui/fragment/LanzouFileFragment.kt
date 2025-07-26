@@ -10,8 +10,8 @@ import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.enums.FilePageType
 import com.lanzou.cloud.enums.LayoutPosition
-import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.model.FileInfoModel
+import com.lanzou.cloud.model.FilePathModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.ui.dialog.FileDetailDialog
@@ -40,23 +40,22 @@ class LanzouFileFragment(
     }
   }
 
-  private var folderId = "-1"
-
   private val clipboardManager by lazy {
     requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
   }
 
   override fun initData() {
     super.initData()
-    folderId = arguments?.getString(PARAM_FOLDER_ID) ?: "-1"
+    val folderId = arguments?.getString(PARAM_FOLDER_ID) ?: "-1"
+    paths.add(FilePathModel(path = folderId))
   }
 
-  override suspend fun getData(page: Int): List<FileInfoModel> {
-    return LanzouRepository.getFiles(folderId, page)
+  override suspend fun getData(path: String?, page: Int): List<FileInfoModel> {
+    return LanzouRepository.getFiles(path ?: "-1", page)
   }
 
   override fun hasParentDirectory(): Boolean {
-    return folderId != "-1" && binding.refresh.index == 1
+    return getCurrentPath() != "-1"
   }
 
   override fun onSort(
@@ -66,23 +65,8 @@ class LanzouFileFragment(
     return data
   }
 
-  override fun onLoadEnd(data: List<FileInfoModel>?) {
-  }
-
   override fun isLoadMore(data: List<FileInfoModel>?): Boolean {
     return data != null && data.size >= 18
-  }
-
-  override fun onNavigateUp(): Boolean {
-    val parentFragment = parentFragment ?: return false
-    if (parentFragment is OnFileNavigateListener) {
-      return parentFragment.onNavigateUp()
-    }
-    return false
-  }
-
-  override fun getCurrentPath(): String? {
-    return arguments?.getString(PARAM_FOLDER_ID)
   }
 
   override fun onMkdir(name: String, path: String) {

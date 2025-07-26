@@ -1,7 +1,6 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -41,6 +40,7 @@ import com.lanzou.cloud.event.FileAction
 import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.event.OnLayoutChangeListener
 import com.lanzou.cloud.model.FileInfoModel
+import com.lanzou.cloud.model.FilePathModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.WebActivity
@@ -88,12 +88,19 @@ abstract class FileFragment(
   protected val models get() = binding.fileRv.models as List<FileInfoModel>
 
   /**
+   * 路径列表
+   */
+  protected val paths = mutableListOf<FilePathModel>()
+
+  protected val currentPage get() = binding.refresh.index
+
+  /**
    * 获取所需的数据
    *
    * @param page 当前页码
    * @return 返回文件集合
    */
-  abstract suspend fun getData(page: Int): List<FileInfoModel>?
+  abstract suspend fun getData(path: String?, page: Int): List<FileInfoModel>?
 
   /**
    * 是否第一次可见
@@ -104,6 +111,7 @@ abstract class FileFragment(
    * 初始化数据
    */
   override fun initData() {
+    paths.clear()
     lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.RESUMED) {
         viewModel.currentPositionFlow.collect {
@@ -220,7 +228,7 @@ abstract class FileFragment(
     binding.refresh.onRefresh {
       scope {
         val data = onSort(withIO {
-          getData(index)
+          getData(getCurrentPath(), index)
         }, viewModel.filterSortModel.value)?.toMutableList()
 
         if (index == 1) {
@@ -228,7 +236,7 @@ abstract class FileFragment(
         }
 
         // 根据子类判断是否显示返回
-        val showBackItem = hasParentDirectory()
+        val showBackItem = hasParentDirectory() && index == 1
 
         data?.let {
           if (showBackItem) {
@@ -237,10 +245,12 @@ abstract class FileFragment(
           mData.addAll(it)
         }
 
+        val page = index
+
         addData(data, isEmpty = { data.isNullOrEmpty() && !showBackItem }) {
           isLoadMore(data)
         }
-        onLoadEnd(data)
+        onLoadEnd(data, page)
       }
     }
 
@@ -302,7 +312,18 @@ abstract class FileFragment(
    * @param position 点击的位置(去掉 header 的位置)
    */
   protected open fun onItemClick(model: FileInfoModel, position: Int) {
-    navigateTo(model, position)
+    if (model.isFile) {
+      // 请求上传文件
+      navigateTo(model, position)
+      return
+    }
+    if (paths.isEmpty()) {
+      return
+    }
+    paths[paths.lastIndex].scrollPosition = getFirstVisiblePosition()
+    val path = model.path.ifEmpty { model.folderId }
+    paths.add(FilePathModel(path))
+    binding.refresh.showLoading()
   }
 
   /**
@@ -325,7 +346,12 @@ abstract class FileFragment(
    * 触发返回事件，当返回 true 时，按下返回键将执行 finish，false 则啥也不做
    */
   override fun onNavigateUp(): Boolean {
-    return true
+    if (paths.size <= 1) {
+      return true
+    }
+    paths.removeAt(paths.lastIndex)
+    refresh()
+    return false
   }
 
   /**
@@ -343,7 +369,16 @@ abstract class FileFragment(
    *
    * @param data 已加载的数据
    */
-  protected open fun onLoadEnd(data: List<FileInfoModel>?) {}
+  protected open fun onLoadEnd(data: List<FileInfoModel>?, page: Int) {
+    if (paths.isEmpty() || page != 1) {
+      return
+    }
+    val firstVisiblePosition = getFirstVisiblePosition()
+    val scrollPosition = paths.last().scrollPosition
+    if (firstVisiblePosition != scrollPosition) {
+      scrollToPosition(scrollPosition)
+    }
+  }
 
   /**
    * 定义对数据进行排序的规则
@@ -435,11 +470,15 @@ abstract class FileFragment(
    * 获取当前的路径
    */
   open fun getCurrentPath(): String? {
-    return null
+    return paths.lastOrNull()?.path
   }
 
-  override fun getCheckedFiles(): List<FileInfoModel> {
-    return mData.filter { it.isChecked && it.isFile }
+  override fun getCheckedFiles(ignoreDirectory: Boolean): List<FileInfoModel> {
+    return models.filter { it.isChecked && (!ignoreDirectory || it.isFile) }
+  }
+
+  override fun getCheckedPositions(): List<Int> {
+    return binding.fileRv.bindingAdapter.checkedPosition
   }
 
   override fun addFile(fileInfoModel: FileInfoModel) {
@@ -500,7 +539,13 @@ abstract class FileFragment(
   }
 
   override fun removeFile(position: Int, file: FileInfoModel) {
-    mData.removeAt(binding.fileRv.removeModel(position))
+    if (position > 0) {
+      mData.removeAt(binding.fileRv.removeModel(position))
+    } else {
+      // 处理 position 小于 0 的情况
+      val position = mData.indexOf(file)
+      mData.removeAt(binding.fileRv.removeModel(position))
+    }
   }
 
   override fun deleteFile(position: Int, file: FileInfoModel) {
@@ -623,7 +668,12 @@ abstract class FileFragment(
     if (current.path == targetFilePath) {
       return null
     }
-    Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
+    if (current.isDirectory) {
+      if (FileUtils.moveDir(current.path, targetFilePath) { true }) {
+        return current.copy(path = targetFilePath)
+      }
+      return null
+    }
     if (FileUtils.moveFile(current.path, targetFilePath) { true }) {
       return current.copy(path = targetFilePath)
     }
@@ -649,9 +699,14 @@ abstract class FileFragment(
     if (current.path == targetFilePath) {
       return null
     }
-    Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
-    if (FileUtils.copyFile(current.path, targetFilePath) { true }) {
-      return current.copy(path = targetFilePath)
+    if (current.isDirectory) {
+      if (FileUtils.copyDir(current.path, targetFilePath) { true }) {
+        return current.copy(path = targetFilePath)
+      }
+    } else {
+      if (FileUtils.copyFile(current.path, targetFilePath) { true }) {
+        return current.copy(path = targetFilePath)
+      }
     }
     return null
   }
@@ -692,5 +747,18 @@ abstract class FileFragment(
       }
     }
     return false
+  }
+
+  private fun getFirstVisiblePosition(): Int {
+    val layoutManager = binding.fileRv.layoutManager
+    return when (layoutManager) {
+      is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition()
+      is StaggeredGridLayoutManager -> {
+        val arr = layoutManager.findFirstCompletelyVisibleItemPositions(null)
+        arr[0]
+      }
+
+      else -> 0
+    }
   }
 }

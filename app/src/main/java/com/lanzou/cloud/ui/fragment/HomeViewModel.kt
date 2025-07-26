@@ -87,6 +87,14 @@ class HomeViewModel : ViewModel() {
     _focusedPositionFlow.value = positon
   }
 
+  fun toggle() {
+    when (focusedPositionFlow.value) {
+      LayoutPosition.LEFT -> toggleLeft()
+      LayoutPosition.RIGHT -> toggleRight()
+      else -> throw IllegalStateException()
+    }
+  }
+
   fun toggleLeft() {
     _leftMultiModelFlow.value = !(_leftMultiModelFlow.value ?: false)
   }

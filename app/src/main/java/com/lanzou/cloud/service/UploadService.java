@@ -209,6 +209,8 @@ public class UploadService extends Service {
         if (repository.getUploadPath() == null) {
             Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
             return;
+        } else if (repository.getUploadPath() == -1) {
+            Toast.makeText(this, "不建议把缓存目录设置为根目录，请去设置修改", Toast.LENGTH_SHORT).show();
         }
         paths.stream().distinct()
                 .forEach(path -> {
@@ -228,6 +230,8 @@ public class UploadService extends Service {
         if (repository.getUploadPath() == null) {
             Toast.makeText(this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
             return;
+        } else if (repository.getUploadPath() == -1) {
+            Toast.makeText(this, "不建议把缓存目录设置为根目录，请去设置修改", Toast.LENGTH_SHORT).show();
         }
         Upload upload = createUpload(path, folderId, folderName);
         upload.setListener(listener);
