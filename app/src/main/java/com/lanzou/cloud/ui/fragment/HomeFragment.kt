@@ -602,7 +602,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     layoutPosition: LayoutPosition = currentFocusedPosition,
     fragment: FileFragment = UploadFileSelectorFragment.newInstance(path, layoutPosition)
   ) {
-    val currentSelectedPosition = currentPaths.indexOfFirst { it.path == path }
+    val currentSelectedPosition = currentPaths.indexOfFirst { it.name == name }
     if (currentSelectedPosition != -1) {
       currentVp.setCurrentItem(currentSelectedPosition, true)
       toast("当前聚焦位置已存在相同选项卡，已跳转")
