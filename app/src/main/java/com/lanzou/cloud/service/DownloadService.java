@@ -464,7 +464,7 @@ public class DownloadService extends Service {
         Objects.requireNonNull(downloadUrl, "获取下载地址失败");
         Log.i(TAG, "downloadUrl: " + downloadUrl);
 
-        repository.getResponse(downloadUrl);
+        // repository.getResponse(downloadUrl);
 
         // 获取到响应信息，注意：这里获取到的可能不是完整响应，因为需要断点续传
         Response response = repository.getRangeResponse(downloadUrl, download.getCurrent());

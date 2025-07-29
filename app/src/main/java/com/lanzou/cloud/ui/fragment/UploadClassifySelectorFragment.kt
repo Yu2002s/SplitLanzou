@@ -35,8 +35,17 @@ class UploadClassifySelectorFragment(position: LayoutPosition = LayoutPosition.R
     }
   }
 
-  override suspend fun getData(page: Int): List<FileInfoModel>? {
+  override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {
     return getFiles()
+  }
+
+  override fun getFullPath(): String {
+    return when (arguments?.getInt(PARAM_TYPE)) {
+      TYPE_APK -> "安装包"
+      TYPE_VIDEO -> "视频"
+      TYPE_ZIP -> "压缩包"
+      else -> super.getFullPath()
+    }
   }
 
   override fun addFile(fileInfoModel: FileInfoModel) {

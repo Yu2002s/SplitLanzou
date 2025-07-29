@@ -4,6 +4,18 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
+        app:title="储存">
+
+        <Preference
+            app:icon="@drawable/baseline_clear_all_24"
+            app:key="clear_cache"
+            app:title="清理缓存"
+            app:summary="释放缓存空间，如果正在下载或上传请不要执行" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
         app:title="上传">
 
         <SwitchPreferenceCompat
@@ -62,6 +74,11 @@
 
         </Preference>
 
+        <Preference
+            android:title="分享给朋友"
+            app:icon="@drawable/baseline_share_24"
+            app:iconSpaceReserved="false"
+            app:key="share_app" />
 
     </PreferenceCategory>
 

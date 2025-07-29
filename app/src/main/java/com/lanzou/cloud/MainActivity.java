@@ -198,25 +198,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onServiceDisconnected(ComponentName name) {
     }
 
-    /*@Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        int selectedItemId = binding.bottomNav.getSelectedItemId();
-        // menu.findItem(R.id.create_folder).setVisible(selectedItemId == R.id.nav_file);
-        // menu.findItem(R.id.detail).setVisible(selectedItemId == R.id.nav_file);
-        // menu.findItem(R.id.scan).setVisible(selectedItemId == R.id.nav_me);
-        // menu.findItem(R.id.delete).setVisible(selectedItemId == R.id.nav_home);
-        menu.findItem(R.id.sort).setVisible(selectedItemId == R.id.nav_home);
-        menu.findItem(R.id.delete_download).setVisible(selectedItemId == R.id.nav_transmission);
-        menu.findItem(R.id.clear_download).setVisible(selectedItemId == R.id.nav_transmission);
-        return super.onPrepareOptionsMenu(menu);
-    }*/
-
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // getMenuInflater().inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }*/
-
     @Override
     protected void onDestroy() {
         super.onDestroy();

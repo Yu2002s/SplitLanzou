@@ -1,6 +1,16 @@
 package com.lanzou.cloud.utils
 
+import ando.file.core.FileUri
+import android.content.Context
+import android.webkit.MimeTypeMap
+import androidx.core.app.ShareCompat
+import com.drake.engine.utils.AppUtils
+import com.drake.engine.utils.FileUtils
+import com.drake.tooltip.toast
+import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
+import java.io.File
+
 
 object FileUtils {
 
@@ -9,14 +19,14 @@ object FileUtils {
   }
 
   fun getIcon(ext: String?): Int {
-    return when (ext) {
+    return when (ext?.lowercase()) {
       null -> R.drawable.baseline_folder_24
       "zip", "jar" -> R.drawable.ic_archive
       "exe" -> R.drawable.ic_exe
       "apk" -> R.drawable.ic_apk
       "7z" -> R.drawable.ic_7z
       "rar" -> R.drawable.ic_rar
-      "jpg" -> R.drawable.ic_jpg
+      "jpg", "jpeg" -> R.drawable.ic_jpg
       "png" -> R.drawable.ic_png
       "aac" -> R.drawable.ic_aac
       "mp3" -> R.drawable.ic_mp3
@@ -33,6 +43,31 @@ object FileUtils {
       "xml" -> R.drawable.ic_xml
       "kotlin" -> R.drawable.ic_kotlin
       else -> R.drawable.ic_file
+    }
+  }
+
+  fun shareApp(context: Context, pkgName: String) {
+    val appPath = AppUtils.getAppPath(pkgName)
+    val appName = AppUtils.getAppName(pkgName)
+    val targetPath = LanzouApplication.tempPath + "/$appName.apk"
+    FileUtils.copyFile(appPath, targetPath) { true }
+    shareFile(context, targetPath)
+  }
+
+  /**
+   * 分享文件
+   */
+  fun shareFile(context: Context, path: String) {
+    val file = File(path)
+    if (file.exists()) {
+      val shareUri = FileUri.getShareUri(path)
+      ShareCompat.IntentBuilder(context)
+        .setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension))
+        .setStream(shareUri)
+        .setChooserTitle("分享文件到")
+        .startChooser()
+    } else {
+      toast("分享文件不存在")
     }
   }
 }

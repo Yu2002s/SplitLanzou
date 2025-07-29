@@ -6,6 +6,7 @@ import com.lanzou.cloud.config.Api
 import com.lanzou.cloud.model.BaseLanzouResponse
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LanzouShareFolderModel
+import com.lanzou.cloud.model.LanzouUrlModel
 import com.lanzou.cloud.model.ProfileModel
 import com.lanzou.cloud.service.UploadService
 import com.lanzou.cloud.utils.converter.SerializationConverter
@@ -62,7 +63,6 @@ object LanzouRepository {
     inputEls.forEach { item ->
       map[item.attr("name")] = item.attr("value")
     }
-
 
     val result2 = Post<String>(Api.DISK_PHP) {
       addQuery("item", "profile")
@@ -168,9 +168,15 @@ object LanzouRepository {
       param("task", task)
       param("folder_id", folderId)
       param("pg", page)
-    }.await()?.onEach {
-      getFileRealName(it)
-    } ?: emptyList()
+    }.await() ?: emptyList()
+  }
+
+  suspend fun getFileInfo(id: String) = coroutineScope {
+    Post<LanzouUrlModel>(Api.FILE_PHP) {
+      converter = SerializationConverter(message = "text", data = "info")
+      param("file_id", id)
+      param("task", 22)
+    }.await()
   }
 
   /**
@@ -199,6 +205,7 @@ object LanzouRepository {
   private fun getFileRealName(fileInfoModel: FileInfoModel) {
     val ext = fileInfoModel.extension
     val name = fileInfoModel.nameAll
+    fileInfoModel.name = fileInfoModel.nameAll
 
     val isApk = "apk" == ext
 

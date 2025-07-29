@@ -1,13 +1,15 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,6 +41,7 @@ import com.lanzou.cloud.event.FileAction
 import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.event.OnLayoutChangeListener
 import com.lanzou.cloud.model.FileInfoModel
+import com.lanzou.cloud.model.FilePathModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.WebActivity
@@ -86,12 +89,19 @@ abstract class FileFragment(
   protected val models get() = binding.fileRv.models as List<FileInfoModel>
 
   /**
+   * 路径列表
+   */
+  protected val paths = mutableListOf<FilePathModel>()
+
+  protected val currentPage get() = binding.refresh.index
+
+  /**
    * 获取所需的数据
    *
    * @param page 当前页码
    * @return 返回文件集合
    */
-  abstract suspend fun getData(page: Int): List<FileInfoModel>?
+  abstract suspend fun getData(path: String?, page: Int): List<FileInfoModel>?
 
   /**
    * 是否第一次可见
@@ -102,10 +112,13 @@ abstract class FileFragment(
    * 初始化数据
    */
   override fun initData() {
+    paths.clear()
     lifecycleScope.launch {
-      viewModel.currentPositionFlow.collect {
-        // 监听布局改变，如果发生改变，则更改 RV 的 layoutManager
-        onLayoutChange(it)
+      repeatOnLifecycle(Lifecycle.State.RESUMED) {
+        viewModel.currentPositionFlow.collect {
+          // 监听布局改变，如果发生改变，则更改 RV 的 layoutManager
+          onLayoutChange(it)
+        }
       }
     }
 
@@ -192,20 +205,20 @@ abstract class FileFragment(
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
           VibrationManager.get().vibrateOneShot(50)
           val targetPosition = viewHolder.layoutPosition
-          if(!swipeModel) {
+          if (!swipeModel) {
             minPosition = targetPosition
             maxPosition = targetPosition
             swipeModel = true
           } else {
-            if(minPosition > targetPosition) {
+            if (minPosition > targetPosition) {
               minPosition = targetPosition
             }
-            if(targetPosition > maxPosition) {
+            if (targetPosition > maxPosition) {
               maxPosition = targetPosition
             }
             swipeModel = false
           }
-          for(i in minPosition..maxPosition) {
+          for (i in minPosition..maxPosition) {
             setChecked(i, true)
           }
           toggleMulti(true)
@@ -216,7 +229,7 @@ abstract class FileFragment(
     binding.refresh.onRefresh {
       scope {
         val data = onSort(withIO {
-          getData(index)
+          getData(getCurrentPath(), index)
         }, viewModel.filterSortModel.value)?.toMutableList()
 
         if (index == 1) {
@@ -224,7 +237,7 @@ abstract class FileFragment(
         }
 
         // 根据子类判断是否显示返回
-        val showBackItem = hasParentDirectory()
+        val showBackItem = hasParentDirectory() && index == 1
 
         data?.let {
           if (showBackItem) {
@@ -233,10 +246,12 @@ abstract class FileFragment(
           mData.addAll(it)
         }
 
+        val page = index
+
         addData(data, isEmpty = { data.isNullOrEmpty() && !showBackItem }) {
           isLoadMore(data)
         }
-        onLoadEnd(data)
+        onLoadEnd(data, page)
       }
     }
 
@@ -254,6 +269,14 @@ abstract class FileFragment(
     binding.btnLogin.setOnClickListener {
       WebActivity.login()
     }
+  }
+
+  fun refreshPathSubTitle() {
+    val pageType = when (filePageType) {
+      FilePageType.LOCAL -> "本地"
+      FilePageType.REMOTE -> "远程"
+    }
+    (activity as? AppCompatActivity)?.supportActionBar?.subtitle = pageType + " - " + getFullPath()
   }
 
   override fun onResume() {
@@ -275,9 +298,18 @@ abstract class FileFragment(
 
   override fun onLayoutChange(positon: LayoutPosition) {
     if (view != null) {
-      binding.fileRv.layoutManager = when (positon) {
-        LayoutPosition.RIGHT, LayoutPosition.MIDDLE -> LinearLayoutManager(requireContext())
-        LayoutPosition.LEFT -> StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+      val fileRv = binding.fileRv
+      val layoutManager = when {
+        positon == LayoutPosition.MIDDLE -> LinearLayoutManager(requireContext())
+        positon != layoutPosition -> StaggeredGridLayoutManager(
+          2,
+          StaggeredGridLayoutManager.VERTICAL
+        )
+
+        else -> LinearLayoutManager(requireContext())
+      }
+      if (fileRv.layoutManager?.javaClass != layoutManager.javaClass) {
+        fileRv.layoutManager = layoutManager
       }
     }
   }
@@ -289,7 +321,19 @@ abstract class FileFragment(
    * @param position 点击的位置(去掉 header 的位置)
    */
   protected open fun onItemClick(model: FileInfoModel, position: Int) {
-    navigateTo(model, position)
+    if (model.isFile) {
+      // 请求上传文件
+      navigateTo(model, position)
+      return
+    }
+    if (paths.isEmpty()) {
+      return
+    }
+    paths[paths.lastIndex].scrollPosition = getFirstVisiblePosition()
+    val path = model.path.ifEmpty { model.folderId }
+    paths.add(FilePathModel(path = path, name = model.name))
+    refreshPathSubTitle()
+    binding.refresh.showLoading()
   }
 
   /**
@@ -312,7 +356,13 @@ abstract class FileFragment(
    * 触发返回事件，当返回 true 时，按下返回键将执行 finish，false 则啥也不做
    */
   override fun onNavigateUp(): Boolean {
-    return true
+    if (paths.size <= 1) {
+      return true
+    }
+    paths.removeAt(paths.lastIndex)
+    refreshPathSubTitle()
+    refresh()
+    return false
   }
 
   /**
@@ -330,7 +380,16 @@ abstract class FileFragment(
    *
    * @param data 已加载的数据
    */
-  protected open fun onLoadEnd(data: List<FileInfoModel>?) {}
+  protected open fun onLoadEnd(data: List<FileInfoModel>?, page: Int) {
+    if (paths.isEmpty() || page != 1) {
+      return
+    }
+    val firstVisiblePosition = getFirstVisiblePosition()
+    val scrollPosition = paths.last().scrollPosition
+    if (firstVisiblePosition != scrollPosition) {
+      scrollToPosition(scrollPosition)
+    }
+  }
 
   /**
    * 定义对数据进行排序的规则
@@ -422,11 +481,17 @@ abstract class FileFragment(
    * 获取当前的路径
    */
   open fun getCurrentPath(): String? {
-    return null
+    return paths.lastOrNull()?.path
   }
 
-  override fun getCheckedFiles(): List<FileInfoModel> {
-    return mData.filter { it.isChecked && it.isFile }
+  open fun getFullPath() = paths.joinToString("/") { it.name }
+
+  override fun getCheckedFiles(ignoreDirectory: Boolean): List<FileInfoModel> {
+    return models.filter { it.isChecked && (!ignoreDirectory || it.isFile) }
+  }
+
+  override fun getCheckedPositions(): List<Int> {
+    return binding.fileRv.bindingAdapter.checkedPosition
   }
 
   override fun addFile(fileInfoModel: FileInfoModel) {
@@ -487,7 +552,13 @@ abstract class FileFragment(
   }
 
   override fun removeFile(position: Int, file: FileInfoModel) {
-    mData.removeAt(binding.fileRv.removeModel(position))
+    if (position > 0) {
+      mData.removeAt(binding.fileRv.removeModel(position))
+    } else {
+      // 处理 position 小于 0 的情况
+      val position = mData.indexOf(file)
+      mData.removeAt(binding.fileRv.removeModel(position))
+    }
   }
 
   override fun deleteFile(position: Int, file: FileInfoModel) {
@@ -499,7 +570,9 @@ abstract class FileFragment(
       .setMessage("确认要删除文件: ${file.name}")
       .setPositiveButton("确认") { dialog, _ ->
         scopeDialog {
-          File(file.path).deleteRecursively()
+          withIO {
+            File(file.path).deleteRecursively()
+          }
           removeFile(position, file)
         }.finally {
           toggleMulti(false)
@@ -511,9 +584,11 @@ abstract class FileFragment(
 
   override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
     scopeDialog {
-      files.forEach {
-        if (it.path.isNotEmpty()) {
-          File(it.path).deleteRecursively()
+      withIO {
+        files.forEach {
+          if (it.path.isNotEmpty()) {
+            File(it.path).deleteRecursively()
+          }
         }
       }
       binding.fileRv.removeModels(positions) {
@@ -607,15 +682,27 @@ abstract class FileFragment(
     targetPath ?: return null
     // FIXME: 不判断存不存在，暂时直接替换文件
     val targetFilePath = targetPath + File.separator + current.name
-    Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
-    if (FileUtils.moveFile(current.path, targetFilePath) { true }) {
+    if (current.path == targetFilePath) {
+      return null
+    }
+    val result = if (current.isDirectory) {
+      FileUtils.moveDir(current.path, targetFilePath) { true }
+    } else {
+      FileUtils.moveFile(current.path, targetFilePath) { true }
+    }
+
+    if (result) {
       return current.copy(path = targetFilePath)
     }
     return null
   }
 
   override fun shareFile(position: Int, file: FileInfoModel) {
-    toast("没写")
+    if (!FileUtils.isFile(file.path)) {
+      toast("文件可能未下载完成，请刷新检查后重试")
+      return
+    }
+    com.lanzou.cloud.utils.FileUtils.shareFile(requireContext(), file.path)
   }
 
   override fun copyFile(
@@ -624,13 +711,18 @@ abstract class FileFragment(
     targetPath: String?
   ): FileInfoModel? {
     targetPath ?: return null
-    // FIXME: 不判断存不存在，暂时直接替换文件
     val targetFilePath = targetPath + File.separator + current.name
-    Log.i(TAG, "currentPath: ${current.path}, targetPath: $targetFilePath")
-    if (FileUtils.copyFile(current.path, targetFilePath) { true }) {
-      return current.copy(path = targetFilePath)
+    if (current.path == targetFilePath) {
+      return null
     }
-    return null
+    try {
+      val file = File(current.path)
+      val target = File(targetFilePath)
+      file.copyRecursively(target, true)
+      return current.copy(path = targetFilePath)
+    } catch (_: Exception) {
+      return null
+    }
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -669,5 +761,18 @@ abstract class FileFragment(
       }
     }
     return false
+  }
+
+  private fun getFirstVisiblePosition(): Int {
+    val layoutManager = binding.fileRv.layoutManager
+    return when (layoutManager) {
+      is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition()
+      is StaggeredGridLayoutManager -> {
+        val arr = layoutManager.findFirstCompletelyVisibleItemPositions(null)
+        arr[0]
+      }
+
+      else -> 0
+    }
   }
 }

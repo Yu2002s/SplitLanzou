@@ -26,12 +26,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.drake.engine.base.EngineNavFragment
 import com.drake.engine.utils.dp
+import com.drake.net.utils.scope
 import com.drake.net.utils.scopeDialog
 import com.drake.net.utils.withIO
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
 import com.lanzou.cloud.data.Upload
 import com.lanzou.cloud.databinding.FragmentHomeBinding
@@ -48,6 +50,7 @@ import com.lanzou.cloud.ui.dialog.FileActionDialog
 import com.lanzou.cloud.ui.dialog.FileMkdirDialog
 import com.lanzou.cloud.ui.dialog.FileSearchDialog
 import com.lanzou.cloud.utils.getWindowWidth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -186,6 +189,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     override fun onPageSelected(position: Int) {
       homeViewModel.focusPosition(paths[position].fragment.layoutPosition)
       requireActivity().invalidateMenu()
+      currentFileFragment.refreshPathSubTitle()
     }
   }
 
@@ -240,6 +244,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       ), this,
       Context.BIND_AUTO_CREATE
     )
+
+    // 清理临时文件
+    scope(Dispatchers.IO) {
+      val file = File(LanzouApplication.tempPath)
+      if (file.exists()) {
+        file.deleteRecursively()
+      }
+    }
   }
 
   override fun initData() {
@@ -269,6 +281,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     lifecycleScope.launch {
       homeViewModel.focusedPositionFlow.collect {
         requireActivity().invalidateMenu()
+        currentFileFragment.refreshPathSubTitle()
       }
     }
   }
@@ -308,6 +321,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   private fun initPage(tab: TabLayout, pager: ViewPager2, paths: List<PathModel>) {
     pager.apply {
       offscreenPageLimit = 3
+      isUserInputEnabled = false
       adapter = FilePagerAdapter(paths, childFragmentManager, lifecycle)
       registerOnPageChangeCallback(FilePageChangeCallback((paths)))
     }
@@ -398,12 +412,20 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           toast("选中文件为空")
           return
         }
+        if (currentFilePageType == targetFilePageType) {
+          if (currentFilePageType == FilePageType.LOCAL) {
+            moveFiles(currentFileFragment.getCheckedFiles(false))
+          } else {
+            moveFiles(checkedFiles)
+          }
+          return
+        }
         val currentPath = targetFileFragment.getCurrentPath() ?: return
         val currentFolderName = targetPathModel.name
 
         MaterialAlertDialogBuilder(requireContext())
           .setTitle("上传")
-          .setMessage("已选择${checkedFiles.size}个文件，将上传到: $currentFolderName\n\n【暂时不支持选择文件夹、不能显示进度】")
+          .setMessage("已选择${checkedFiles.size}个文件，将上传到: $currentFolderName\n\n【暂时不支持选择文件夹】")
           .setPositiveButton("执行上传") { dialog, _ ->
             uploadFiles(currentPath, checkedFiles, currentFolderName)
           }
@@ -417,6 +439,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           toast("选中文件为空")
           return
         }
+        if (currentFilePageType == targetFilePageType) {
+          if (currentFilePageType == FilePageType.LOCAL) {
+            moveFiles(currentFileFragment.getCheckedFiles(false))
+          } else {
+            moveFiles(checkedFiles)
+          }
+          return
+        }
         val currentPath = targetFileFragment.getCurrentPath()
         if (currentPath == null) {
           toast("不能下载到目标位置")
@@ -424,7 +454,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         }
         MaterialAlertDialogBuilder(requireContext())
           .setTitle("下载")
-          .setMessage("已选择${checkedFiles.size}个文件，将下载到: $currentPath\n\n【暂时不支持选择文件夹，不能显示进度】")
+          .setMessage("已选择${checkedFiles.size}个文件，将下载到: $currentPath\n\n【暂时不支持选择文件夹】")
           .setPositiveButton("执行下载") { dialog, _ ->
             downloadFiles(currentPath, checkedFiles)
           }
@@ -503,7 +533,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
     MaterialAlertDialogBuilder(requireContext())
       .setTitle(if (isUpload) "上传" else "下载")
-      .setMessage("$message\n\n注意：【暂时不能显示实时进度】")
+      .setMessage(message)
       .setPositiveButton("执行") { dialog, _ ->
         if (isUpload) {
           uploadFile(fileInfoModel.path, currentPath, currentFolderName)
@@ -525,39 +555,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       .onItemClick = { itemPosition ->
       when (itemPosition) {
         "上传", "下载" -> showTransmissionDialog(fileInfoModel, position, filePageType)
-        "分享" -> {
-          currentFileFragment.shareFile(position, fileInfoModel)
-        }
-
-        "复制" -> {
-          if (filePageType != FilePageType.REMOTE) {
-            val targetPath = targetFileFragment.getCurrentPath()
-            scopeDialog {
-              // 暂时不显示复制的进度
-              withIO {
-                currentFileFragment.copyFile(position, fileInfoModel, targetPath)
-              }?.let {
-                targetFileFragment.addFile(it)
-              } ?: toast("发生错误或不能复制到这里")
-            }
-          } else {
-            toast("远程路径不支持复制")
-          }
-        }
-
-        "移动" -> {
-          scopeDialog {
-            // FIXME: 目前子 UploadFileSelectorFragment 不会更新 path
-            val currentPath = targetFileFragment.getCurrentPath()
-            withIO {
-              currentFileFragment.moveFile(position, fileInfoModel, currentPath)
-            }?.let {
-              currentFileFragment.removeFile(position, fileInfoModel)
-              targetFileFragment.addFile(it)
-            }
-          }
-        }
-
+        "分享" -> currentFileFragment.shareFile(position, fileInfoModel)
+        "复制" -> copyFile(position, fileInfoModel)
+        "移动" -> moveFile(position, fileInfoModel)
         "删除" -> currentFileFragment.deleteFile(position, fileInfoModel)
         "重命名" -> currentFileFragment.renameFile(position, fileInfoModel)
         "详情" -> currentFileFragment.showDetail(position, fileInfoModel)
@@ -583,6 +583,12 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     layoutPosition: LayoutPosition = currentFocusedPosition,
     fragment: FileFragment = UploadFileSelectorFragment.newInstance(path, layoutPosition)
   ) {
+    val currentSelectedPosition = currentPaths.indexOfFirst { it.name == name }
+    if (currentSelectedPosition != -1) {
+      currentVp.setCurrentItem(currentSelectedPosition, true)
+      toast("当前聚焦位置已存在相同选项卡，已跳转")
+      return
+    }
     val path = when (filePageType) {
       FilePageType.REMOTE -> RemotePathModel(
         path!!, name,
@@ -596,20 +602,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     when (layoutPosition) {
       LayoutPosition.LEFT -> {
         leftPaths.add(insertPosition, path)
-        // val insertPosition = leftPaths.size - 1
         currentLeftVpAdapter.notifyItemInserted(insertPosition)
-        binding.vpLeft.post {
-          binding.vpLeft.setCurrentItem(insertPosition, true)
-        }
+        binding.vpLeft.setCurrentItem(insertPosition, true)
       }
 
       LayoutPosition.RIGHT -> {
         rightPaths.add(insertPosition, path)
-        // val insertPosition = rightPaths.size - 1
         currentRightVpAdapter.notifyItemInserted(insertPosition)
-        binding.vpRight.post {
-          binding.vpRight.setCurrentItem(insertPosition, true)
-        }
+        binding.vpRight.setCurrentItem(insertPosition, true)
       }
 
       else -> throw IllegalStateException()
@@ -660,7 +660,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       folderId.toLong(),
       folderName
     ) { upload ->
-      if (target != targetFileFragment) {
+      if (view == null) {
         return@uploadFile
       }
       when (upload.status) {
@@ -677,7 +677,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           }
         }
 
-        Upload.ERROR -> target.refresh()
+        Upload.ERROR -> {}
       }
     }
   }
@@ -691,7 +691,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       fileInfoModel.name,
       filePath
     ) { download ->
-      if (target != targetFileFragment) {
+      if (view == null) {
         return@addDownloadWithPath
       }
       when (download.status) {
@@ -699,9 +699,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           it.progress = download.progress
         }
 
-        Upload.ERROR -> target.getFile(filePath)?.let {
-          target.refresh()
-        }
+        Upload.ERROR -> {}
       }
     }
   }
@@ -711,7 +709,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     val target = targetFileFragment
     val paths = checkedFiles.map { it.path }
     uploadService.uploadFiles(paths, path.toLong(), folderName) { upload ->
-      if (target != targetFileFragment) {
+      if (view == null) {
         return@uploadFiles
       }
       when (upload.status) {
@@ -728,7 +726,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         }
 
         Upload.ERROR -> {
-          target.refresh()
+          // FIXME: 不处理上传失败问题
         }
       }
     }
@@ -742,7 +740,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       it.path = directory + File.separator + it.name
     }
     downloadService.addDownload(checkedFiles) { download ->
-      if (target != targetFileFragment) {
+      if (view == null) {
         return@addDownload
       }
       when (download.status) {
@@ -753,11 +751,67 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         }
 
         Upload.ERROR -> {
-          target.refresh()
+          // FIXME: 不处理下载失败问题
         }
       }
     }
     targetFileFragment.addFiles(checkedFiles)
+  }
+
+  private fun moveFile(position: Int, fileInfoModel: FileInfoModel) {
+    scopeDialog {
+      val currentPath = targetFileFragment.getCurrentPath()
+      withIO {
+        currentFileFragment.moveFile(position, fileInfoModel, currentPath)
+      }?.let {
+        currentFileFragment.removeFile(position, fileInfoModel)
+        targetFileFragment.addFile(it)
+      } ?: toast("发生错误或不能移动到这里")
+    }
+  }
+
+  private fun moveFiles(checkedFiles: List<FileInfoModel>) {
+    scopeDialog {
+      val currentPath = targetFileFragment.getCurrentPath()
+      checkedFiles.forEachIndexed { position, fileInfoModel ->
+        withIO {
+          currentFileFragment.moveFile(position, fileInfoModel, currentPath)
+        }?.let {
+          currentFileFragment.removeFile(-1, fileInfoModel)
+          targetFileFragment.addFile(it)
+        }
+      }
+    }.finally {
+      homeViewModel.toggle()
+    }
+  }
+
+  private fun copyFile(position: Int, fileInfoModel: FileInfoModel) {
+    val targetPath = targetFileFragment.getCurrentPath()
+    scopeDialog {
+      // 暂时不显示复制的进度
+      withIO {
+        currentFileFragment.copyFile(position, fileInfoModel, targetPath)
+      }?.let {
+        targetFileFragment.addFile(it)
+      } ?: toast("发生错误或不能复制到这里")
+    }
+  }
+
+  private fun copyFiles(checkedFiles: List<FileInfoModel>) {
+    // 只能本地对本地复制
+    scopeDialog {
+      val currentPath = targetFileFragment.getCurrentPath()
+      checkedFiles.forEachIndexed { position, fileInfoModel ->
+        withIO {
+          currentFileFragment.copyFile(position, fileInfoModel, currentPath)
+        }?.let {
+          targetFileFragment.addFile(it)
+        }
+      }
+    }.finally {
+      homeViewModel.toggle()
+    }
   }
 
   override fun onNavigateUp(): Boolean {
@@ -786,6 +840,8 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     super.onPrepareMenu(menu)
     menu.findItem(R.id.show_system_app).isVisible = currentFileFragment is UploadAppSelectorFragment
     menu.findItem(R.id.sort).isVisible = currentFilePageType != FilePageType.REMOTE
+    menu.findItem(R.id.copy).isVisible = currentFilePageType == FilePageType.LOCAL
+        && currentFilePageType == targetFilePageType
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -799,6 +855,11 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         true
       }
 
+      R.id.copy -> {
+        copyFiles(currentFileFragment.getCheckedFiles(false))
+        true
+      }
+
       R.id.show_system_app -> {
         menuItem.isChecked = !menuItem.isChecked
         homeViewModel.showSystemApp(menuItem.isChecked)
@@ -809,7 +870,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       R.id.add_tab -> {
         // TODO: 这里应该有一层映射关系，这里暂且写死
         val items = arrayOf("远程", "本地", "软件", "压缩包", "安装包", "视频")
-        var currentPosition = -1
+        var currentPosition = 0
         MaterialAlertDialogBuilder(requireActivity())
           .setTitle("添加选项卡到当前聚焦位置")
           .setSingleChoiceItems(items, 0) { dialog, which ->
