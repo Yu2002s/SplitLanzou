@@ -230,6 +230,16 @@ abstract class FileFragment(
         ) {
           //Log.d("滑动触发多选", "onChildDraw调用")
         }
+        /*override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float {
+          return 0f
+        }
+        override fun onMove(
+          recyclerView: RecyclerView,
+          source: RecyclerView.ViewHolder,
+          target: RecyclerView.ViewHolder,
+        ): Boolean {
+          return false
+        }*/
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
           //Log.d("滑动触发多选", direction.toString())
           VibrationManager.get().vibrateOneShot(50)
@@ -253,7 +263,7 @@ abstract class FileFragment(
             setChecked(i, true)
           }
           binding.fileRv.bindingAdapter.toggle(true)
-          binding.fileRv.bindingAdapter.notifyDataSetChanged()
+          binding.fileRv.bindingAdapter.notifyItemChanged(minPosition, maxPosition - minPosition)
         }
       })
     }
