@@ -1,10 +1,12 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
+import android.graphics.Canvas
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
@@ -15,7 +17,14 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.drake.brv.BindingAdapter
+import com.drake.brv.BindingAdapter.BindingViewHolder
 import com.drake.brv.annotaion.AnimationType
+import com.drake.brv.annotaion.ItemOrientation
+import com.drake.brv.item.ItemDrag
+import com.drake.brv.item.ItemSwipe
+import com.drake.brv.listener.DefaultItemTouchCallback
+import com.drake.brv.listener.ItemDifferCallback
 import com.drake.brv.utils.addModels
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.models
@@ -46,7 +55,6 @@ import com.lanzou.cloud.model.FilePathModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.WebActivity
-import com.lanzou.cloud.utils.FileItemTouchCallback
 import com.lanzou.cloud.utils.FileJavaUtils
 import com.lanzou.cloud.utils.VibrationManager
 import com.lanzou.cloud.utils.addModel
@@ -210,9 +218,20 @@ abstract class FileFragment(
         onItemClick(model, modelPosition)
       }
 
-
-      itemTouchHelper = ItemTouchHelper(object : FileItemTouchCallback() {
+      itemTouchHelper = ItemTouchHelper(object : DefaultItemTouchCallback() {
+        override fun onChildDraw(
+          c: Canvas,
+          recyclerView: RecyclerView,
+          viewHolder: RecyclerView.ViewHolder,
+          dX: Float,
+          dY: Float,
+          actionState: Int,
+          isCurrentlyActive: Boolean,
+        ) {
+          //Log.d("滑动触发多选", "onChildDraw调用")
+        }
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+          //Log.d("滑动触发多选", direction.toString())
           VibrationManager.get().vibrateOneShot(50)
           val targetPosition = viewHolder.layoutPosition
           if (!swipeModel) {
@@ -233,7 +252,8 @@ abstract class FileFragment(
           for (i in minPosition..maxPosition) {
             setChecked(i, true)
           }
-          toggleMulti(true)
+          binding.fileRv.bindingAdapter.toggle(true)
+          binding.fileRv.bindingAdapter.notifyDataSetChanged()
         }
       })
     }
