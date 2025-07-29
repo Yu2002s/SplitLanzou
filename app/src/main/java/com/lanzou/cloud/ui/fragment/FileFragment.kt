@@ -1,6 +1,7 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -140,6 +141,9 @@ abstract class FileFragment(
     binding.m = viewModel
     binding.lifecycleOwner = this
 
+    var minPosition = 0
+    var maxPosition = 0
+    var swipeModel = false
     binding.fileRv.setup {
       setAnimation(AnimationType.SLIDE_RIGHT) // 指定动画
       setCheckableType(R.layout.item_list_fileinfo) // 返回项不需要多选
@@ -162,6 +166,9 @@ abstract class FileFragment(
         }
         if (!toggleMode) {
           checkedAll(false)
+          minPosition = 0
+          maxPosition = 0
+          swipeModel = false
         }
       }
 
@@ -177,8 +184,6 @@ abstract class FileFragment(
         }
       }
 
-      var minPosition = 0
-      var maxPosition = 0
 
       R.id.item.onFastClick {
         val model = getModel<FileInfoModel>()
@@ -189,10 +194,15 @@ abstract class FileFragment(
             onNavigateUp()
           return@onFastClick
         }
+
         // 点击事件监听
         if (toggleMode) {
-          minPosition = 0
-          maxPosition = 0
+          if(swipeModel) {
+            minPosition = 0
+            maxPosition = 0
+            swipeModel = false
+            Log.d("滑动触发多选", "首次滑动后单选，取消滑动多选功能")
+          }
           setChecked(modelPosition, !model.isChecked)
           return@onFastClick
         }
@@ -200,7 +210,7 @@ abstract class FileFragment(
         onItemClick(model, modelPosition)
       }
 
-      var swipeModel = false
+
       itemTouchHelper = ItemTouchHelper(object : FileItemTouchCallback() {
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
           VibrationManager.get().vibrateOneShot(50)
@@ -208,15 +218,17 @@ abstract class FileFragment(
           if (!swipeModel) {
             minPosition = targetPosition
             maxPosition = targetPosition
+            Log.d("滑动触发多选", "滑动开始, targetPosition = " + targetPosition)
             swipeModel = true
           } else {
-            if (minPosition > targetPosition) {
+            if (minPosition >= targetPosition) {
               minPosition = targetPosition
             }
             if (targetPosition > maxPosition) {
               maxPosition = targetPosition
             }
             swipeModel = false
+            Log.d("滑动触发多选", "滑动结束, targetPositon = " + targetPosition + ", minPosition = " + minPosition + ", maxPosition = " + maxPosition)
           }
           for (i in minPosition..maxPosition) {
             setChecked(i, true)
