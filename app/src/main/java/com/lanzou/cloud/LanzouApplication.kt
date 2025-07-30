@@ -48,13 +48,22 @@ class LanzouApplication : Application() {
 
     const val HOST_LOGIN = HOST + "account.php?action=login"
 
+    /**
+     * 下载、解析服务 Api 接口地址
+     */
     const val API_URL = "http://api.jdynb.xyz:6400"
 
     const val SHARE_URL = "http://lz.jdynb.xyz/index.html"
 
-    const val SHARE_URL2 = "http://lzy.jdynb.xyz/share/file/"
+    /**
+     * 分享文件地址
+     */
+    const val SHARE_URL2 = "https://lzy.jdynb.xyz/share/file/"
 
-    const val SHARE_FOLDER_URL = "http://lzy.jdynb.xyz/share/folder/"
+    /**
+     * 分享文件夹地址
+     */
+    const val SHARE_FOLDER_URL = "https://lzy.jdynb.xyz/share/folder/"
 
     const val GITHUB_HOME = "https://github.com/Yu2002s/SplitLanzou"
 

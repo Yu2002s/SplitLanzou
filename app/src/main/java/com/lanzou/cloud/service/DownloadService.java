@@ -246,6 +246,9 @@ public class DownloadService extends Service {
         }
     }
 
+    /**
+     * 移除所有下载
+     */
     public void removeAllDownload() {
         LitePal.deleteAll(SplitFile.class);
         LitePal.deleteAll(Download.class);
@@ -255,6 +258,7 @@ public class DownloadService extends Service {
             }
             future.cancel(true);
         });
+        downloadMap.clear();
         FileUtils.deleteAllInDir(downloadPath);
     }
 

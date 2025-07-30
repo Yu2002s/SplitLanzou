@@ -104,8 +104,16 @@ class LanzouFileFragment(
     }
   }
 
+  override suspend fun onRenameFile(file: FileInfoModel): Boolean {
+    return LanzouRepository.renameFile(file.id, file.name)
+  }
+
   override fun renameFile(position: Int, file: FileInfoModel) {
-    toast("这边重命名还没做")
+    if (file.fileId.isEmpty()) {
+      toast("文件可能未上传，请刷新检查后重试")
+      return
+    }
+    super.renameFile(position, file)
   }
 
   override fun shareFile(position: Int, file: FileInfoModel) {

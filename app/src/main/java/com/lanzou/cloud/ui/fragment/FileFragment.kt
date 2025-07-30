@@ -599,10 +599,20 @@ abstract class FileFragment(
     }
   }
 
-  override fun renameFile(position: Int, file: FileInfoModel) {
-    if (file.path.isEmpty()) {
-      return
+  /**
+   * 具体执行重命名
+   */
+  protected open suspend fun onRenameFile(file: FileInfoModel): Boolean {
+    val targetFile = File(file.path)
+    val renamedFile = File(targetFile.parentFile, file.name)
+    if (targetFile.renameTo(renamedFile)) {
+      file.path = renamedFile.path
+      return true
     }
+    return false
+  }
+
+  override fun renameFile(position: Int, file: FileInfoModel) {
     BaseEditDialog(requireContext()).apply {
       setTitle("重命名")
       editValue = file.name
@@ -613,17 +623,19 @@ abstract class FileFragment(
           return@setPositiveButton
         }
         file.name = editValue
-        val targetFile = File(file.path)
-        val renamedFile = File(targetFile.parentFile, editValue)
-        if (targetFile.renameTo(renamedFile)) {
-          file.path = renamedFile.path
-        }
-        binding.fileRv.updateModel(position)
-        val targetPosition = getInsertPosition(file.name)
-        if (targetPosition != position) {
-          Collections.swap(binding.fileRv.mutable, position, targetPosition)
-          binding.fileRv.bindingAdapter.notifyItemMoved(position, targetPosition)
-          scrollToPosition(targetPosition)
+        scopeDialog {
+          if (!onRenameFile(file)) {
+            throw IllegalStateException("重命名失败")
+          }
+          binding.fileRv.updateModel(position)
+          val targetPosition = getInsertPosition(file.name)
+          if (targetPosition != position) {
+            Collections.swap(binding.fileRv.mutable, position, targetPosition)
+            binding.fileRv.bindingAdapter.notifyItemMoved(position, targetPosition)
+            scrollToPosition(targetPosition)
+          }
+        }.catch {
+          toast(it.message)
         }
       }
       setNegativeButton("取消", null)

@@ -122,6 +122,17 @@ class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT)
       .show()
   }
 
+  override fun copyFile(
+    position: Int,
+    current: FileInfoModel,
+    targetPath: String?
+  ): FileInfoModel? {
+    if (!current.name.endsWith(".apk")) {
+      current.name += ".apk"
+    }
+    return super.copyFile(position, current, targetPath)
+  }
+
   override suspend fun moveFile(
     position: Int,
     current: FileInfoModel,

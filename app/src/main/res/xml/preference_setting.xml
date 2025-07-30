@@ -23,8 +23,8 @@
             app:icon="@drawable/baseline_download_for_offline_24"
             app:iconSpaceReserved="false"
             app:key="big_file_upload"
-            app:summary="开启大文件上传功能，文件将被切割"
-            app:title="大文件上传" />
+            app:summary="开启大文件上传功能"
+            app:title="文件上传" />
 
         <SeekBarPreference
             android:max="524288000"
@@ -36,8 +36,8 @@
             app:min="52428800"
             app:seekBarIncrement="10485760"
             app:showSeekBarValue="true"
-            app:summary="限制单个文件在切割时的大小(单位：字节)"
-            app:title="分割文件大小" />
+            app:summary="限制单个文件的大小(单位：字节)"
+            app:title="文件大小" />
 
         <Preference
             android:title="缓存路径"

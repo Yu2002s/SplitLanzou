@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import com.drake.brv.annotaion.DividerOrientation
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.divider
@@ -64,9 +65,17 @@ class MeFragment : EngineNavFragment<FragmentMeBinding>(R.layout.fragment_me), M
   override fun initView() {
     requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
+    val gridManager = GridLayoutManager(requireContext(), 2)
+    gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+      override fun getSpanSize(position: Int): Int {
+        return if (position == 0) 2 else 1
+      }
+    }
+
+    binding.meRv.layoutManager = gridManager
     binding.meRv.divider {
       includeVisible = true
-      orientation = DividerOrientation.VERTICAL
+      orientation = DividerOrientation.GRID
       setDivider(16, true)
     }.setup {
       addType<UserInfoModel>(R.layout.item_userinfo)

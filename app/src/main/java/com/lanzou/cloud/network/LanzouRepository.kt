@@ -14,17 +14,31 @@ import com.lanzou.cloud.utils.formatBytes
 import kotlinx.coroutines.coroutineScope
 import org.jsoup.Jsoup
 
+/**
+ * 仓库集中管理接口
+ */
 object LanzouRepository {
 
+  /**
+   * 可点击修改的选项
+   */
   private val CLICKABLE_NAMES = arrayOf("个性域名", "密码修改", "手机号", "注销账户")
 
+  /**
+   * 匹配文件的正则
+   */
   private val FILE_REGEX = "(.+)\\.([a-zA-Z]+\\d?)\\.apk".toRegex()
 
+  /**
+   * 匹配分割文件的正则
+   */
   private val SPLIT_FILE_REGEX =
     ("(.+)\\.([a-zA-Z]+\\d?)\\[(\\d+)]\\." + UploadService.SPLIT_FILE_EXTENSION).toRegex()
 
   /**
    * 获取用户的资料信息
+   *
+   * @return 用户资料信息
    */
   suspend fun getUserProfiles() = coroutineScope {
     val result = Get<String>(Api.DISK_PHP) {
@@ -48,6 +62,10 @@ object LanzouRepository {
 
   /**
    * 编辑密码
+   *
+   * @param password 当前密码
+   * @param newPassword 新密码
+   * @return 是否成功
    */
   suspend fun editPassword(password: String, newPassword: String) = coroutineScope {
     val result = Get<String>(Api.DISK_PHP) {
@@ -80,6 +98,12 @@ object LanzouRepository {
     return@coroutineScope tipsText.contains("密码修改成功")
   }
 
+  /**
+   * 编辑自定义域名
+   *
+   * @param domain 具体域名
+   * @return 是否成功
+   */
   suspend fun editDomain(domain: String) = coroutineScope {
     Post<BaseLanzouResponse>(Api.FILE_PHP) {
       param("task", 48)
@@ -105,6 +129,13 @@ object LanzouRepository {
     }.await().zt == 1
   }
 
+  /**
+   * 删除文件
+   *
+   * @param fileId 文件 id
+   * @param isFile 是否是文件
+   * @return 是否成功
+   */
   suspend fun deleteFile(fileId: String, isFile: Boolean = true) = coroutineScope {
     Post<BaseLanzouResponse>(Api.FILE_PHP) {
       param("task", if (isFile) 6 else 3)
@@ -171,6 +202,12 @@ object LanzouRepository {
     }.await() ?: emptyList()
   }
 
+  /**
+   * 获取文件信息
+   *
+   * @param id 文件 id
+   * @return 文件信息
+   */
   suspend fun getFileInfo(id: String) = coroutineScope {
     Post<LanzouUrlModel>(Api.FILE_PHP) {
       converter = SerializationConverter(message = "text", data = "info")
@@ -194,11 +231,34 @@ object LanzouRepository {
     }.await().text
   }
 
+  /**
+   * 移动文件
+   *
+   * @param fileId 文件 id
+   * @param folderId 目标文件夹 id
+   * @return 是否成功
+   */
   suspend fun moveFile(fileId: String, folderId: String) = coroutineScope {
     Post<BaseLanzouResponse>(Api.FILE_PHP) {
       param("task", 20)
       param("file_id", fileId)
       param("folder_id", folderId)
+    }.await().zt == 1
+  }
+
+  /**
+   * 重命名文件
+   *
+   * @param fileId 文件 id
+   * @param fileName 文件名
+   * @return 是否成功
+   */
+  suspend fun renameFile(fileId: String, fileName: String) = coroutineScope {
+    Post<BaseLanzouResponse>(Api.FILE_PHP) {
+      param("task", 46)
+      param("file_id", fileId)
+      param("file_name", fileName)
+      param("type", 2)
     }.await().zt == 1
   }
 
