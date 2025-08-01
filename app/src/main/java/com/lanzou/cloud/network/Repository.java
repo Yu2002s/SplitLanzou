@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -77,7 +78,7 @@ public class Repository {
             "bds", "bdi", "conf", "it"
     };
 
-    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%d.0.0.0 Safari/537.36 Edg/%d.0.0.0";
     private static final String ACCEPT = "*/*";
     private static final String ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6";
 
@@ -596,9 +597,13 @@ public class Repository {
     }
 
     private Request.Builder createRequest(String url) {
+        int version = (int) (100 + Math.random() * 50);
+        String ua = String.format(Locale.CHINA, USER_AGENT, version, version);
+        Log.i(TAG, "random UserAgent: " + ua);
+        // FIXME: 2025/8/1 频繁使用相同UA可能会造成无法访问问题，这里处理一下
         return new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", USER_AGENT)
+                .addHeader("User-Agent", ua)
                 .addHeader("Accept", ACCEPT)
                 .addHeader("Accept-Language", ACCEPT_LANGUAGE);
     }

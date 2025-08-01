@@ -21,17 +21,33 @@ class HomeViewModel : ViewModel() {
 
   private val _focusedPositionFlow = MutableStateFlow(LayoutPosition.LEFT)
 
+  /**
+   * 当前聚焦的位置
+   */
   val focusedPositionFlow: StateFlow<LayoutPosition> = _focusedPositionFlow
 
+  /**
+   * 当前布局展示的位置
+   */
   private val _currentPositionFlow = MutableStateFlow(LayoutPosition.MIDDLE)
 
   val currentPositionFlow: StateFlow<LayoutPosition> = _currentPositionFlow
 
+  /**
+   * 之前的位置
+   */
   var beforePosition = currentPositionFlow.value
 
   private val _leftMultiModelFlow = MutableStateFlow<Boolean?>(null)
+
+  /**
+   * 左边多选状态
+   */
   val leftMultiModeFlow: StateFlow<Boolean?> = _leftMultiModelFlow
 
+  /**
+   * 左边多选按钮文本
+   */
   val leftMultiBtnText = MutableStateFlow("多选")
 
   private val _rightMultiModeFlow = MutableStateFlow<Boolean?>(null)

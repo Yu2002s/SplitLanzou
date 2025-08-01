@@ -52,8 +52,8 @@ public class UpdateUtils {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 context.runOnUiThread(() ->
-                        Toast.makeText(context, "网络被墙，检查更新失败，请前往设置手动获取更新\n" + e.getMessage(),
-                                Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "网络被墙，检查更新失败，可前往设置手动获取更新\n" + e.getMessage(),
+                                Toast.LENGTH_LONG).show()
                 );
             }
 

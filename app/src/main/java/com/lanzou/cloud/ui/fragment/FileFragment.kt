@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
@@ -17,14 +16,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.drake.brv.BindingAdapter
-import com.drake.brv.BindingAdapter.BindingViewHolder
 import com.drake.brv.annotaion.AnimationType
-import com.drake.brv.annotaion.ItemOrientation
-import com.drake.brv.item.ItemDrag
-import com.drake.brv.item.ItemSwipe
 import com.drake.brv.listener.DefaultItemTouchCallback
-import com.drake.brv.listener.ItemDifferCallback
 import com.drake.brv.utils.addModels
 import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.models
@@ -70,6 +63,7 @@ import java.util.Collections
  * 对文件操作的基类
  *
  * @param layoutPosition 布局所在的位置，分为 LEFT、RIGHT
+ * @param filePageType 页面的类型，远程或本地
  */
 abstract class FileFragment(
   val layoutPosition: LayoutPosition = LayoutPosition.LEFT,
@@ -153,10 +147,9 @@ abstract class FileFragment(
     var maxPosition = 0
     var swipeModel = false
     binding.fileRv.setup {
-      setAnimation(AnimationType.SLIDE_RIGHT) // 指定动画
+      setAnimation(AnimationType.ALPHA) // 指定动画
       setCheckableType(R.layout.item_list_fileinfo) // 返回项不需要多选
       addType<FileInfoModel>(R.layout.item_list_fileinfo) // 文件布局
-      // addType<String>(R.layout.item_file_parent) // 返回布局
 
       onChecked { position, checked, allChecked ->
         val model = getModel<FileInfoModel>(position)
@@ -165,8 +158,6 @@ abstract class FileFragment(
 
       // 监听多选事件
       onToggle { position, toggleMode, end ->
-        // val model = getModelOrNull<FileInfoModel>(position) ?: return@onToggle
-        // model.isCheckable = toggleMode
         if (this@FileFragment.layoutPosition == LayoutPosition.LEFT) {
           viewModel.toggleLeft(toggleMode) // 左侧多选
         } else {
@@ -205,11 +196,11 @@ abstract class FileFragment(
 
         // 点击事件监听
         if (toggleMode) {
-          if(swipeModel) {
+          if (swipeModel) {
             minPosition = 0
             maxPosition = 0
             swipeModel = false
-            Log.d("滑动触发多选", "首次滑动后单选，取消滑动多选功能")
+            Log.d(TAG, "首次滑动后单选，取消滑动多选功能")
           }
           setChecked(modelPosition, !model.isChecked)
           return@onFastClick
@@ -228,18 +219,9 @@ abstract class FileFragment(
           actionState: Int,
           isCurrentlyActive: Boolean,
         ) {
-          //Log.d("滑动触发多选", "onChildDraw调用")
+          // Log.d("滑动触发多选", "onChildDraw调用")
         }
-        /*override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float {
-          return 0f
-        }
-        override fun onMove(
-          recyclerView: RecyclerView,
-          source: RecyclerView.ViewHolder,
-          target: RecyclerView.ViewHolder,
-        ): Boolean {
-          return false
-        }*/
+
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
           //Log.d("滑动触发多选", direction.toString())
           VibrationManager.get().vibrateOneShot(50)
@@ -247,7 +229,7 @@ abstract class FileFragment(
           if (!swipeModel) {
             minPosition = targetPosition
             maxPosition = targetPosition
-            Log.d("滑动触发多选", "滑动开始, targetPosition = " + targetPosition)
+            Log.d(TAG, "滑动开始, targetPosition = $targetPosition")
             swipeModel = true
           } else {
             if (minPosition >= targetPosition) {
@@ -257,13 +239,16 @@ abstract class FileFragment(
               maxPosition = targetPosition
             }
             swipeModel = false
-            Log.d("滑动触发多选", "滑动结束, targetPositon = " + targetPosition + ", minPosition = " + minPosition + ", maxPosition = " + maxPosition)
+            Log.d(
+              TAG,
+              "滑动结束, targetPositon = $targetPosition, minPosition = $minPosition, maxPosition = $maxPosition"
+            )
           }
           for (i in minPosition..maxPosition) {
             setChecked(i, true)
           }
-          binding.fileRv.bindingAdapter.toggle(true)
-          binding.fileRv.bindingAdapter.notifyItemChanged(minPosition, maxPosition - minPosition)
+          toggle(true)
+          notifyItemChanged(minPosition, maxPosition - minPosition)
         }
       })
     }
@@ -294,12 +279,6 @@ abstract class FileFragment(
           isLoadMore(data)
         }
         onLoadEnd(data, page)
-      }
-    }
-
-    binding.refresh.stateLayout?.onContent {
-      animate().setDuration(0).alpha(0F).withEndAction {
-        animate().setDuration(500).alpha(1F)
       }
     }
 
@@ -526,6 +505,9 @@ abstract class FileFragment(
     return paths.lastOrNull()?.path
   }
 
+  /**
+   * 获取完整的路径
+   */
   open fun getFullPath() = paths.joinToString("/") { it.name }
 
   override fun getCheckedFiles(ignoreDirectory: Boolean): List<FileInfoModel> {

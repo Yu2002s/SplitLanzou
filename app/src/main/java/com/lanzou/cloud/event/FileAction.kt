@@ -28,6 +28,9 @@ interface FileAction : Searchable {
    */
   fun getCheckedFiles(ignoreDirectory: Boolean = true): List<FileInfoModel>
 
+  /**
+   * 获取选中的 item 索引
+   */
   fun getCheckedPositions(): List<Int>
 
   /**

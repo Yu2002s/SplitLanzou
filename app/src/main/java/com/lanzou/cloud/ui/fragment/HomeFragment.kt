@@ -318,6 +318,13 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       }
   }
 
+  /**
+   * 初始化页面
+   *
+   * @param tab 页面标签
+   * @param pager 具体页面
+   * @param paths 路径列表
+   */
   private fun initPage(tab: TabLayout, pager: ViewPager2, paths: List<PathModel>) {
     pager.apply {
       offscreenPageLimit = 3
