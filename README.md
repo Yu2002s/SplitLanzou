@@ -1,18 +1,18 @@
 # SplitLanzou
 
-突破上传文件限制，**分割上传文件，第三方蓝奏云**
+**第三方蓝奏云**
 
-> 特别说明：本项目为**蓝奏云(lanzou.com)的第三方客户端**，本项目不存储任何文件和资源。项目采用
-> 分割文件方式达到上传储存目的，任何用户二次开发本项目行为，**本项目概不负责**。
+> 特别说明：本项目为**蓝奏云(lanzou.com)的第三方客户端**，本项目不存储任何文件和资源。
+> 任何用户二次开发本项目行为，**本项目概不负责**。
 > **请勿将本项目用于非法用途，否则一切后果由使用者自己承担。如本项目侵犯了原作者的版权，请立即联系我删除。**
 
 ## 下载
 
-### 1.最新发行版(release)
+### 1.最新版
 
 > **以下版本不会自动更新，需要手动前往 github gitee 首页进行更新，如存在问题请提 issue**
 
-1. [网盘下载](https://jdy2002.lanzoub.com/b041xpw2d) *推荐* (密码：2fgt)
+1. [网盘下载](https://lzy.jdynb.xyz/share/folder/b041xpw2d/2fgt) *推荐* (密码：2fgt)
 2. [github release](https://github.com/Yu2002s/SplitLanzou/releases) **可能无法访问**
 3. [gitee release](https://gitee.com/jdy2002/SplitLanzou/releases) 国内仓库
 
@@ -34,8 +34,8 @@
 ### 本项目依赖环境：
 
 1. jdk21
-2. gradle8.11.1
-3. AndroidStudio 2024.2.2 (AS 版本太高，jdk 也高，需要手动设置 jdk 版本)
+2. gradle8.11.1 +
+3. AndroidStudio 2024.2.2 + (AS 版本太高，jdk 也高，需要手动设置 jdk 版本)
 
 其他环境可能无法成功编译
 

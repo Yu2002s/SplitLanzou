@@ -29,8 +29,8 @@ android {
         applicationId "com.lanzou.cloud"
         minSdk 24
         targetSdk 35
-        versionCode 20
-        versionName "1.8.1-fix"
+        versionCode 21
+        versionName "1.8.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.debug

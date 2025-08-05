@@ -18,6 +18,9 @@ sealed class PathModel(
   var id: Long = System.currentTimeMillis() + Random.nextLong(999999)
 }
 
+/**
+ * 远程路径
+ */
 class RemotePathModel(
   id: String = "-1",
   name: String,
@@ -25,6 +28,9 @@ class RemotePathModel(
 ) :
   PathModel(name, fragment, id)
 
+/**
+ * 本地路径
+ */
 class LocalPathModel(
   path: String? = Environment.getExternalStorageDirectory().path,
   name: String,

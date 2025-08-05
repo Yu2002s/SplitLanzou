@@ -38,7 +38,7 @@ class SerializationConverter(
   override fun <R> onConvert(succeed: Type, response: Response): R? {
     try {
       return NetConverter.onConvert(succeed, response)
-    } catch (e: ConvertException) {
+    } catch (_: ConvertException) {
       val code = response.code
       when {
         code in 200..299 -> { // 请求成功

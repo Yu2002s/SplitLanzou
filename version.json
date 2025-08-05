@@ -1,7 +1,7 @@
 {
-  "version": "1.8.1-fix",
-  "versionCode": 20,
-  "content": "1.修复1.8.1存在的问题\n\n【如有问题可前往github首页反馈】",
-  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/i8SRf31xc5lg\n",
-  "date": "2025-07-26"
+  "version": "1.8.2",
+  "versionCode": 21,
+  "content": "1.修复一些问题\n\n【如有问题可前往github首页反馈】",
+  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/i8yk832prnyf",
+  "date": "2025-08-05"
 }

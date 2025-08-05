@@ -2,6 +2,8 @@ package com.lanzou.cloud.network
 
 import com.drake.net.Get
 import com.drake.net.Post
+import com.lanzou.cloud.LanzouApplication
+import com.lanzou.cloud.R
 import com.lanzou.cloud.config.Api
 import com.lanzou.cloud.model.BaseLanzouResponse
 import com.lanzou.cloud.model.FileInfoModel
@@ -95,7 +97,7 @@ object LanzouRepository {
     val document2 = Jsoup.parse(result2)
     val tipsText =
       document2.selectFirst(".info_box .info_b2")?.text() ?: return@coroutineScope false
-    return@coroutineScope tipsText.contains("密码修改成功")
+    return@coroutineScope tipsText.contains(LanzouApplication.context.getString(R.string.password_update_success))
   }
 
   /**
@@ -108,24 +110,6 @@ object LanzouRepository {
     Post<BaseLanzouResponse>(Api.FILE_PHP) {
       param("task", 48)
       param("domain", domain)
-    }.await().zt == 1
-  }
-
-  suspend fun sendEditPhoneSms(phone: String) = coroutineScope {
-    Post<BaseLanzouResponse>(Api.FILE_PHP) {
-      param("task", 43)
-      param("type", 1)
-      param("phoneold", phone)
-    }.await().zt == 1
-  }
-
-  suspend fun editPhone(phone: String, newPhone: String, code: String) = coroutineScope {
-    Post<BaseLanzouResponse>(Api.FILE_PHP) {
-      param("task", 43)
-      param("type", 2)
-      param("phoneold", phone)
-      param("phonenew", newPhone)
-      param("phonecode", code)
     }.await().zt == 1
   }
 

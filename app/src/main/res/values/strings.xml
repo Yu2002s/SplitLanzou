@@ -52,5 +52,6 @@
     <string name="check_update">检查更新</string>
     <string name="dev">作者: 冬日暖雨</string>
     <string name="sort">排序</string>
+    <string name="password_update_success">密码修改成功</string>
 
 </resources>
