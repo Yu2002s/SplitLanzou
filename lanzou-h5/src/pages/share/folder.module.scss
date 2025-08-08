@@ -1,0 +1,42 @@
+.folderContainer {
+  height: 100%;
+
+  .form {
+    padding: 10px;
+
+    .formItem {
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      word-break: keep-all;
+
+      .labelName {
+        font-size: 16px;
+        margin-right: 10px;
+      }
+
+      .formInput {
+        flex: 1;
+        height: 48px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: none;
+        outline: 1px solid $theme-color;
+      }
+    }
+  }
+
+  .fileList {
+    .fileItem {
+      padding: 10px;
+      background-color: #fff;
+      margin: 10px;
+      border-radius: 6px;
+
+      .fileLink {
+        word-break: break-all;
+      }
+    }
+  }
+}

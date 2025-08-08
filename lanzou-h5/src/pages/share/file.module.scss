@@ -1,0 +1,71 @@
+.filePage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .fileInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+
+    .filename {
+      margin: 10px 0;
+    }
+
+    .fileLogo {
+      width: 80px;
+      height: 80px;
+    }
+
+    .formItem {
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      word-break: keep-all;
+
+      .labelName {
+        font-size: 16px;
+        margin-right: 10px;
+      }
+
+      .formInput {
+        flex: 1;
+        height: 48px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: none;
+        outline: 1px solid $theme-color;
+      }
+    }
+  }
+
+  .bottom {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fff;
+
+    .otherBtn {
+      display: flex;
+      margin-bottom: 10px;
+
+      .btn {
+        flex: 1;
+        height: 48px;
+
+        &:last-child {
+          margin-left: 10px;
+        }
+      }
+    }
+
+    .downloadBtn {
+      height: 48px;
+      font-size: 18px;
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,25 @@
+.downloadPage {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  .logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+  }
+
+  .appName {
+    font-size: 19px;
+    color: #333333;
+    margin: 10px 0 20px 0;
+  }
+
+  .tip {
+    margin-bottom: 30px;
+    color: $theme-color;
+    font-size: 13px;
+  }
+}
