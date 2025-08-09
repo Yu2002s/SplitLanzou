@@ -40,10 +40,12 @@ import com.lanzou.cloud.databinding.FragmentHomeBinding
 import com.lanzou.cloud.enums.FilePageType
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
+import com.lanzou.cloud.event.OnUploadListener
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LocalPathModel
 import com.lanzou.cloud.model.PathModel
 import com.lanzou.cloud.model.RemotePathModel
+import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
 import com.lanzou.cloud.ui.dialog.FileActionDialog
@@ -291,16 +293,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     binding.m = homeViewModel
     binding.btnLeft.setOnClickListener(this)
     binding.btnRight.setOnClickListener(this)
-    binding.fabUpload.setOnClickListener(this)
-    binding.fabDownload.setOnClickListener(this)
+    binding.fabLeft.setOnClickListener(this)
+    binding.fabRight.setOnClickListener(this)
     binding.btnRightSearch.setOnClickListener(this)
     binding.btnLeftSearch.setOnClickListener(this)
     binding.btnLeftMkdir.setOnClickListener(this)
     binding.btnRightMkdir.setOnClickListener(this)
     binding.btnLeftMulti.setOnClickListener(this)
     binding.btnRightMulti.setOnClickListener(this)
-    binding.fabUpload.setOnClickListener(this)
-    binding.fabDownload.setOnClickListener(this)
     requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
     val contentWidth = (windowWidth - 1.dp) / 2
@@ -413,34 +413,25 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
       R.id.btn_right_multi -> homeViewModel.toggleRight()
 
-      R.id.fab_upload -> {
-        val checkedFiles = currentFileFragment.getCheckedFiles()
-        if (checkedFiles.isEmpty()) {
-          toast("选中文件为空")
-          return
-        }
+      R.id.fab_left, R.id.fab_right -> {
         if (currentFilePageType == targetFilePageType) {
           if (currentFilePageType == FilePageType.LOCAL) {
             moveFiles(currentFileFragment.getCheckedFiles(false))
           } else {
-            moveFiles(checkedFiles)
+            moveFiles(currentFileFragment.getCheckedFiles())
           }
           return
         }
-        val currentPath = targetFileFragment.getCurrentPath() ?: return
-        val currentFolderName = targetPathModel.name
+        val currentPath = targetFileFragment.getCurrentPath()
 
-        MaterialAlertDialogBuilder(requireContext())
-          .setTitle("上传")
-          .setMessage("已选择${checkedFiles.size}个文件，将上传到: $currentFolderName\n\n【暂时不支持选择文件夹】")
-          .setPositiveButton("执行上传") { dialog, _ ->
-            uploadFiles(currentPath, checkedFiles, currentFolderName)
-          }
-          .setNegativeButton("取消", null)
-          .show()
+        if (currentFilePageType == FilePageType.LOCAL) {
+          uploadFiles(currentPath, currentFileFragment.getCheckedFiles(false))
+        } else if (currentFilePageType == FilePageType.REMOTE) {
+          downloadFiles(currentPath, currentFileFragment.getCheckedFiles())
+        }
       }
 
-      R.id.fab_download -> {
+      /*R.id.fab_right -> {
         val checkedFiles = currentFileFragment.getCheckedFiles()
         if (checkedFiles.isEmpty()) {
           toast("选中文件为空")
@@ -455,19 +446,8 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           return
         }
         val currentPath = targetFileFragment.getCurrentPath()
-        if (currentPath == null) {
-          toast("不能下载到目标位置")
-          return
-        }
-        MaterialAlertDialogBuilder(requireContext())
-          .setTitle("下载")
-          .setMessage("已选择${checkedFiles.size}个文件，将下载到: $currentPath\n\n【暂时不支持选择文件夹】")
-          .setPositiveButton("执行下载") { dialog, _ ->
-            downloadFiles(currentPath, checkedFiles)
-          }
-          .setNegativeButton("取消", null)
-          .show()
-      }
+        downloadFiles(currentPath, checkedFiles)
+      }*/
     }
   }
 
@@ -711,58 +691,113 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
-  private fun uploadFiles(path: String, checkedFiles: List<FileInfoModel>, folderName: String) {
-    homeViewModel.toggleRight(false)
-    val target = targetFileFragment
-    val paths = checkedFiles.map { it.path }
-    uploadService.uploadFiles(paths, path.toLong(), folderName) { upload ->
-      if (view == null) {
-        return@uploadFiles
-      }
-      when (upload.status) {
-        Upload.COMPLETE -> {
-          target.getFile(upload.path)?.let {
-            it.id = upload.fileId.toString()
-          }
-        }
-
-        Upload.PROGRESS -> {
-          target.getFile(upload.path)?.let {
-            it.progress = upload.progress
-          }
-        }
-
-        Upload.ERROR -> {
-          // FIXME: 不处理上传失败问题
-        }
-      }
+  /**
+   * 上传多个文件
+   *
+   * @param path 要上传到的远程目录（文件夹 id）
+   * @param checkedFiles 已选择的文件列表
+   */
+  private fun uploadFiles(path: String?, checkedFiles: List<FileInfoModel>) {
+    checkedFiles.ifEmpty {
+      toast("没有选择文件")
+      return
     }
-    targetFileFragment.addFiles(checkedFiles)
+    if (path == null) {
+      toast("不能上传到目标位置")
+      return
+    }
+    MaterialAlertDialogBuilder(requireContext())
+      .setTitle("上传")
+      .setMessage("已选择${checkedFiles.size}个文件，将上传到: ${targetFileFragment.getFullPath()}")
+      .setPositiveButton("执行上传") { dialog, _ ->
+        homeViewModel.toggle()
+        val target = targetFileFragment
+        val uploadListener = object : OnUploadListener {
+          override fun onUpload(upload: Upload) {
+            if (view == null) {
+              return
+            }
+            when (upload.status) {
+              Upload.COMPLETE -> {
+                target.getFile(upload.path)?.let {
+                  it.progress = 100
+                  it.id = upload.fileId.toString()
+                }
+              }
+
+              Upload.PROGRESS -> {
+                target.getFile(upload.path)?.let {
+                  it.progress = upload.progress
+                }
+              }
+            }
+          }
+        }
+        val targetPath = targetPathModel
+        scopeDialog {
+          checkedFiles.forEach {
+            if (it.isDirectory) {
+              LanzouRepository.mkdirFolder(path, it.name)?.let { folderId ->
+                val paths = File(it.path).listFiles()?.toList()?.map { f -> f.path } ?: return@let
+                uploadService.uploadFiles(paths, folderId.toLong(), it.name, uploadListener)
+                it.folderId = folderId
+                it.path = ""
+                target.addFile(it)
+              }
+            } else {
+              uploadService.uploadFile(it.path, path.toLong(), targetPath.name, uploadListener)
+              target.addFile(it)
+            }
+          }
+        }.catch {
+          toast(it.message)
+        }
+      }
+      .setNegativeButton("取消", null)
+      .show()
   }
 
-  private fun downloadFiles(directory: String, checkedFiles: List<FileInfoModel>) {
-    homeViewModel.toggleLeft(false)
-    val target = targetFileFragment
-    checkedFiles.forEach {
-      it.path = directory + File.separator + it.name
+  /**
+   * 下载多个文件
+   *
+   * @param directory 下载到的目录
+   * @param checkedFiles 已选择的文件列表
+   */
+  private fun downloadFiles(directory: String?, checkedFiles: List<FileInfoModel>) {
+    checkedFiles.ifEmpty {
+      toast("没有选择文件")
+      return
     }
-    downloadService.addDownload(checkedFiles) { download ->
-      if (view == null) {
-        return@addDownload
-      }
-      when (download.status) {
-        Upload.PROGRESS, Upload.COMPLETE -> {
-          target.getFile(download.path)?.let {
-            it.progress = download.progress
+    if (directory == null) {
+      toast("不能下载到目标位置")
+      return
+    }
+    val fullPath = targetFileFragment.getFullPath()
+    MaterialAlertDialogBuilder(requireContext())
+      .setTitle("下载")
+      .setMessage("已选择${checkedFiles.size}个文件，将下载到: $fullPath\n\n【暂时不支持选择文件夹】")
+      .setPositiveButton("执行下载") { dialog, _ ->
+        homeViewModel.toggle()
+        val target = targetFileFragment
+        checkedFiles.forEach {
+          it.path = directory + File.separator + it.name
+        }
+        downloadService.addDownload(checkedFiles) { download ->
+          if (view == null) {
+            return@addDownload
+          }
+          when (download.status) {
+            Upload.PROGRESS, Upload.COMPLETE -> {
+              target.getFile(download.path)?.let {
+                it.progress = download.progress
+              }
+            }
           }
         }
-
-        Upload.ERROR -> {
-          // FIXME: 不处理下载失败问题
-        }
+        targetFileFragment.addFiles(checkedFiles)
       }
-    }
-    targetFileFragment.addFiles(checkedFiles)
+      .setNegativeButton("取消", null)
+      .show()
   }
 
   private fun moveFile(position: Int, fileInfoModel: FileInfoModel) {
@@ -778,6 +813,10 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   }
 
   private fun moveFiles(checkedFiles: List<FileInfoModel>) {
+    checkedFiles.ifEmpty {
+      toast("没有选择文件")
+      return
+    }
     scopeDialog {
       val currentPath = targetFileFragment.getCurrentPath()
       checkedFiles.forEachIndexed { position, fileInfoModel ->
@@ -925,7 +964,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   override fun onDestroy() {
     super.onDestroy()
     requireContext().unbindService(this)
-    // uploadService.removeUploadListener(this)
   }
 
   private class FilePagerAdapter(

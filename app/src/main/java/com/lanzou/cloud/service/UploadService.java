@@ -279,6 +279,8 @@ public class UploadService extends Service {
                 filePath = FileUri.INSTANCE.getPathByUri(Uri.parse(path));
             }
 
+            Log.i(TAG, "uploadFilePath: " + filePath);
+
             // 还有其他情况还没用考虑到，可能部分机型会有上传失败问题。
             if (filePath == null) {
                 throw new IllegalStateException("呜呜呜呜，这个还没适配");

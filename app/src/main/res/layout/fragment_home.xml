@@ -217,7 +217,7 @@
         </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_upload"
+            android:id="@+id/fab_left"
             invisible="@{m.rightMultiModeFlow}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -227,7 +227,7 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             invisible="@{m.leftMultiModeFlow}"
-            android:id="@+id/fab_download"
+            android:id="@+id/fab_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|bottom"

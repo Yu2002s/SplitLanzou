@@ -1,12 +1,42 @@
+@keyframes rotate-anim {
+  from {
+    transform: rotateZ(0deg);
+  }
+
+  to {
+    transform: rotateZ(360deg);
+  }
+}
+
 .loading {
+  font-size: 18px;
   height: 100%;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  &Text {
+  .loadingWrap {
+    position: relative;
+    animation: rotate-anim 1.5s ease infinite;
+    left: 60px;
+
+    .loadingItem {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: inline-block;
+      width: 6px;
+      height: 20px;
+      border-radius: 10px;
+      background-color: $theme-color;
+      transform-origin: bottom left;
+    }
+  }
+
+  .loadingText {
     font-size: 14px;
-    color: #888888;
+    color: #888;
+    margin-top: 100px;
   }
 }

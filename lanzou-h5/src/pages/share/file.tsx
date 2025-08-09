@@ -6,7 +6,6 @@ import { Button } from '@/components/Button'
 import ProgressButton from '@/components/ProgressButton'
 import { type IFileLoaderData } from './loader'
 import { downloadFile, downloadSplitFile, formatByte } from '@/utils/file.ts'
-import Config from '@/config/app'
 import { isUrl } from '@/utils/common'
 import type { SplitFile } from '@/types/file'
 
@@ -85,9 +84,7 @@ export default function FileSharePage() {
 
   // 解析大于100M的文件
   function parseFile(downloadUrl: string) {
-    fetch(downloadUrl, {
-      headers: Config.REQUEST_HEADER,
-    })
+    fetch(downloadUrl)
       .then((res) => res.json())
       .then(async (data: SplitFile) => {
         setProgress(0)
