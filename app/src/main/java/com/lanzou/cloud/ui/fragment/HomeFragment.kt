@@ -77,13 +77,13 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   )
 
   private val rightPaths = mutableListOf(
-    RemotePathModel(
-      name = "远程",
-      fragment = LanzouFileFragment.newInstance(position = LayoutPosition.RIGHT, name = "根目录")
-    ),
     LocalPathModel(
       name = "本地",
       fragment = UploadFileSelectorFragment.newInstance()
+    ),
+    RemotePathModel(
+      name = "远程",
+      fragment = LanzouFileFragment.newInstance(position = LayoutPosition.RIGHT, name = "根目录")
     ),
     LocalPathModel(name = "软件", fragment = UploadAppSelectorFragment()),
   )

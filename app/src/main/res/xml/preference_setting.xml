@@ -9,8 +9,8 @@
         <Preference
             app:icon="@drawable/baseline_clear_all_24"
             app:key="clear_cache"
-            app:title="清理缓存"
-            app:summary="释放缓存空间，如果正在下载或上传请不要执行" />
+            app:summary="释放缓存空间，如果正在下载或上传请不要执行"
+            app:title="清理缓存" />
 
     </PreferenceCategory>
 
@@ -79,6 +79,17 @@
             app:icon="@drawable/baseline_share_24"
             app:iconSpaceReserved="false"
             app:key="share_app" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:summary="跳转到Github issue(可能要梯子)"
+            app:title="建议/反馈">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://github.com/Yu2002s/SplitLanzou/issues" />
+
+        </Preference>
 
     </PreferenceCategory>
 
