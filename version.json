@@ -1,7 +1,7 @@
 {
-  "version": "1.8.3",
-  "versionCode": 22,
-  "content": "1.支持上传文件夹\n2.修复一些问题\n\n【如有问题可前往github首页反馈】",
-  "url": "http://api.jdynb.xyz:6400/parser?url=https://jdy2002.lanzoue.com/i1XD733gn15c",
-  "date": "2025-08-13"
+  "version": "1.8.4",
+  "versionCode": 23,
+  "content": "1.修复下载失败问题\n\n【如有问题可前往github首页反馈】",
+  "url": "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/iqrgI37u963e",
+  "date": "2025-10-07"
 }

@@ -51,7 +51,7 @@ class LanzouApplication : Application() {
     /**
      * 下载、解析服务 Api 接口地址
      */
-    const val API_URL = "http://api.jdynb.xyz:6400"
+    const val API_URL = "https://lz.qaiu.top"
 
     const val SHARE_URL = "http://lz.jdynb.xyz/index.html"
 
