@@ -1,49 +1,44 @@
-package com.lanzou.cloud;
+package com.lanzou.cloud
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.ComponentName;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.IBinder;
-import android.provider.Settings;
-import android.view.View;
-import android.widget.Toast;
-
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.WindowCompat;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.lanzou.cloud.adapter.MainPageAdapter;
-import com.lanzou.cloud.config.SPConfig;
-import com.lanzou.cloud.data.LanzouPage;
-import com.lanzou.cloud.databinding.ActivityMainBinding;
-import com.lanzou.cloud.network.Repository;
-import com.lanzou.cloud.service.DownloadService;
-import com.lanzou.cloud.service.UploadService;
-import com.lanzou.cloud.ui.file.FileFragment;
-import com.lanzou.cloud.ui.selector.FileSelectorActivity;
-import com.lanzou.cloud.ui.selector.PhoneFileActivity;
-import com.lanzou.cloud.utils.SpJavaUtils;
-import com.lanzou.cloud.utils.UpdateUtils;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.os.IBinder
+import android.provider.Settings
+import android.view.View
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
+import com.drake.tooltip.toast
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.lanzou.cloud.adapter.MainPageAdapter
+import com.lanzou.cloud.config.SPConfig
+import com.lanzou.cloud.data.LanzouPage
+import com.lanzou.cloud.databinding.ActivityMainBinding
+import com.lanzou.cloud.network.Repository
+import com.lanzou.cloud.service.DownloadService
+import com.lanzou.cloud.service.UploadService
+import com.lanzou.cloud.ui.file.FileFragment
+import com.lanzou.cloud.ui.selector.FileSelectorActivity
+import com.lanzou.cloud.ui.selector.PhoneFileActivity
+import com.lanzou.cloud.utils.SpJavaUtils
+import com.lanzou.cloud.utils.UpdateUtils
 
 /**
  * SplitLanzou
@@ -52,176 +47,173 @@ import java.util.List;
  * @mail jiangdongyu54@gmail.com
  * @since 2025/07/01
  */
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
-    private ActivityMainBinding binding;
+class MainActivity : AppCompatActivity(), ServiceConnection {
 
-    private UploadService uploadService;
+  private lateinit var binding: ActivityMainBinding
 
-    private DownloadService downloadService;
+  private var uploadService: UploadService? = null
 
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        bindService(new Intent(this, UploadService.class), this, BIND_AUTO_CREATE);
-        bindService(new Intent(this, DownloadService.class), this, BIND_AUTO_CREATE);
+  private var downloadService: DownloadService? = null
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        setSupportActionBar(binding.header.toolBar);
+  @SuppressLint("NonConstantResourceId")
+  protected override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    WindowCompat.setDecorFitsSystemWindows(getWindow(), false)
+    bindService(Intent(this, UploadService::class.java), this, BIND_AUTO_CREATE)
+    bindService(Intent(this, DownloadService::class.java), this, BIND_AUTO_CREATE)
 
-        ViewPager2 viewPager2 = binding.viewpager2;
-        viewPager2.setUserInputEnabled(false);
-        viewPager2.setOffscreenPageLimit(5);
-        viewPager2.setAdapter(new MainPageAdapter(getSupportFragmentManager(), getLifecycle()));
+    binding = ActivityMainBinding.inflate(getLayoutInflater())
+    setContentView(binding.getRoot())
+    setSupportActionBar(binding.header.toolBar)
 
-        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                binding.fab.setVisibility(position == 1 ? View.VISIBLE : View.INVISIBLE);
-            }
-        });
+    val viewPager2: ViewPager2 = binding.viewpager2
+    viewPager2.setUserInputEnabled(false)
+    viewPager2.setOffscreenPageLimit(5)
+    viewPager2.setAdapter(MainPageAdapter(supportFragmentManager, lifecycle))
 
-        binding.bottomNav.setLabelVisibilityMode(BottomNavigationView.LABEL_VISIBILITY_LABELED);
-        binding.bottomNav.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.nav_home:
-                    viewPager2.setCurrentItem(0, false);
-                    break;
-                case R.id.nav_file:
-                    viewPager2.setCurrentItem(1, false);
-                    break;
-                case R.id.nav_transmission:
-                    viewPager2.setCurrentItem(2, false);
-                    break;
-                case R.id.nav_me:
-                    viewPager2.setCurrentItem(3, false);
-                    break;
-                case R.id.nav_setting:
-                    viewPager2.setCurrentItem(4, false);
-                    break;
-            }
-            invalidateMenu();
-            return true;
-        });
+    viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+      override fun onPageSelected(position: Int) {
+        binding.fab.visibility = if (position == 1) View.VISIBLE else View.INVISIBLE
+      }
+    })
 
-        ActivityResultCallback<ActivityResult> selectFileCallback = result -> {
-            Intent data = result.getData();
-            if (data != null && result.getResultCode() == RESULT_OK) {
-                ArrayList<CharSequence> files = data.getCharSequenceArrayListExtra("files");
-                if (files == null || files.isEmpty()) {
-                    // 选择的文件为空时
-                    return;
-                }
-                for (CharSequence uri : files) {
-                    LanzouPage currentPage = getFileFragment().getCurrentPage();
-                    uploadService.uploadFile(uri.toString(), currentPage.getFolderId(), currentPage.getName());
-                }
-            }
-        };
+    binding.bottomNav.setLabelVisibilityMode(BottomNavigationView.LABEL_VISIBILITY_LABELED)
+    binding.bottomNav.setOnItemSelectedListener({ item ->
+      when (item.itemId) {
+        R.id.nav_home -> viewPager2.setCurrentItem(0, false)
+        R.id.nav_file -> viewPager2.setCurrentItem(1, false)
+        R.id.nav_transmission -> viewPager2.setCurrentItem(2, false)
+        R.id.nav_me -> viewPager2.setCurrentItem(3, false)
+        R.id.nav_setting -> viewPager2.setCurrentItem(4, false)
+      }
+      invalidateMenu()
+      true
+    })
 
-        ActivityResultLauncher<Intent> selectFileLauncher =
-                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), selectFileCallback);
-
-        binding.fab.setOnClickListener(view -> showUploadDialog(selectFileLauncher));
-
-        requestPermission();
-
-        if (SpJavaUtils.getBoolean(SPConfig.CHECK_UPDATE, true)) {
-            UpdateUtils.checkUpdate(this);
+    val selectFileCallback: ActivityResultCallback<ActivityResult> =
+      ActivityResultCallback { result ->
+        val data: Intent? = result.data
+        if (data != null && result.resultCode == RESULT_OK) {
+          val files: ArrayList<CharSequence>? = data.getCharSequenceArrayListExtra("files")
+          if (files == null || files.isEmpty()) {
+            // 选择的文件为空时
+            return@ActivityResultCallback
+          }
+          for (uri in files) {
+            val currentPage: LanzouPage = this.fileFragment.currentPage
+            uploadService?.uploadFile(
+              uri.toString(),
+              currentPage.folderId,
+              currentPage.name
+            )
+          }
         }
-    }
+      }
 
+    val selectFileLauncher: ActivityResultLauncher<Intent> =
+      registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+        selectFileCallback
+      )
+
+    binding.fab.setOnClickListener({ view -> showUploadDialog(selectFileLauncher) })
+
+    requestPermission()
+
+    if (SpJavaUtils.getBoolean(SPConfig.CHECK_UPDATE, true)) {
+      UpdateUtils.checkUpdate(this)
+    }
+  }
+
+  private val fileFragment: FileFragment
     /**
      * 获取 FileFragment 实例
      *
      * @return FileFragment
      */
-    private FileFragment getFileFragment() {
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        Fragment fragment = fragments.get(1);
-        if (!(fragment instanceof FileFragment)) {
-            for (Fragment f : fragments) {
-                if (f instanceof FileFragment) {
-                    return (FileFragment) f;
-                }
-            }
-            throw new ClassCastException("获取 FileFragment 错误");
+    get() {
+      val fragments: MutableList<Fragment?> = supportFragmentManager.fragments
+      val fragment: Fragment? = fragments[1]
+      if (fragment !is FileFragment) {
+        for (f in fragments) {
+          if (f is FileFragment) {
+            return f
+          }
         }
-        return (FileFragment) fragment;
+        throw ClassCastException("获取 FileFragment 错误")
+      }
+      return fragment
     }
 
-    private void showUploadDialog(ActivityResultLauncher<Intent> selectFileLauncher) {
-        Repository repository = Repository.getInstance();
+  private fun showUploadDialog(selectFileLauncher: ActivityResultLauncher<Intent>) {
+    val repository = Repository.getInstance()
 
-        DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
-            if (repository.getUploadPath() == null) {
-                // 未选择
-                Toast.makeText(MainActivity.this, "请前往设置，设置缓存路径", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Class<?> clazz = null;
-            switch (which) {
-                case 0:
-                    getFileFragment().createFolder();
-                    break;
-                case 1:
-                    clazz = FileSelectorActivity.class;
-                    break;
-                case 2:
-                    clazz = PhoneFileActivity.class;
-                    break;
-            }
-            if (clazz != null) {
-                selectFileLauncher.launch(new Intent(MainActivity.this, clazz));
-            }
-            dialog.dismiss();
-        };
-
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("选择操作")
-                .setSingleChoiceItems(new String[]{"新建文件夹", "分类选择上传", "文件选择上传"}, -1, onClickListener)
-                .show();
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        if (service instanceof UploadService.UploadBinder) {
-            uploadService = ((UploadService.UploadBinder) service).getService();
-        } else if (service instanceof DownloadService.DownloadBinder) {
-            downloadService = ((DownloadService.DownloadBinder) service).getService();
+    val onClickListener: DialogInterface.OnClickListener =
+      DialogInterface.OnClickListener { dialog: DialogInterface, which: Int ->
+        if (repository.uploadPath == null) {
+          // 未选择
+          toast(getString(R.string.tip_cache_path))
+          return@OnClickListener
         }
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unbindService(this);
-    }
-
-    private void requestPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                try {
-                    Toast.makeText(this, "请授权此权限", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                    intent.setData(Uri.parse("package:" + getPackageName()));
-                    startActivity(intent);
-                } catch (Exception ignore) {
-                }
-            }
-        } else {
-            int granted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if (granted != PackageManager.PERMISSION_GRANTED) {
-                String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE};
-                ActivityCompat.requestPermissions(this, permissions, 1);
-            }
+        var clazz: Class<*>? = null
+        when (which) {
+          0 -> this.fileFragment.createFolder()
+          1 -> clazz = FileSelectorActivity::class.java
+          2 -> clazz = PhoneFileActivity::class.java
         }
+        if (clazz != null) {
+          selectFileLauncher.launch(Intent(this@MainActivity, clazz))
+        }
+        dialog.dismiss()
+      }
+
+    MaterialAlertDialogBuilder(this)
+      .setTitle("选择操作")
+      .setSingleChoiceItems(
+        arrayOf<String>("新建文件夹", "分类选择上传", "文件选择上传"),
+        -1,
+        onClickListener
+      )
+      .show()
+  }
+
+  override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+    if (service is UploadService.UploadBinder) {
+      uploadService = service.service
+    } else if (service is DownloadService.DownloadBinder) {
+      downloadService = service.service
     }
+  }
+
+  override fun onServiceDisconnected(name: ComponentName?) {
+  }
+
+  protected override fun onDestroy() {
+    super.onDestroy()
+    unbindService(this)
+  }
+
+  private fun requestPermission() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      if (!Environment.isExternalStorageManager()) {
+        try {
+          toast("请授权此权限")
+          val intent: Intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+          intent.setData(("package:$packageName").toUri())
+          startActivity(intent)
+        } catch (ignore: Exception) {
+        }
+      }
+    } else {
+      val granted: Int =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+      if (granted != PackageManager.PERMISSION_GRANTED) {
+        val permissions: Array<String> = arrayOf(
+          Manifest.permission.WRITE_EXTERNAL_STORAGE,
+          Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+        ActivityCompat.requestPermissions(this, permissions, 1)
+      }
+    }
+  }
 }

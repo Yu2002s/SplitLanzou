@@ -53,5 +53,6 @@
     <string name="dev">作者: 冬日暖雨</string>
     <string name="sort">排序</string>
     <string name="password_update_success">密码修改成功</string>
+    <string name="tip_cache_path">请前往设置，设置缓存路径</string>
 
 </resources>

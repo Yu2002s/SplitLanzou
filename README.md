@@ -1,5 +1,19 @@
 # SplitLanzou
 
+:::tip
+
+已停止维护，需要部署下载服务请自行修改源码
+
+```kt
+com.lanzou.cloud.LanzouApplication // line 54
+```
+
+修改接口地址: `http://api.jdynb.xyz:6400` -> `自定义地址`
+
+部署下载服务参见: `https://github.com/qaiu/netdisk-fast-download`
+
+:::
+
 **第三方蓝奏云**
 
 > 特别说明：本项目为**蓝奏云(lanzou.com)的第三方客户端**，本项目不存储任何文件和资源。
