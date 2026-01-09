@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.GsonBuilder;
 import com.lanzou.cloud.LanzouApplication;
+import com.lanzou.cloud.data.LanzouDownloadResponse;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouFileResponse;
 import com.lanzou.cloud.data.LanzouFolder;
@@ -26,6 +27,7 @@ import com.lanzou.cloud.service.LanzouService;
 import com.lanzou.cloud.service.UploadService;
 import com.lanzou.cloud.utils.FileJavaUtils;
 import com.lanzou.cloud.utils.GsonConverterFactory;
+import com.lanzou.cloud.utils.SSLSocketClient;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -45,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import okhttp3.FormBody;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -92,6 +95,8 @@ public class Repository {
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .connectTimeout(30, TimeUnit.SECONDS)
+            .sslSocketFactory(SSLSocketClient.getSSLSocketFactory(), SSLSocketClient.geX509tTrustManager())
+            .hostnameVerifier(SSLSocketClient.getHostnameVerifier())
             .addInterceptor(new Interceptor() {
                 @NonNull
                 @Override
@@ -313,47 +318,55 @@ public class Repository {
             downloadUrl += "@" + pwd;
         }
         return downloadUrl;
-        // 下面方法弃用，改用上面方法进行获取下载地址
-        // 获取下载地址
-        /*try {
-            if (url.contains("/tp/")) {
-                url = url.replace("tp/", "");
-            }
-            String html = getHtml(url);
+    }
+
+    @Nullable
+    @Deprecated
+    public String getDownloadUrlForLocal(@NonNull String url, @Nullable String pwd) {
+        Log.i(TAG, "getDownloadUrlForLocal, url:" + url + ", pwd:" + pwd);
+        try {
+            String html = getHtml(url + "?webtp2&error=fileid?p");
             String host = url.substring(0, url.lastIndexOf("/"));
 
             if (TextUtils.isEmpty(pwd)) {
-                Pattern pattern = Pattern.compile("ifr2\" name=\"[0-9]{10}\" src=\"(.+)\" frameborder");
-                Matcher matcher = pattern.matcher(html);
-                if (matcher.find()) {
-                    String location = host + matcher.group(1);
-                    String downloadHtml = getHtml(location);
-                    Pattern ajaxPattern = Pattern.compile("var ajaxdata = '(.+)';");
-                    Matcher ajaxMatcher = ajaxPattern.matcher(downloadHtml);
-                    if (!ajaxMatcher.find()) {
-                        return null;
-                    }
-                    String ajaxData = ajaxMatcher.group(1);
-                    Pattern signPattern = Pattern.compile("'sign':'(.+)','web");
-                    Matcher signMatcher = signPattern.matcher(downloadHtml);
-                    if (!signMatcher.find()) {
-                        return null;
-                    }
-                    Pattern reqPattern = Pattern.compile("url : '(.+)',");
-                    Matcher reqMatcher = reqPattern.matcher(downloadHtml);
-                    if (!reqMatcher.find()) {
-                        return null;
-                    }
-                    FormBody body = new FormBody.Builder()
-                            .add("action", "downprocess")
-                            .add("signs", ajaxData)
-                            .add("sign", signMatcher.group(1))
-                            .build();
-                    LanzouDownloadResponse lanzouDownloadResponse = get(lanzouService.getDownloadUrl(USER_AGENT, host, host + reqMatcher.group(1), body));
-                    if (lanzouDownloadResponse.getStatus() == 1) {
-                        return lanzouDownloadResponse.getDom() + "/file/" + lanzouDownloadResponse.getUrl();
-                    }
+                Log.i(TAG, "url: " + url + "?webtp2&error=fileid?p");
+                Log.d(TAG, "html: " + html);
+                Document document = Jsoup.parse(html);
+                Element iframe = document.selectFirst("iframe");
+                Log.d(TAG, "iframe: " + iframe);
+                if (iframe == null) {
                     return null;
+                }
+                String location = host + iframe.attr("src");
+                Log.i(TAG, "location: " + location);
+                String downloadHtml = getHtml(location);
+                Log.i(TAG, "downloadHtml: " + downloadHtml);
+                Pattern ajaxPattern = Pattern.compile("var ajaxdata = '(.+)';");
+                Matcher ajaxMatcher = ajaxPattern.matcher(downloadHtml);
+                if (!ajaxMatcher.find()) {
+                    return null;
+                }
+                String ajaxData = ajaxMatcher.group(1);
+                Log.i(TAG, "ajaxData: " + ajaxData);
+                Pattern signPattern = Pattern.compile("'wp_sign':'(.+)',");
+                Matcher signMatcher = signPattern.matcher(downloadHtml);
+                if (!signMatcher.find()) {
+                    return null;
+                }
+                Pattern reqPattern = Pattern.compile("url : '(.+)',");
+                Matcher reqMatcher = reqPattern.matcher(downloadHtml);
+                if (!reqMatcher.find()) {
+                    return null;
+                }
+                Log.i(TAG, "signs: " + ajaxData + ", sign: " + signMatcher.group(1));
+                FormBody body = new FormBody.Builder()
+                        .add("action", "downprocess")
+                        .add("signs", ajaxData)
+                        .add("sign", signMatcher.group(1))
+                        .build();
+                LanzouDownloadResponse lanzouDownloadResponse = get(lanzouService.getDownloadUrl(USER_AGENT, host, host + reqMatcher.group(1), body));
+                if (lanzouDownloadResponse.getStatus() == 1) {
+                    return lanzouDownloadResponse.getDom() + "/file/" + lanzouDownloadResponse.getUrl();
                 }
             } else {
                 Pattern pattern = Pattern.compile("'sign':(.+),'p'");
@@ -381,12 +394,12 @@ public class Repository {
                 if (lanzouDownloadResponse.getStatus() == 1) {
                     return lanzouDownloadResponse.getDom() + "/file/" + lanzouDownloadResponse.getUrl();
                 }
-                return null;
             }
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;*/
+        return null;
     }
 
     @Nullable

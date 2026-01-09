@@ -1,18 +1,6 @@
 # SplitLanzou
 
-:::tip
-
-已停止维护，需要部署下载服务请自行修改源码
-
-```kt
-com.lanzou.cloud.LanzouApplication // line 54
-```
-
-修改接口地址: `http://api.jdynb.xyz:6400` -> `自定义地址`
-
-部署下载服务参见: `https://github.com/qaiu/netdisk-fast-download`
-
-:::
+> 恢复迭代中...
 
 **第三方蓝奏云**
 
@@ -90,9 +78,12 @@ android {
 
 文件管理截图，支持上传、下载、分享并显示**100m+**文件
 
-<img src="https://s1.ax1x.com/2023/08/03/pPFeucj.png"  align = "center" width="30%"  alt="文件列表"/>
-<img src="https://s1.ax1x.com/2023/08/03/pPFen3Q.png"  align = "center"  width="30%" alt="" />
-<img src="https://s1.ax1x.com/2023/08/03/pPFem9g.png"  align = "center"  width="30%" alt="" />
+<img src="screenshots/微信图片_20260109103712_2_199.jpg" width="250" alt="1">
+<img src="screenshots/微信图片_20260109103713_3_199.jpg" width="250" alt="1">
+<img src="screenshots/微信图片_20260109103714_4_199.jpg" width="250" alt="1">
+<img src="screenshots/微信图片_20260109103714_5_199.jpg" width="250" alt="1">
+<img src="screenshots/微信图片_20260109103715_6_199.jpg" width="250" alt="1">
+<img src="screenshots/微信图片_20260109103716_7_199.jpg" width="250" alt="1">
 
 ## 分享文件
 

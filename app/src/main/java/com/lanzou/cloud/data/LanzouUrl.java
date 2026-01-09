@@ -71,6 +71,10 @@ public class LanzouUrl {
         return host;
     }
 
+    public String getFileUrl() {
+        return host + "/" + fileId;
+    }
+
     public void setHost(String host) {
         this.host = host;
     }

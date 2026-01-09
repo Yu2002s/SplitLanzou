@@ -281,7 +281,7 @@ public class DownloadService extends Service {
                 String pwd = lanzouUrl.getHasPwd() == 1 ? lanzouUrl.getPwd() : null;
 
                 String showName = fileInfoModel.getName();
-                String url = lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId();
+                String url = lanzouUrl.getFileUrl();
 
                 downloadMap.put(url, executorService.submit(() -> {
                     Download download = createDownload(url, showName, pwd, fileInfoModel.getPath(), false);
@@ -310,7 +310,7 @@ public class DownloadService extends Service {
                 return;
             }
             String pwd = lanzouUrl.getHasPwd() == 1 ? lanzouUrl.getPwd() : null;
-            addDownload(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId(), name, pwd);
+            addDownload(lanzouUrl.getFileUrl(), name, pwd);
         });
     }
 
@@ -325,7 +325,7 @@ public class DownloadService extends Service {
                 return;
             }
             String pwd = lanzouUrl.getHasPwd() == 1 ? lanzouUrl.getPwd() : null;
-            addDownload(lanzouUrl.getHost() + "/tp/" + lanzouUrl.getFileId(), name, pwd, path, listener);
+            addDownload(lanzouUrl.getFileUrl(), name, pwd, path, listener);
         });
     }
 
@@ -467,8 +467,6 @@ public class DownloadService extends Service {
         String downloadUrl = repository.getDownloadUrl(url, download.getPwd());
         Objects.requireNonNull(downloadUrl, "获取下载地址失败");
         Log.i(TAG, "downloadUrl: " + downloadUrl);
-
-        // repository.getResponse(downloadUrl);
 
         // 获取到响应信息，注意：这里获取到的可能不是完整响应，因为需要断点续传
         Response response = repository.getRangeResponse(downloadUrl, download.getCurrent());

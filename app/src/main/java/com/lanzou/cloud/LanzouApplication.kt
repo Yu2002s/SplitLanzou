@@ -50,6 +50,8 @@ class LanzouApplication : Application() {
 
     /**
      * 下载、解析服务 Api 接口地址
+     *
+     * 部署下载服务参见: https://github.com/qaiu/netdisk-fast-download
      */
     const val API_URL = "https://lz.qaiu.top"
 
@@ -63,6 +65,7 @@ class LanzouApplication : Application() {
     /**
      * 分享文件夹地址
      */
+    @Deprecated("接口失效，已废弃")
     const val SHARE_FOLDER_URL = "https://lzy.jdynb.xyz/share/folder/"
 
     const val GITHUB_HOME = "https://github.com/Yu2002s/SplitLanzou"
@@ -76,8 +79,12 @@ class LanzouApplication : Application() {
     /**
      * 捐赠页，开发不易
      */
+    @Deprecated("接口失效，已废弃")
     const val APP_DONATE = "http://lzy.jdynb.xyz/donate"
 
+    /**
+     * 临时文件存储路径
+     */
     lateinit var tempPath: String
   }
 
