@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
       }
     })
 
-    binding.bottomNav.setLabelVisibilityMode(BottomNavigationView.LABEL_VISIBILITY_LABELED)
+    binding.bottomNav.labelVisibilityMode = BottomNavigationView.LABEL_VISIBILITY_LABELED
     binding.bottomNav.setOnItemSelectedListener({ item ->
       when (item.itemId) {
         R.id.nav_home -> viewPager2.setCurrentItem(0, false)
@@ -198,10 +198,10 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
       if (!Environment.isExternalStorageManager()) {
         try {
           toast("请授权此权限")
-          val intent: Intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+          val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
           intent.setData(("package:$packageName").toUri())
           startActivity(intent)
-        } catch (ignore: Exception) {
+        } catch (_: Exception) {
         }
       }
     } else {

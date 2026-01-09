@@ -36,7 +36,9 @@ public class UpdateUtils {
     /**
      * 更新地址（github pages 部署的静态 json 地址）
      */
+    @Deprecated
     private static final String URL = "https://yu2002s.github.io/SplitLanzou/version.json";
+    private static final String URL_GITEE = "https://gitee.com/jdy2002/SplitLanzou/raw/master/version.json";
 
     /**
      * 检查更新
@@ -46,7 +48,7 @@ public class UpdateUtils {
     public static void checkUpdate(Activity context) {
         OkHttpClient okHttpClient = new OkHttpClient();
         Request request = new Request.Builder()
-                .url(URL)
+                .url(URL_GITEE)
                 .build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
@@ -87,6 +89,7 @@ public class UpdateUtils {
             String content = jsonObject.getString("content");
             String url = jsonObject.getString("url");
             context.runOnUiThread(() -> {
+                Log.i(TAG, "更新信息: " + json);
                 if (versionCode > currentVersionCode) {
                     Log.i(TAG, "发现新版本: " + versionName);
                     showUpdateDialog(context, versionName, content, url);
