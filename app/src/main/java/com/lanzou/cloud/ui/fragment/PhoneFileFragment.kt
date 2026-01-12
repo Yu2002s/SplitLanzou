@@ -12,8 +12,11 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
-  FileFragment(position) {
+/**
+ * 手机文件管理
+ */
+class PhoneFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
+  LocalFileFragment(position) {
 
   companion object {
     private val ROOT = Environment.getExternalStorageDirectory()
@@ -23,8 +26,8 @@ class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT
     fun newInstance(
       path: String? = ROOT.path,
       position: LayoutPosition? = LayoutPosition.RIGHT
-    ): UploadFileSelectorFragment {
-      val fragment = UploadFileSelectorFragment(position ?: LayoutPosition.RIGHT)
+    ): PhoneFileFragment {
+      val fragment = PhoneFileFragment(position ?: LayoutPosition.RIGHT)
       fragment.arguments = bundleOf(PARAM_PATH to (path ?: ROOT.path))
       return fragment
     }
@@ -75,14 +78,14 @@ class UploadFileSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT
     return if (index != -1) index else super.getInsertPosition(name)*/
   }
 
-  override fun onMkdir(name: String, path: String) {
+  override fun onMkdirFile(name: String, path: String) {
     val file = File(path)
     if (file.exists()) {
       toast("文件已存在")
       return
     }
     if (file.mkdir()) {
-      super.onMkdir(name, path)
+      super.onMkdirFile(name, path)
     } else {
       toast("创建失败，请检查App储存权限")
     }

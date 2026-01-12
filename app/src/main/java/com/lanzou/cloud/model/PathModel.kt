@@ -3,7 +3,7 @@ package com.lanzou.cloud.model
 import android.os.Environment
 import com.lanzou.cloud.ui.fragment.FileFragment
 import com.lanzou.cloud.ui.fragment.LanzouFileFragment
-import com.lanzou.cloud.ui.fragment.UploadFileSelectorFragment
+import com.lanzou.cloud.ui.fragment.PhoneFileFragment
 import kotlin.random.Random
 
 sealed class PathModel(
@@ -34,6 +34,6 @@ class RemotePathModel(
 class LocalPathModel(
   path: String? = Environment.getExternalStorageDirectory().path,
   name: String,
-  fragment: FileFragment = UploadFileSelectorFragment.newInstance(path)
+  fragment: FileFragment = PhoneFileFragment.newInstance(path)
 ) :
   PathModel(name, fragment, path)

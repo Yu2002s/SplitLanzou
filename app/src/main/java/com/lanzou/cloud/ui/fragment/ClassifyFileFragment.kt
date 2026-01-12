@@ -11,8 +11,11 @@ import com.lanzou.cloud.utils.formatBytes
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UploadClassifySelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
-  FileFragment(position) {
+/**
+ * 分类文件管理
+ */
+class ClassifyFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
+  LocalFileFragment(position) {
 
   companion object {
 
@@ -28,8 +31,8 @@ class UploadClassifySelectorFragment(position: LayoutPosition = LayoutPosition.R
     fun newInstance(
       type: Int,
       position: LayoutPosition = LayoutPosition.RIGHT
-    ): UploadClassifySelectorFragment {
-      val fragment = UploadClassifySelectorFragment(position)
+    ): ClassifyFileFragment {
+      val fragment = ClassifyFileFragment(position)
       fragment.arguments = bundleOf(PARAM_TYPE to type)
       return fragment
     }

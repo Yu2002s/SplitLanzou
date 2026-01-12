@@ -3,11 +3,7 @@ package com.lanzou.cloud.ui.fragment
 import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -25,19 +21,15 @@ import com.drake.brv.utils.mutable
 import com.drake.brv.utils.setDifferModels
 import com.drake.brv.utils.setup
 import com.drake.engine.base.EngineFragment
-import com.drake.engine.utils.FileUtils
 import com.drake.engine.utils.PinyinUtils
 import com.drake.net.utils.scope
 import com.drake.net.utils.scopeDialog
 import com.drake.net.utils.withIO
 import com.drake.tooltip.toast
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.R
 import com.lanzou.cloud.base.BaseEditDialog
 import com.lanzou.cloud.databinding.FragmentFileBaseBinding
 import com.lanzou.cloud.enums.FilePageType
-import com.lanzou.cloud.enums.FileSortField
-import com.lanzou.cloud.enums.FileSortRule
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.Backable
 import com.lanzou.cloud.event.FileAction
@@ -48,15 +40,12 @@ import com.lanzou.cloud.model.FilePathModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.WebActivity
-import com.lanzou.cloud.utils.FileJavaUtils
 import com.lanzou.cloud.utils.VibrationManager
 import com.lanzou.cloud.utils.addModel
 import com.lanzou.cloud.utils.removeModel
-import com.lanzou.cloud.utils.removeModels
 import com.lanzou.cloud.utils.updateModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.Collections
 
 /**
@@ -70,7 +59,7 @@ abstract class FileFragment(
   val filePageType: FilePageType = FilePageType.LOCAL,
 ) :
   EngineFragment<FragmentFileBaseBinding>(R.layout.fragment_file_base), OnLayoutChangeListener,
-  Backable, FileAction, MenuProvider {
+  Backable, FileAction {
 
   companion object {
 
@@ -83,7 +72,7 @@ abstract class FileFragment(
   /**
    * 快照数据，主要用于搜索过滤使用
    */
-  protected val mData = mutableListOf<FileInfoModel>()
+  protected val sourceData = mutableListOf<FileInfoModel>()
 
   /**
    * 实际展示在页面的数据
@@ -133,7 +122,7 @@ abstract class FileFragment(
         if (viewModel.focusedPositionFlow.value != layoutPosition) {
           return@collect
         }
-        sort(it)
+        sortFile(it)
       }
     }
   }
@@ -182,7 +171,6 @@ abstract class FileFragment(
           setChecked(modelPosition, true)
         }
       }
-
 
       R.id.item.onFastClick {
         val model = getModel<FileInfoModel>()
@@ -260,7 +248,7 @@ abstract class FileFragment(
         }, viewModel.filterSortModel.value)?.toMutableList()
 
         if (index == 1) {
-          mData.clear()
+          sourceData.clear()
         }
 
         // 根据子类判断是否显示返回
@@ -270,7 +258,7 @@ abstract class FileFragment(
           if (showBackItem) {
             it.add(0, FileInfoModel(name = ".."))
           }
-          mData.addAll(it)
+          sourceData.addAll(it)
         }
 
         val page = index
@@ -292,6 +280,9 @@ abstract class FileFragment(
     }
   }
 
+  /**
+   * 刷新路径副标题
+   */
   fun refreshPathSubTitle() {
     val pageType = when (filePageType) {
       FilePageType.LOCAL -> "本地"
@@ -423,57 +414,28 @@ abstract class FileFragment(
     data: List<FileInfoModel>?,
     filterSortModel: FilterSortModel,
   ): List<FileInfoModel>? {
-
-    val rule = filterSortModel.rule
-    val field = filterSortModel.field
-
-    return data?.sortedWith { o1, o2 ->
-      if (o1.isDirectory && o2.isFile) {
-        -1
-      } else if (o1.isFile && o2.isDirectory) {
-        1
-      } else {
-        when (rule) {
-          FileSortRule.ASC -> when (field) {
-            FileSortField.NAME -> PinyinUtils.ccs2Pinyin(o1.name)
-              .compareTo(PinyinUtils.ccs2Pinyin(o2.name))
-
-            FileSortField.TIME -> o1.updateTime.compareTo(o2.updateTime)
-            FileSortField.SIZE -> o1.length.compareTo(o2.length)
-          }
-
-          FileSortRule.DESC -> when (field) {
-            FileSortField.NAME ->
-              PinyinUtils.ccs2Pinyin(o2.name)
-                .compareTo(PinyinUtils.ccs2Pinyin(o1.name))
-
-            FileSortField.TIME -> o2.updateTime.compareTo(o1.updateTime)
-            FileSortField.SIZE -> o2.length.compareTo(o1.length)
-          }
-        }
-      }
-    }
+    return data
   }
 
-  override fun onSearch(keyWorld: String?) {
-    if (keyWorld.isNullOrBlank()) {
-      binding.fileRv.models = mData
-    } else {
-      binding.fileRv.setDifferModels(mData.filter {
-        PinyinUtils.ccs2Pinyin(it.name).lowercase()
-          .contains(PinyinUtils.ccs2Pinyin(keyWorld).lowercase())
-      })
-    }
-  }
-
-  override fun onMkdir(name: String, path: String) {
+  override fun onMkdirFile(name: String, path: String) {
     val file = FileInfoModel(name = name, folderId = path)
     val fileRv = binding.fileRv
     val position = getInsertPosition(name)
     fileRv.mutable.add(position, file)
-    mData.add(position, file)
+    sourceData.add(position, file)
     fileRv.bindingAdapter.notifyItemInserted(position)
     fileRv.scrollToPosition(position)
+  }
+
+  override fun onSearch(keyWorld: String?) {
+    if (keyWorld.isNullOrBlank()) {
+      binding.fileRv.models = sourceData
+    } else {
+      binding.fileRv.setDifferModels(sourceData.filter {
+        PinyinUtils.ccs2Pinyin(it.name).lowercase()
+          .contains(PinyinUtils.ccs2Pinyin(keyWorld).lowercase())
+      })
+    }
   }
 
   override fun toggleMulti(isMultiMode: Boolean) {
@@ -525,7 +487,7 @@ abstract class FileFragment(
   override fun addFile(position: Int, fileInfoModel: FileInfoModel) {
     val newFile = fileInfoModel.copy()
     newFile.highlight = true
-    mData.add(position, newFile)
+    sourceData.add(position, newFile)
     binding.fileRv.run {
       addModel(position, newFile)
       scrollToPosition(position)
@@ -539,7 +501,7 @@ abstract class FileFragment(
     val position = getInsertPosition(files[0].name)
     val newFiles = files.map { it.copy(highlight = true) }
     binding.fileRv.addModels(newFiles, true, position)
-    mData.addAll(position, newFiles)
+    sourceData.addAll(position, newFiles)
     binding.fileRv.post {
       scrollToPosition(position)
     }
@@ -572,54 +534,16 @@ abstract class FileFragment(
   }
 
   override fun getFile(path: String): FileInfoModel? {
-    return mData.find { it.path == path }
+    return sourceData.find { it.path == path }
   }
 
   override fun removeFile(position: Int, file: FileInfoModel) {
     if (position > 0) {
-      mData.removeAt(binding.fileRv.removeModel(position))
+      sourceData.removeAt(binding.fileRv.removeModel(position))
     } else {
       // 处理 position 小于 0 的情况
-      val position = mData.indexOf(file)
-      mData.removeAt(binding.fileRv.removeModel(position))
-    }
-  }
-
-  override fun deleteFile(position: Int, file: FileInfoModel) {
-    if (file.path.isEmpty()) {
-      return
-    }
-    MaterialAlertDialogBuilder(requireContext())
-      .setTitle("删除文件")
-      .setMessage("确认要删除文件: ${file.name}")
-      .setPositiveButton("确认") { dialog, _ ->
-        scopeDialog {
-          withIO {
-            File(file.path).deleteRecursively()
-          }
-          removeFile(position, file)
-        }.finally {
-          toggleMulti(false)
-        }
-      }
-      .setNegativeButton("取消", null)
-      .show()
-  }
-
-  override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
-    scopeDialog {
-      withIO {
-        files.forEach {
-          if (it.path.isNotEmpty()) {
-            File(it.path).deleteRecursively()
-          }
-        }
-      }
-      binding.fileRv.removeModels(positions) {
-        mData.removeAt(it)
-      }
-    }.finally {
-      toggleMulti(false)
+      val position = sourceData.indexOf(file)
+      sourceData.removeAt(binding.fileRv.removeModel(position))
     }
   }
 
@@ -627,12 +551,6 @@ abstract class FileFragment(
    * 具体执行重命名
    */
   protected open suspend fun onRenameFile(file: FileInfoModel): Boolean {
-    val targetFile = File(file.path)
-    val renamedFile = File(targetFile.parentFile, file.name)
-    if (targetFile.renameTo(renamedFile)) {
-      file.path = renamedFile.path
-      return true
-    }
     return false
   }
 
@@ -667,138 +585,25 @@ abstract class FileFragment(
     }
   }
 
-  override fun showDetail(position: Int, file: FileInfoModel) {
-    val items = arrayOf(
-      "文件名称: ${file.name}",
-      "目录: ${file.path}",
-      "类型: ${file.extension}",
-      "大小: ${file.size}",
-      "修改时间: ${file.updateTimeStr}"
-    )
-    MaterialAlertDialogBuilder(requireContext())
-      .setTitle("文件详情")
-      .setItems(items, null)
-      .setPositiveButton("关闭", null)
-      .setNegativeButton("打开文件") { dialog, _ ->
-        FileJavaUtils.openFile(file.path)
-      }
-      .setNeutralButton("MD5") { dialog, _ ->
-        scopeDialog {
-          val md5 = coroutineScope {
-            FileUtils.getFileMD5ToString(file.path)
-          }
-          MaterialAlertDialogBuilder(requireContext())
-            .setTitle("文件MD5")
-            .setMessage(md5)
-            .setPositiveButton("关闭", null)
-            .show()
-        }
-      }
-      .show()
-  }
-
-  override fun sort(filterSortModel: FilterSortModel) {
+  /**
+   * 排序文件
+   */
+  override fun sortFile(filterSortModel: FilterSortModel) {
     scope {
       val sortedData = coroutineScope {
-        onSort(mData, filterSortModel)
+        onSort(sourceData, filterSortModel)
       }
       binding.fileRv.models = sortedData
-      mData.clear()
+      sourceData.clear()
       sortedData?.let {
-        mData.addAll(it)
+        sourceData.addAll(it)
       }
     }
   }
 
-  override suspend fun moveFile(
-    position: Int,
-    current: FileInfoModel,
-    targetPath: String?
-  ): FileInfoModel? {
-    targetPath ?: return null
-    // FIXME: 不判断存不存在，暂时直接替换文件
-    val targetFilePath = targetPath + File.separator + current.name
-    if (current.path == targetFilePath) {
-      return null
-    }
-    val result = if (current.isDirectory) {
-      FileUtils.moveDir(current.path, targetFilePath) { true }
-    } else {
-      FileUtils.moveFile(current.path, targetFilePath) { true }
-    }
-
-    if (result) {
-      return current.copy(path = targetFilePath)
-    }
-    return null
-  }
-
-  override fun shareFile(position: Int, file: FileInfoModel) {
-    if (!FileUtils.isFile(file.path)) {
-      toast("文件可能未下载完成，请刷新检查后重试")
-      return
-    }
-    com.lanzou.cloud.utils.FileUtils.shareFile(requireContext(), file.path)
-  }
-
-  override fun copyFile(
-    position: Int,
-    current: FileInfoModel,
-    targetPath: String?
-  ): FileInfoModel? {
-    targetPath ?: return null
-    val targetFilePath = targetPath + File.separator + current.name
-    if (current.path == targetFilePath) {
-      return null
-    }
-    try {
-      val file = File(current.path)
-      val target = File(targetFilePath)
-      file.copyRecursively(target, true)
-      return current.copy(path = targetFilePath)
-    } catch (_: Exception) {
-      return null
-    }
-  }
-
-  override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-  }
-
-  override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-    when (menuItem.itemId) {
-      R.id.delete -> {
-        val bindingAdapter = binding.fileRv.bindingAdapter
-        val checkedCount = bindingAdapter.checkedCount
-        if (checkedCount == 0) {
-          toast("没有选择文件")
-          return true
-        }
-        MaterialAlertDialogBuilder(requireContext())
-          .setTitle("删除文件")
-          .setMessage("是否删除已选择的${checkedCount}个文件")
-          .setPositiveButton("删除") { dialog, _ ->
-            deleteFiles(bindingAdapter.checkedPosition, bindingAdapter.getCheckedModels())
-          }
-          .setNegativeButton("取消", null)
-          .show()
-
-        return true
-      }
-
-      else -> {
-        menuItem.isChecked = true
-        when (menuItem.itemId) {
-          R.id.sort_name -> viewModel.sortField(FileSortField.NAME)
-          R.id.sort_time -> viewModel.sortField(FileSortField.TIME)
-          R.id.sort_size -> viewModel.sortField(FileSortField.SIZE)
-          R.id.sort_asc -> viewModel.sortRule(FileSortRule.ASC)
-          R.id.sort_desc -> viewModel.sortRule(FileSortRule.DESC)
-        }
-      }
-    }
-    return false
-  }
-
+  /**
+   * 获取 Item 可见的第一个位置
+   */
   private fun getFirstVisiblePosition(): Int {
     val layoutManager = binding.fileRv.layoutManager
     return when (layoutManager) {

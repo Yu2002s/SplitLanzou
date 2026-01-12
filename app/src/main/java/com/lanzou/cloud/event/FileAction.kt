@@ -14,7 +14,7 @@ interface FileAction : Searchable {
    * @param name 文件名称
    * @param path 文件路径
    */
-  fun onMkdir(name: String, path: String)
+  fun onMkdirFile(name: String, path: String)
 
   /**
    * 切换多选
@@ -25,26 +25,38 @@ interface FileAction : Searchable {
 
   /**
    * 获取选中的文件
+   *
+   * @param ignoreDirectory 是否忽略文件夹
+   * @return 文件列表
    */
   fun getCheckedFiles(ignoreDirectory: Boolean = true): List<FileInfoModel>
 
   /**
    * 获取选中的 item 索引
+   *
+   * @return 索引列表
    */
   fun getCheckedPositions(): List<Int>
 
   /**
    * 添加文件到列表中
+   *
+   * @param files 文件列表
    */
   fun addFiles(files: List<FileInfoModel>)
 
   /**
    * 添加单个文件
+   *
+   * @param fileInfoModel 文件
    */
   fun addFile(fileInfoModel: FileInfoModel)
 
   /**
    * 添加文件
+   *
+   * @param position 需要添加文件的位置
+   * @param fileInfoModel 文件
    */
   fun addFile(position: Int, fileInfoModel: FileInfoModel)
 
@@ -67,11 +79,15 @@ interface FileAction : Searchable {
    * @param position 此 position 为 item 的 modelPosition，数据的实际位置
    * 不包含 header 区域，删除数据使用此 position，而实际更新 adapter 需要加上 headerCount
    * 可使用扩展方法 removeModel
+   * @param file 文件
    */
   fun deleteFile(position: Int, file: FileInfoModel)
 
   /**
    * 移除文件（实际不进行删除操作）
+   *
+   * @param position 索引（不包含 header 区域）
+   * @param file 文件
    */
   fun removeFile(position: Int, file: FileInfoModel)
 
@@ -94,32 +110,40 @@ interface FileAction : Searchable {
    * 显示详情信息
    *
    * @param position item 位置 (不包含 header)
-   * @param file 文件对象
+   * @param file 文件
    */
-  fun showDetail(position: Int, file: FileInfoModel)
+  fun showFileDetail(position: Int, file: FileInfoModel)
 
   /**
    * 排序文件
    *
    * @param filterSortModel 过滤规则
    */
-  fun sort(filterSortModel: FilterSortModel)
+  fun sortFile(filterSortModel: FilterSortModel)
 
   /**
    * 获取指定的文件
    *
    * @param path 文件路径
-   * @return 文件对象
+   * @return 具体文件
    */
   fun getFile(path: String): FileInfoModel?
 
   /**
    * 移动文件
+   *
+   * @param position 当前文件位置
+   * @param current 当前文件
+   * @param targetPath 目标路径
+   * @return 新文件
    */
   suspend fun moveFile(position: Int, current: FileInfoModel, targetPath: String?): FileInfoModel?
 
   /**
    * 复制文件
+   * @param position 当前文件位置
+   * @param current 当前文件
+   * @param targetPath 目标路径
    *
    * @return 新文件
    */
@@ -127,6 +151,9 @@ interface FileAction : Searchable {
 
   /**
    * 分享文件
+   *
+   * @param position 当前文件位置
+   * @param file 当前文件
    */
   fun shareFile(position: Int, file: FileInfoModel)
 }

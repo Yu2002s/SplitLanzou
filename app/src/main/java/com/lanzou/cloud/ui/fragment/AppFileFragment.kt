@@ -18,8 +18,11 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
-  FileFragment(position) {
+/**
+ * App 文件管理
+ */
+class AppFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
+  LocalFileFragment(position) {
 
   override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {
     val pm = requireContext().packageManager
@@ -90,7 +93,7 @@ class UploadAppSelectorFragment(position: LayoutPosition = LayoutPosition.RIGHT)
     }
   }
 
-  override fun showDetail(position: Int, file: FileInfoModel) {
+  override fun showFileDetail(position: Int, file: FileInfoModel) {
     val appInfo = AppUtils.getAppInfo(file.pkgName)
     val packageInfo = requireContext().packageManager.getPackageInfo(file.pkgName!!, 0)
 

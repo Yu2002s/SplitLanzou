@@ -38,6 +38,8 @@ import com.lanzou.cloud.R
 import com.lanzou.cloud.data.Upload
 import com.lanzou.cloud.databinding.FragmentHomeBinding
 import com.lanzou.cloud.enums.FilePageType
+import com.lanzou.cloud.enums.FileSortField
+import com.lanzou.cloud.enums.FileSortRule
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.event.OnUploadListener
@@ -65,6 +67,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
   }
 
+  /**
+   * 左侧路径列表
+   */
   private val leftPaths = mutableListOf(
     RemotePathModel(
       name = "远程",
@@ -72,34 +77,52 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     ),
     LocalPathModel(
       name = "本地",
-      fragment = UploadFileSelectorFragment.newInstance(position = LayoutPosition.LEFT)
+      fragment = PhoneFileFragment.newInstance(position = LayoutPosition.LEFT)
     )
   )
 
+  /**
+   * 右侧路径列表
+   */
   private val rightPaths = mutableListOf(
     LocalPathModel(
       name = "本地",
-      fragment = UploadFileSelectorFragment.newInstance()
+      fragment = PhoneFileFragment.newInstance()
     ),
     RemotePathModel(
       name = "远程",
       fragment = LanzouFileFragment.newInstance(position = LayoutPosition.RIGHT, name = "根目录")
     ),
-    LocalPathModel(name = "软件", fragment = UploadAppSelectorFragment()),
+    LocalPathModel(name = "软件", fragment = AppFileFragment()),
   )
 
+  /**
+   * 窗口宽度
+   */
   private val windowWidth = getWindowWidth()
 
+  /**
+   * 左侧 ViewPager2 LayoutParams
+   */
   private val leftLp by lazy {
     binding.leftContent.layoutParams as LinearLayout.LayoutParams
   }
 
+  /**
+   * 右侧 ViewPager2 LayoutParams
+   */
   private val rightLp by lazy {
     binding.rightContent.layoutParams as LinearLayout.LayoutParams
   }
 
+  /**
+   * HomeViewModel 实例
+   */
   private val homeViewModel by viewModels<HomeViewModel>()
 
+  /**
+   * 当前路径列表
+   */
   private val currentPaths
     get() = when (currentFocusedPosition) {
       LayoutPosition.LEFT -> leftPaths
@@ -107,10 +130,19 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       else -> throw IllegalStateException()
     }
 
+  /**
+   * 当前路径
+   */
   private val currentPathModel get() = currentPaths[currentVp.currentItem]
 
+  /**
+   * 当前文件页面类型
+   */
   private val currentFilePageType get() = currentFileFragment.filePageType
 
+  /**
+   * 目标文件页面类型
+   */
   private val targetFilePageType
     get() = when (currentFocusedPosition) {
       LayoutPosition.LEFT -> currentRightFileFragment.filePageType
@@ -118,6 +150,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       else -> throw IllegalStateException()
     }
 
+  /**
+   * 当前文件 FileFragment 实例对象
+   */
   private val currentFileFragment
     get() = when (currentFocusedPosition) {
       LayoutPosition.LEFT -> currentLeftFileFragment
@@ -125,12 +160,24 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       else -> throw IllegalStateException()
     }
 
+  /**
+   * 当前左侧文件 FileFragment 实例对象
+   */
   private val currentLeftFileFragment get() = leftPaths[binding.vpLeft.currentItem].fragment
 
+  /**
+   * 当前右侧文件 FileFragment 实例对象
+   */
   private val currentRightFileFragment get() = rightPaths[binding.vpRight.currentItem].fragment
 
+  /**
+   * 当前聚焦的页面位置
+   */
   private val currentFocusedPosition get() = homeViewModel.focusedPositionFlow.value
 
+  /**
+   * 当前 ViewPager2 实例对象
+   */
   private val currentVp
     get() = when (currentFocusedPosition) {
       LayoutPosition.LEFT -> binding.vpLeft
@@ -138,6 +185,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       else -> throw IllegalStateException()
     }
 
+  /**
+   * 当前 ViewPager2 的适配器实例对象
+   */
   private val currentVpAdapter
     get() = (when (currentFocusedPosition) {
       LayoutPosition.LEFT -> binding.vpLeft
@@ -150,7 +200,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   private val currentRightVpAdapter get() = binding.vpRight.adapter as FilePagerAdapter
 
   /**
-   * 目标 fragment
+   * 目标 FileFragment 实例对象
    */
   private val targetFileFragment: FileFragment
     get() {
@@ -171,6 +221,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       return leftPaths
     }
 
+  /**
+   * 目标路径
+   */
   private val targetPathModel: PathModel
     get() {
       if (currentFocusedPosition == LayoutPosition.LEFT) {
@@ -179,6 +232,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       return leftPaths[binding.vpLeft.currentItem]
     }
 
+  /**
+   * 目标页面位置
+   */
   private val targetPosition
     get() = when (currentFocusedPosition) {
       LayoutPosition.LEFT -> LayoutPosition.RIGHT
@@ -186,6 +242,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       else -> throw IllegalStateException()
     }
 
+  /**
+   * 文件页面改变监听器
+   */
   private inner class FilePageChangeCallback(private val paths: List<PathModel>) :
     ViewPager2.OnPageChangeCallback() {
     override fun onPageSelected(position: Int) {
@@ -195,6 +254,9 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  /**
+   * 文件标签选中监听器
+   */
   private inner class FileTabSelectedListener(private val position: LayoutPosition) :
     TabLayout.OnTabSelectedListener {
     override fun onTabReselected(tab: TabLayout.Tab) {
@@ -466,7 +528,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           currentPath
         }
 
-        currentFileFragment.onMkdir(it!!, path)
+        currentFileFragment.onMkdirFile(it!!, path)
       }
       show()
     }
@@ -547,7 +609,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         "移动" -> moveFile(position, fileInfoModel)
         "删除" -> currentFileFragment.deleteFile(position, fileInfoModel)
         "重命名" -> currentFileFragment.renameFile(position, fileInfoModel)
-        "详情" -> currentFileFragment.showDetail(position, fileInfoModel)
+        "详情" -> currentFileFragment.showFileDetail(position, fileInfoModel)
       }
     }
   }
@@ -562,13 +624,24 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     addFilePage(fileInfoModel.name, filePageType, path)
   }
 
+  /**
+   * 添加文件页面
+   *
+   * @param name 文件页面名称
+   * @param filePageType 文件页面类型
+   * @param path 文件路径
+   * @param layoutPosition 文件页面位置
+   * @param fragment 具体要添加的 FileFragment 实例
+   *
+   * @see FileFragment
+   */
   private fun addFilePage(
     name: String,
     filePageType: FilePageType,
     path: String? = if (filePageType == FilePageType.REMOTE) "-1"
     else Environment.getExternalStorageDirectory().path,
     layoutPosition: LayoutPosition = currentFocusedPosition,
-    fragment: FileFragment = UploadFileSelectorFragment.newInstance(path, layoutPosition)
+    fragment: FileFragment = PhoneFileFragment.newInstance(path, layoutPosition)
   ) {
     val currentSelectedPosition = currentPaths.indexOfFirst { it.name == name }
     if (currentSelectedPosition != -1) {
@@ -603,6 +676,12 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  /**
+   * 移除文件页面
+   *
+   * @param position 移除的页面位置
+   * @param layoutPosition 移除的页面位置
+   */
   private fun removeFilePage(
     position: Int,
     layoutPosition: LayoutPosition = currentFocusedPosition
@@ -669,6 +748,11 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  /**
+   * 下载文件
+   * @param directory 要保存到的目录
+   * @param fileInfoModel 文件
+   */
   private fun downloadFile(directory: String, fileInfoModel: FileInfoModel) {
     val filePath = directory + File.separator + fileInfoModel.name
     val target = targetFileFragment
@@ -800,6 +884,12 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       .show()
   }
 
+  /**
+   * 移动文件
+   *
+   * @param position 文件在列表中的位置
+   * @param fileInfoModel 文件信息
+   */
   private fun moveFile(position: Int, fileInfoModel: FileInfoModel) {
     scopeDialog {
       val currentPath = targetFileFragment.getCurrentPath()
@@ -812,6 +902,10 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  /**
+   * 移动多个文件
+   * @param checkedFiles 已选择的文件列表
+   */
   private fun moveFiles(checkedFiles: List<FileInfoModel>) {
     checkedFiles.ifEmpty {
       toast("没有选择文件")
@@ -832,6 +926,12 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  /**
+   * 复制文件
+   *
+   * @param position 文件在列表中的位置
+   * @param fileInfoModel 文件信息
+   */
   private fun copyFile(position: Int, fileInfoModel: FileInfoModel) {
     val targetPath = targetFileFragment.getCurrentPath()
     scopeDialog {
@@ -844,6 +944,10 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     }
   }
 
+  /**
+   * 复制多个文件
+   * @param checkedFiles 已选择的文件列表
+   */
   private fun copyFiles(checkedFiles: List<FileInfoModel>) {
     // 只能本地对本地复制
     scopeDialog {
@@ -879,12 +983,11 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   }
 
   override fun onServiceDisconnected(p0: ComponentName?) {
-
   }
 
   override fun onPrepareMenu(menu: Menu) {
     super.onPrepareMenu(menu)
-    menu.findItem(R.id.show_system_app).isVisible = currentFileFragment is UploadAppSelectorFragment
+    menu.findItem(R.id.show_system_app).isVisible = currentFileFragment is AppFileFragment
     menu.findItem(R.id.sort).isVisible = currentFilePageType != FilePageType.REMOTE
     menu.findItem(R.id.copy).isVisible = currentFilePageType == FilePageType.LOCAL
         && currentFilePageType == targetFilePageType
@@ -896,16 +999,19 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
   override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
     return when (menuItem.itemId) {
+      // 滚动到顶部
       R.id.scroll_top -> {
         currentFileFragment.scrollToPosition(0)
         true
       }
 
+      // 复制
       R.id.copy -> {
         copyFiles(currentFileFragment.getCheckedFiles(false))
         true
       }
 
+      // 是否显示系统App
       R.id.show_system_app -> {
         menuItem.isChecked = !menuItem.isChecked
         homeViewModel.showSystemApp(menuItem.isChecked)
@@ -913,6 +1019,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         true
       }
 
+      // 添加标签选项卡
       R.id.add_tab -> {
         // TODO: 这里应该有一层映射关系，这里暂且写死
         val items = arrayOf("远程", "本地", "软件", "压缩包", "安装包", "视频")
@@ -926,20 +1033,20 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
             val filePageType = if (currentPosition == 0) FilePageType.REMOTE else FilePageType.LOCAL
             val fragment = when (currentPosition) {
               0 -> LanzouFileFragment.newInstance(position = currentFocusedPosition)
-              1 -> UploadFileSelectorFragment.newInstance(position = currentFocusedPosition)
-              2 -> UploadAppSelectorFragment(position = currentFocusedPosition)
-              3 -> UploadClassifySelectorFragment.newInstance(
-                UploadClassifySelectorFragment.TYPE_ZIP,
+              1 -> PhoneFileFragment.newInstance(position = currentFocusedPosition)
+              2 -> AppFileFragment(position = currentFocusedPosition)
+              3 -> ClassifyFileFragment.newInstance(
+                ClassifyFileFragment.TYPE_ZIP,
                 currentFocusedPosition
               )
 
-              4 -> UploadClassifySelectorFragment.newInstance(
-                UploadClassifySelectorFragment.TYPE_APK,
+              4 -> ClassifyFileFragment.newInstance(
+                ClassifyFileFragment.TYPE_APK,
                 currentFocusedPosition
               )
 
-              5 -> UploadClassifySelectorFragment.newInstance(
-                UploadClassifySelectorFragment.TYPE_VIDEO,
+              5 -> ClassifyFileFragment.newInstance(
+                ClassifyFileFragment.TYPE_VIDEO,
                 currentFocusedPosition
               )
 
@@ -957,7 +1064,55 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         true
       }
 
-      else -> currentFileFragment.onMenuItemSelected(menuItem)
+      // else -> currentFileFragment.onMenuItemSelected(menuItem)
+      // 删除文件
+      R.id.delete -> {
+        val fragment = currentFileFragment
+        val files = fragment.getCheckedFiles(false)
+        if (files.isEmpty()) {
+          toast("没有选择文件")
+          return true
+        }
+        MaterialAlertDialogBuilder(requireContext())
+          .setTitle("删除文件")
+          .setMessage("是否删除已选择的${files.size}个文件")
+          .setPositiveButton("删除") { dialog, _ ->
+            // deleteFiles(bindingAdapter.checkedPosition, bindingAdapter.getCheckedModels())
+            fragment.deleteFiles(fragment.getCheckedPositions(), files)
+          }
+          .setNegativeButton("取消", null)
+          .show()
+
+        return true
+      }
+
+      // 名称排序
+      R.id.sort_name -> {
+        homeViewModel.sortField(FileSortField.NAME)
+        true
+      }
+
+      R.id.sort_time -> {
+        homeViewModel.sortField(FileSortField.TIME)
+        true
+      }
+
+      R.id.sort_size -> {
+        homeViewModel.sortField(FileSortField.SIZE)
+        true
+      }
+
+      R.id.sort_asc -> {
+        homeViewModel.sortRule(FileSortRule.ASC)
+        true
+      }
+
+      R.id.sort_desc -> {
+        homeViewModel.sortRule(FileSortRule.DESC)
+        true
+      }
+
+      else -> false
     }
   }
 

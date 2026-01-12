@@ -19,10 +19,13 @@ import com.lanzou.cloud.utils.removeModel
 import com.lanzou.cloud.utils.removeModelsSuspend
 import kotlinx.coroutines.delay
 
+/**
+ * 蓝奏文件管理
+ */
 class LanzouFileFragment(
   position: LayoutPosition = LayoutPosition.LEFT,
   filePageType: FilePageType = FilePageType.REMOTE
-) : FileFragment(position, filePageType) {
+) : RemoteFileFragment(position, filePageType) {
 
   companion object {
 
@@ -69,10 +72,10 @@ class LanzouFileFragment(
     return data != null && data.size >= 18
   }
 
-  override fun onMkdir(name: String, path: String) {
+  override fun onMkdirFile(name: String, path: String) {
     scopeDialog {
       LanzouRepository.mkdirFolder(path, name)
-      super.onMkdir(name, path)
+      super.onMkdirFile(name, path)
     }.catch {
       toast(it.message)
     }
@@ -81,7 +84,7 @@ class LanzouFileFragment(
   override fun deleteFile(position: Int, file: FileInfoModel) {
     scopeDialog {
       LanzouRepository.deleteFile(file.fileId, file.isFile)
-      mData.removeAt(binding.fileRv.removeModel(position))
+      sourceData.removeAt(binding.fileRv.removeModel(position))
     }.catch {
       toast(it.message)
     }.finally {
@@ -94,7 +97,7 @@ class LanzouFileFragment(
       binding.fileRv.removeModelsSuspend(positions) {
         val file = models[it]
         LanzouRepository.deleteFile(file.fileId, file.isFile)
-        mData.removeAt(it)
+        sourceData.removeAt(it)
         delay(100)
       }
     }.catch {
@@ -145,7 +148,7 @@ class LanzouFileFragment(
     }
   }
 
-  override fun showDetail(position: Int, file: FileInfoModel) {
+  override fun showFileDetail(position: Int, file: FileInfoModel) {
     if (file.id.isEmpty()) {
       return
     }
