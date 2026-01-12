@@ -1,4 +1,4 @@
-package com.lanzou.cloud.ui.file;
+package com.lanzou.cloud.ui.cloud.file;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -47,9 +47,9 @@ import com.lanzou.cloud.event.FileActionListener;
 import com.lanzou.cloud.network.Repository;
 import com.lanzou.cloud.service.DownloadService;
 import com.lanzou.cloud.ui.activity.FolderSelectorActivity;
+import com.lanzou.cloud.ui.cloud.file.imple.FileActionImpl;
+import com.lanzou.cloud.ui.cloud.web.WebActivity;
 import com.lanzou.cloud.ui.dialog.FileDetailDialog;
-import com.lanzou.cloud.ui.file.imple.FileActionImpl;
-import com.lanzou.cloud.ui.web.WebActivity;
 
 import java.util.ArrayList;
 import java.util.List;

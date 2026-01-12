@@ -1,4 +1,4 @@
-package com.lanzou.cloud.ui.selector;
+package com.lanzou.cloud.ui.cloud.selector;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;

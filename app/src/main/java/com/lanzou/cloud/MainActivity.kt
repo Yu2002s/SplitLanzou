@@ -34,9 +34,9 @@ import com.lanzou.cloud.databinding.ActivityMainBinding
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
-import com.lanzou.cloud.ui.file.FileFragment
-import com.lanzou.cloud.ui.selector.FileSelectorActivity
-import com.lanzou.cloud.ui.selector.PhoneFileActivity
+import com.lanzou.cloud.ui.cloud.file.FileFragment
+import com.lanzou.cloud.ui.cloud.selector.FileSelectorActivity
+import com.lanzou.cloud.ui.cloud.selector.PhoneFileActivity
 import com.lanzou.cloud.utils.SpJavaUtils
 import com.lanzou.cloud.utils.UpdateUtils
 
@@ -56,13 +56,13 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
   private var downloadService: DownloadService? = null
 
   @SuppressLint("NonConstantResourceId")
-  protected override fun onCreate(savedInstanceState: Bundle?) {
+  override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    WindowCompat.setDecorFitsSystemWindows(getWindow(), false)
+    WindowCompat.setDecorFitsSystemWindows(window, false)
     bindService(Intent(this, UploadService::class.java), this, BIND_AUTO_CREATE)
     bindService(Intent(this, DownloadService::class.java), this, BIND_AUTO_CREATE)
 
-    binding = ActivityMainBinding.inflate(getLayoutInflater())
+    binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.getRoot())
     setSupportActionBar(binding.header.toolBar)
 
@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     MaterialAlertDialogBuilder(this)
       .setTitle("选择操作")
       .setSingleChoiceItems(
-        arrayOf<String>("新建文件夹", "分类选择上传", "文件选择上传"),
+        arrayOf("新建文件夹", "分类选择上传", "文件选择上传"),
         -1,
         onClickListener
       )

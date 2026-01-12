@@ -1,4 +1,4 @@
-package com.lanzou.cloud.ui.upload;
+package com.lanzou.cloud.ui.fragment;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,6 +21,7 @@ import com.lanzou.cloud.adapter.UploadAdapter;
 import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.event.OnUploadListener;
 import com.lanzou.cloud.service.UploadService;
+import com.lanzou.cloud.ui.activity.UploadInfoActivity;
 
 import java.util.ArrayList;
 import java.util.List;

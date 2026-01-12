@@ -151,12 +151,6 @@ class LanzouApplication : Application() {
         }
         startAnimation()
       }
-      onContent {
-        // startAnimation()
-      }
-      onLoading {
-        // startAnimation()
-      }
     }
   }
 

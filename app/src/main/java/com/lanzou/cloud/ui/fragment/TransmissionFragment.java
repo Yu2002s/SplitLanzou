@@ -1,6 +1,9 @@
-package com.lanzou.cloud.ui.transmission;
+package com.lanzou.cloud.ui.fragment;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,33 +14,33 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayoutMediator;
-import com.lanzou.cloud.base.java.BaseActivity;
-import com.lanzou.cloud.databinding.ActivityTransmissionListBinding;
-import com.lanzou.cloud.ui.download.DownloadListFragment;
-import com.lanzou.cloud.ui.upload.UploadListFragment;
+import com.lanzou.cloud.databinding.FragmentTransmissionBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransmissionListActivity extends BaseActivity {
+public class TransmissionFragment extends Fragment {
 
-    private ActivityTransmissionListBinding binding;
+    private FragmentTransmissionBinding binding;
 
     private final List<Fragment> fragments = new ArrayList<>();
 
+    @Nullable
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityTransmissionListBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        setSupportActionBar(binding.header.toolBar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentTransmissionBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         fragments.add(new DownloadListFragment());
         fragments.add(new UploadListFragment());
 
         ViewPager2 viewPager2 = binding.viewPager2;
-        viewPager2.setAdapter(new TransmissionAdapter(getSupportFragmentManager(), getLifecycle()));
+        viewPager2.setAdapter(new TransmissionAdapter(getChildFragmentManager(), getLifecycle()));
 
         new TabLayoutMediator(binding.tabLayout, viewPager2, (tab, position) -> {
             if (position == 0) {
@@ -66,5 +69,11 @@ public class TransmissionListActivity extends BaseActivity {
         public int getItemCount() {
             return fragments.size();
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

@@ -12,7 +12,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.data.User;
 import com.lanzou.cloud.network.Repository;
-import com.lanzou.cloud.ui.web.WebActivity;
+import com.lanzou.cloud.ui.cloud.web.WebActivity;
 
 import java.util.List;
 

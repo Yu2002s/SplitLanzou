@@ -1,10 +1,13 @@
 package com.lanzou.cloud.utils;
 
-import android.app.Application;
 import android.content.Context;
-import android.os.*;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+
 import androidx.annotation.RequiresApi;
-import java.util.*;
+
+import java.util.Arrays;
 
 // =======================================================
 // Class: VibrationManager

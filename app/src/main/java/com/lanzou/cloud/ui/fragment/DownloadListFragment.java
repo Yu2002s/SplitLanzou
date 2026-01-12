@@ -1,4 +1,4 @@
-package com.lanzou.cloud.ui.download;
+package com.lanzou.cloud.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -31,6 +31,7 @@ import com.lanzou.cloud.data.Download;
 import com.lanzou.cloud.data.Upload;
 import com.lanzou.cloud.event.OnDownloadListener;
 import com.lanzou.cloud.service.DownloadService;
+import com.lanzou.cloud.ui.activity.DownloadInfoActivity;
 
 import org.litepal.LitePal;
 

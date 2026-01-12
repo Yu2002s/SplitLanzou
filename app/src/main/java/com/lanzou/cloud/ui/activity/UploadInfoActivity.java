@@ -1,4 +1,4 @@
-package com.lanzou.cloud.ui.upload;
+package com.lanzou.cloud.ui.activity;
 
 import android.content.ComponentName;
 import android.content.Context;

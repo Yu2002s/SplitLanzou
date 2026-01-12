@@ -20,8 +20,8 @@ import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouFolder;
 import com.lanzou.cloud.databinding.ActivityFolderSelectorBinding;
 import com.lanzou.cloud.network.Repository;
-import com.lanzou.cloud.ui.file.FileAction;
-import com.lanzou.cloud.ui.file.imple.FileActionImpl;
+import com.lanzou.cloud.ui.cloud.file.FileAction;
+import com.lanzou.cloud.ui.cloud.file.imple.FileActionImpl;
 
 import java.util.ArrayList;
 import java.util.List;

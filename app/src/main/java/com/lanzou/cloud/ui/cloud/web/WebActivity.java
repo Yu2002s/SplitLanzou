@@ -1,4 +1,4 @@
-package com.lanzou.cloud.ui.web;
+package com.lanzou.cloud.ui.cloud.web;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;

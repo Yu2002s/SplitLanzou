@@ -56,15 +56,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.web.WebActivity" />
+        <activity android:name=".ui.cloud.web.WebActivity" />
         <activity
             android:name=".ui.activity.FolderSelectorActivity"
             android:label="选择文件夹" />
         <activity
-            android:name=".ui.transmission.TransmissionListActivity"
+            android:name=".ui.activity.TransmissionListActivity"
             android:label="传输列表" />
         <activity
-            android:name=".ui.upload.UploadInfoActivity"
+            android:name=".ui.activity.UploadInfoActivity"
             android:label="上传信息" />
         <activity
             android:name=".ui.activity.SettingActivity"
@@ -73,7 +73,7 @@
             android:name=".ui.activity.QuestionActivity"
             android:label="一些问题" />
         <activity
-            android:name=".ui.download.DownloadInfoActivity"
+            android:name=".ui.activity.DownloadInfoActivity"
             android:label="下载信息" />
         <activity
             android:name=".ui.activity.ResolveFileActivity"
@@ -97,10 +97,10 @@
             android:name=".ui.activity.ResolveFolderActivity"
             android:label="@string/title_resolve_folder" />
         <activity
-            android:name=".ui.selector.FileSelectorActivity"
+            android:name=".ui.cloud.selector.FileSelectorActivity"
             android:label="上传文件" />
         <activity
-            android:name=".ui.upload.ExternalUploadActivity"
+            android:name=".ui.activity.ExternalUploadActivity"
             android:exported="true"
             android:label="上传文件"
             android:launchMode="singleTask"
@@ -116,7 +116,7 @@
         </activity>
 
         <activity
-            android:name=".ui.selector.PhoneFileActivity"
+            android:name=".ui.cloud.selector.PhoneFileActivity"
             android:label="选择手机文件上传" />
         <activity
             android:name=".ui.activity.RecycleFileActivity"
