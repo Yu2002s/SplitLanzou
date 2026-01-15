@@ -5,6 +5,11 @@
         "id": "simple",
         "name": "lz.qaiu.top",
         "url": "https://lz.qaiu.top"
+      },
+      {
+        "id": "custom",
+        "name": "临时下载服务",
+        "url": "http://wuxianggujun.com:6400"
       }
     ]
   }
