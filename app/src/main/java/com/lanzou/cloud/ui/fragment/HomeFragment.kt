@@ -575,7 +575,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     var currentFolderName = ""
     if (isUpload) {
       currentFolderName = targetPathModel.name
-      message += "\n\n上传到: $currentFolderName"
+      message += "\n\n上传到: ${targetPathModel.path}"
     } else {
       message += "\n\n下载到: $currentPath"
     }

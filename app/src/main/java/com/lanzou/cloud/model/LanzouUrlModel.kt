@@ -40,7 +40,7 @@ data class LanzouUrlModel(
 
   val downloadUrl: String
     get() {
-      var str = "${LanzouApplication.API_URL}/parser?url=${URLEncoder.encode(shareUrl)}"
+      var str = "${LanzouApplication.DOWNLOAD_API_URL}/parser?url=${URLEncoder.encode(shareUrl)}"
       if (hasPwd == 1) {
         str += "&pwd=$pwd"
       }

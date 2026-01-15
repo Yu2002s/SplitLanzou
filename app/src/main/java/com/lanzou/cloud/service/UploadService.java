@@ -61,7 +61,7 @@ public class UploadService extends Service {
      */
     private final ExecutorService executor = Executors.newFixedThreadPool(16);
 
-    private static final int MAX_UPLOAD_SIZE = 99 * 1024 * 1024;
+    private static final int MAX_UPLOAD_SIZE = 95 * 1024 * 1024;
 
     /**
      * 单个最大上传文件大小限制

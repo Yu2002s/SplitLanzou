@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="file_size_entries">
+        <item>80MB</item>
+        <item>95MB</item>
+        <item>150MB</item>
+        <item>200MB</item>
+        <item>250MB</item>
+        <item>300MB</item>
+        <item>350MB</item>
+        <item>400MB</item>
+        <item>500MB</item>
+    </string-array>
+    <integer-array name="file_size_values">
+        <item>83886080</item>
+        <item>99614720</item>
+        <item>157286400</item>
+        <item>209715200</item>
+        <item>262144000</item>
+        <item>314572800</item>
+        <item>367001600</item>
+        <item>419430400</item>
+        <item>536870912</item>
+    </integer-array>
+</resources>

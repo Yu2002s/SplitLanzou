@@ -48,12 +48,14 @@ class LanzouApplication : Application() {
 
     const val HOST_LOGIN = HOST + "account.php?action=login"
 
+    const val CONFIG_URL = "https://gitee.com/jdy2002/SplitLanzou/raw/master/config.json"
+
     /**
      * 下载、解析服务 Api 接口地址
      *
      * 部署下载服务参见: https://github.com/qaiu/netdisk-fast-download
      */
-    const val API_URL = "https://lz.qaiu.top"
+    const val DOWNLOAD_API_URL = "https://lz.qaiu.top"
 
     const val SHARE_URL = "http://lz.jdynb.xyz/index.html"
 

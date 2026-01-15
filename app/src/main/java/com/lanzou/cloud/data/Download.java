@@ -116,7 +116,7 @@ public class Download extends LitePalSupport implements Comparable<Download>, Pa
         return 0;
     }
 
-    public static final Creator<Download> CREATOR = new Creator<Download>() {
+    public static final Creator<Download> CREATOR = new Creator<>() {
         @Override
         public Download createFromParcel(Parcel in) {
             return new Download(in);

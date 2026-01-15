@@ -3,22 +3,28 @@ package com.lanzou.cloud.ui.fragment
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SeekBarPreference
 import com.drake.net.utils.scopeDialog
 import com.drake.net.utils.withIO
 import com.drake.tooltip.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
 import com.lanzou.cloud.config.SPConfig
+import com.lanzou.cloud.model.ConfigModel
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.FolderSelectorActivity
 import com.lanzou.cloud.utils.FileUtils
 import com.lanzou.cloud.utils.SpJavaUtils
-import com.lanzou.cloud.utils.formatBytes
+import com.lanzou.cloud.utils.SpUtils.getRequired
+import com.lanzou.cloud.utils.SpUtils.put
+import com.lanzou.cloud.utils.json
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 class AppSettingFragment : PreferenceFragmentCompat() {
 
@@ -63,11 +69,52 @@ class AppSettingFragment : PreferenceFragmentCompat() {
         }
     }
 
-    val uploadFileSizePreference = findPreference<SeekBarPreference>(SPConfig.UPLOAD_FILE_SIZE)
-    uploadFileSizePreference?.onPreferenceChangeListener =
-      Preference.OnPreferenceChangeListener { preference, newValue ->
-        newValue as Int
-        preference.summary = "当前设置: " + newValue.toLong().formatBytes()
+    val uploadFileSizePreference = findPreference<Preference>(SPConfig.UPLOAD_FILE_SIZE)
+    uploadFileSizePreference?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+      val sizeList = resources.getIntArray(R.array.file_size_values)
+      val currentSize = SPConfig.UPLOAD_FILE_SIZE.getRequired<Int>(sizeList[1])
+      val currentItem = sizeList.indexOf(currentSize)
+      MaterialAlertDialogBuilder(requireContext())
+        .setTitle("选择大小")
+        .setSingleChoiceItems(R.array.file_size_entries, currentItem) { dialog, which ->
+          SPConfig.UPLOAD_FILE_SIZE.put(sizeList[which])
+          dialog.dismiss()
+        }.setPositiveButton("关闭") { dialog, which ->
+          dialog.dismiss()
+        }
+        .show()
+      true
+    }
+
+    findPreference<Preference>("download_api_url")?.onPreferenceClickListener =
+      Preference.OnPreferenceClickListener {
+        scopeDialog {
+          val okHttpClient = OkHttpClient()
+          val request = Request.Builder()
+            .url(LanzouApplication.CONFIG_URL)
+            .build()
+          val response = withIO {
+            okHttpClient.newCall(request).execute()
+          }
+          val responseBody = response.body?.string() ?: return@scopeDialog
+          Log.i("AppSettingFragment", "responseBody: $responseBody")
+          val configModel = json.decodeFromString<ConfigModel>(responseBody)
+          val providers = configModel.download.provider
+          val downloadApiUrl =
+            SPConfig.DOWNLOAD_API_URL.getRequired<String>(LanzouApplication.DOWNLOAD_API_URL)
+          val currentItem = providers.indexOfFirst { it.url == downloadApiUrl }
+          MaterialAlertDialogBuilder(requireContext())
+            .setTitle("选择服务")
+            .setSingleChoiceItems(
+              providers.map { it.name }.toTypedArray(),
+              currentItem
+            ) { dialog, which ->
+              SPConfig.DOWNLOAD_API_URL.put(providers[which].url)
+              dialog.dismiss()
+            }
+            .setPositiveButton("关闭", null)
+            .show()
+        }
         true
       }
 

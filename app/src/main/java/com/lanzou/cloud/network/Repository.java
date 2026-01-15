@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.GsonBuilder;
 import com.lanzou.cloud.LanzouApplication;
+import com.lanzou.cloud.config.SPConfig;
 import com.lanzou.cloud.data.LanzouDownloadResponse;
 import com.lanzou.cloud.data.LanzouFile;
 import com.lanzou.cloud.data.LanzouFileResponse;
@@ -28,6 +29,7 @@ import com.lanzou.cloud.service.UploadService;
 import com.lanzou.cloud.utils.FileJavaUtils;
 import com.lanzou.cloud.utils.GsonConverterFactory;
 import com.lanzou.cloud.utils.SSLSocketClient;
+import com.lanzou.cloud.utils.SpJavaUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -313,7 +315,11 @@ public class Repository {
     public String getDownloadUrl(String url, @Nullable String pwd) {
         // 改用使用接口方式获取下载地址
         String key = url.substring(url.lastIndexOf("/"));
-        String downloadUrl = LanzouApplication.API_URL + "/lz" + key;
+        String downloadApiUrl = SpJavaUtils.get(SPConfig.DOWNLOAD_API_URL, LanzouApplication.DOWNLOAD_API_URL);
+        if (downloadApiUrl.isEmpty()) {
+            downloadApiUrl = LanzouApplication.DOWNLOAD_API_URL;
+        }
+        String downloadUrl = downloadApiUrl + "/lz" + key;
         if (!TextUtils.isEmpty(pwd)) {
             downloadUrl += "@" + pwd;
         }

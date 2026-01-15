@@ -16,6 +16,18 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
+        app:title="下载">
+
+        <Preference
+            app:icon="@drawable/baseline_download_for_offline_24"
+            app:key="download_api_url"
+            app:summary="选择下载使用的服务地址(下载失败可在此切换)"
+            app:title="下载服务" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
         app:title="上传">
 
         <SwitchPreferenceCompat
@@ -26,18 +38,29 @@
             app:summary="开启大文件上传功能"
             app:title="文件上传" />
 
+        <Preference
+            app:entries="@array/file_size_entries"
+            app:entryValues="@array/file_size_values"
+            app:icon="@drawable/baseline_content_cut_24"
+            app:iconSpaceReserved="false"
+            app:key="upload_file_size"
+            app:summary="限制单个文件的大小(普通用户请设置100M以下)"
+            app:title="文件大小" />
+
         <SeekBarPreference
+            android:enabled="false"
             android:max="524288000"
             app:defaultValue="103809024"
             app:dependency="big_file_upload"
             app:icon="@drawable/baseline_content_cut_24"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             app:key="upload_file_size"
             app:min="52428800"
             app:seekBarIncrement="10485760"
             app:showSeekBarValue="true"
             app:summary="限制单个文件的大小(单位：字节)"
-            app:title="文件大小" />
+            app:title="文件大小(废弃)" />
 
         <Preference
             android:title="缓存路径"
@@ -114,6 +137,17 @@
                     android:name="pwd"
                     android:value="7gcf" />
             </intent>
+
+        </Preference>
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:summary="一个方便观看电视直播的App"
+            app:title="DongYuTVWeb">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://gitee.com/jdy2002/DongYuTvWeb"></intent>
 
         </Preference>
 
