@@ -1,7 +1,7 @@
 {
-  "version": "1.8.5",
-  "versionCode": 24,
-  "content": "1.修复下载失败问题\n2.恢复维护更新\n\n【如有问题可前往github/gitee首页反馈】",
-  "url": "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/ivnWB3fnecle",
+  "version": "1.8.6",
+  "versionCode": 25,
+  "content": "1.支持修改下载服务\n2.修改文件大小选择方式\n\n【如有问题可前往github/gitee首页反馈】",
+  "url": "http://wuxianggujun.com:6400/parser?url=https://jdy2002.lanzoue.com/itd5P3g6n0qf",
   "date": "2025-10-07"
 }
