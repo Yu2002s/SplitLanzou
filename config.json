@@ -1,0 +1,11 @@
+{
+  "download": {
+    "provider": [
+      {
+        "id": "simple",
+        "name": "lz.qaiu.top",
+        "url": "https://lz.qaiu.top"
+      }
+    ]
+  }
+}
