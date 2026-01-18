@@ -166,7 +166,7 @@ abstract class LocalFileFragment(position: LayoutPosition = LayoutPosition.RIGHT
     com.lanzou.cloud.utils.FileUtils.shareFile(requireContext(), file.path)
   }
 
-  override fun copyFile(
+  override suspend fun copyFile(
     position: Int,
     current: FileInfoModel,
     targetPath: String?

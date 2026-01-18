@@ -5,12 +5,14 @@ import com.drake.net.Post
 import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
 import com.lanzou.cloud.config.Api
+import com.lanzou.cloud.config.SPConfig
 import com.lanzou.cloud.model.BaseLanzouResponse
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LanzouShareFolderModel
 import com.lanzou.cloud.model.LanzouUrlModel
 import com.lanzou.cloud.model.ProfileModel
 import com.lanzou.cloud.service.UploadService
+import com.lanzou.cloud.utils.SpUtils.getRequired
 import com.lanzou.cloud.utils.converter.SerializationConverter
 import com.lanzou.cloud.utils.formatBytes
 import kotlinx.coroutines.coroutineScope
@@ -138,7 +140,11 @@ object LanzouRepository {
    * @param pwd 文件密码（没有留空）
    */
   suspend fun getShareFolders(url: String, pwd: String? = null) = coroutineScope {
-    Get<List<LanzouShareFolderModel>>(Api.GET_SHARE_FOLDERS) {
+    Get<List<LanzouShareFolderModel>>(
+      SPConfig.DOWNLOAD_API_URL.getRequired<String>(
+        LanzouApplication.DOWNLOAD_API_URL
+      ) + Api.GET_SHARE_FOLDERS
+    ) {
       converter =
         SerializationConverter(
           success = arrayOf("200"),
@@ -244,6 +250,16 @@ object LanzouRepository {
       param("file_name", fileName)
       param("type", 2)
     }.await().zt == 1
+  }
+
+  /**
+   * 解析文件
+   *
+   * @param url 文件地址
+   */
+  fun parseFile(url: String) {
+    val document = Jsoup.connect(url).userAgent(Repository.USER_AGENT).get()
+
   }
 
   private fun getFileRealName(fileInfoModel: FileInfoModel) {

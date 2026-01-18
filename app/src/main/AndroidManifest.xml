@@ -77,6 +77,7 @@
             android:label="下载信息" />
         <activity
             android:name=".ui.activity.ResolveFileActivity"
+            android:theme="@style/Theme.SplitLanzou.Dialog.Activity"
             android:exported="true"
             android:label="解析文件">
             <intent-filter>

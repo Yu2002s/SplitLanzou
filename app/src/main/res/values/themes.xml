@@ -24,8 +24,10 @@
 
     </style>
 
-    <style name="MyDialogTheme" parent="MaterialAlertDialog.Material3">
-
+    <style name="Theme.SplitLanzou.Dialog.Activity" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+        <item name="android:windowMinWidthMajor">100%</item>
     </style>
 
     <style name="MySwitchPreferenceStyle" parent="Preference.SwitchPreferenceCompat.Material">

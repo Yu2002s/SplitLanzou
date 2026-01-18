@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.color.DynamicColors;
+import com.lanzou.cloud.LanzouApplication;
 import com.lanzou.cloud.databinding.ActivityResolveFileBinding;
 import com.lanzou.cloud.service.DownloadService;
 
@@ -20,9 +22,22 @@ public class ResolveFileActivity extends AppCompatActivity implements ServiceCon
 
     private DownloadService downloadService;
 
+    /**
+     * 解析文件
+     *
+     * @param url 文件分享地址
+     */
+    public static void actionStart(String url) {
+        Intent intent = new Intent(LanzouApplication.context, ResolveFileActivity.class);
+        intent.putExtra(Intent.EXTRA_PROCESS_TEXT, url);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        LanzouApplication.context.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        DynamicColors.applyToActivityIfAvailable(this);
         bindService(new Intent(this, DownloadService.class), this, BIND_AUTO_CREATE);
         ActivityResolveFileBinding binding = ActivityResolveFileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());

@@ -10,20 +10,26 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.drake.engine.utils.ClipboardUtils
 import com.drake.tooltip.toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -34,11 +40,14 @@ import com.lanzou.cloud.databinding.ActivityMainBinding
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
+import com.lanzou.cloud.ui.activity.ResolveFileActivity
 import com.lanzou.cloud.ui.cloud.file.FileFragment
 import com.lanzou.cloud.ui.cloud.selector.FileSelectorActivity
 import com.lanzou.cloud.ui.cloud.selector.PhoneFileActivity
+import com.lanzou.cloud.ui.dialog.FileResolveViewModel
 import com.lanzou.cloud.utils.SpJavaUtils
 import com.lanzou.cloud.utils.UpdateUtils
+import kotlinx.coroutines.launch
 
 /**
  * SplitLanzou
@@ -49,11 +58,28 @@ import com.lanzou.cloud.utils.UpdateUtils
  */
 class MainActivity : AppCompatActivity(), ServiceConnection {
 
+  companion object {
+
+    private const val TAG = "MainActivity"
+
+  }
+
   private lateinit var binding: ActivityMainBinding
 
   private var uploadService: UploadService? = null
 
   private var downloadService: DownloadService? = null
+
+  private val fileResolveViewModel by viewModels<FileResolveViewModel>()
+
+  private val handler = Handler(Looper.getMainLooper())
+
+  private val clipboardRunnable = Runnable {
+    // 获取剪切板中的文件
+    val text = ClipboardUtils.getText()
+    Log.i(TAG, "剪切板数据: $text")
+    fileResolveViewModel.setClipData(text)
+  }
 
   @SuppressLint("NonConstantResourceId")
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,6 +149,16 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     if (SpJavaUtils.getBoolean(SPConfig.CHECK_UPDATE, true)) {
       UpdateUtils.checkUpdate(this)
     }
+
+    lifecycleScope.launch {
+      fileResolveViewModel.fileShareUrl.collect { url ->
+        if (url.isBlank()) {
+          return@collect
+        }
+        toast("发现文件分享链接: $url")
+        ResolveFileActivity.actionStart(url)
+      }
+    }
   }
 
   private val fileFragment: FileFragment
@@ -175,6 +211,16 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         onClickListener
       )
       .show()
+  }
+
+  override fun onResume() {
+    super.onResume()
+    handler.postDelayed(clipboardRunnable, 500)
+  }
+
+  override fun onStop() {
+    super.onStop()
+    handler.removeCallbacks(clipboardRunnable)
   }
 
   override fun onServiceConnected(name: ComponentName?, service: IBinder?) {

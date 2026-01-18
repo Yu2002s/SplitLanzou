@@ -54,14 +54,6 @@ class ResolveFolderActivity :
 
   override fun initView() {
     setTitle(getString(R.string.title_resolve_folder))
-    actionRight.text = "网站中打开"
-    actionRight.setOnClickListener {
-      val url = intent.getStringExtra(PARAM_URL) ?: return@setOnClickListener
-      val pwd = intent.getStringExtra(PARAM_PWD)
-      val id = url.substringAfterLast("/")
-      val webUrl = LanzouApplication.SHARE_FOLDER_URL + id + "/${pwd ?: ""}"
-      WebActivity.actionStart(webUrl)
-    }
 
     binding.folderRv.fitNavigationBar()
     binding.folderRv.divider {
@@ -78,7 +70,7 @@ class ResolveFolderActivity :
           .setTitle("下载")
           .setMessage(model.fileName)
           .setPositiveButton("确认") { _, _ ->
-            val url = "https://www.lanzoui.com/${model.fileId}"
+            val url = "${LanzouApplication.LANZOU_SHARE_BASE_URL}${model.fileId}"
             _downloadService?.addDownload(url, model.fileName, null)
           }
           .setNegativeButton("关闭", null)

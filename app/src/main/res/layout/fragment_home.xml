@@ -82,6 +82,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textSize="12sp"
                         android:text="新建" />
 
                     <com.google.android.material.button.MaterialButton
@@ -90,11 +91,13 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textSize="12sp"
                         android:text="搜索" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_left_multi"
                         style="?attr/buttonBarButtonStyle"
+                        android:textSize="12sp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -179,6 +182,7 @@
                         android:id="@+id/btn_right_mkdir"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:textSize="12sp"
                         android:layout_weight="1"
                         android:text="新建" />
 
@@ -187,12 +191,14 @@
                         android:id="@+id/btn_right_search"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:textSize="12sp"
                         android:layout_weight="1"
                         android:text="搜索" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_right_multi"
                         style="?attr/buttonBarButtonStyle"
+                        android:textSize="12sp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

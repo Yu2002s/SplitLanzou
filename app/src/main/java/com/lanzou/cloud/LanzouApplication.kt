@@ -57,6 +57,11 @@ class LanzouApplication : Application() {
      */
     const val DOWNLOAD_API_URL = "https://lz.qaiu.top"
 
+    /**
+     * 蓝奏通用的分享 BASE_URL
+     */
+    const val LANZOU_SHARE_BASE_URL = "https://www.lanzoui.com/"
+
     const val SHARE_URL = "http://lz.jdynb.xyz/index.html"
 
     /**

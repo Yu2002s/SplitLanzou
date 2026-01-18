@@ -125,7 +125,7 @@ class AppFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
       .show()
   }
 
-  override fun copyFile(
+  override suspend fun copyFile(
     position: Int,
     current: FileInfoModel,
     targetPath: String?

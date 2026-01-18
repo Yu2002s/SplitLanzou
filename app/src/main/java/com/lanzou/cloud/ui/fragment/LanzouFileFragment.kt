@@ -128,7 +128,7 @@ class LanzouFileFragment(
       val fileInfo = LanzouRepository.getFileInfo(file.id)
       MaterialAlertDialogBuilder(requireContext())
         .setTitle("分享")
-        .setItems(arrayOf("自定义分享地址", "原始分享地址", "下载直链")) { dialog, which ->
+        .setItems(arrayOf("自定义分享地址(废弃)", "原始分享地址", "下载直链")) { dialog, which ->
           clipboardManager.setPrimaryClip(
             ClipData.newPlainText(
               "share", when (which) {
@@ -156,7 +156,7 @@ class LanzouFileFragment(
       .setFileName(file.name)
   }
 
-  override fun copyFile(
+  override suspend fun copyFile(
     position: Int,
     current: FileInfoModel,
     targetPath: String?

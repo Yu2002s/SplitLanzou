@@ -27,6 +27,8 @@ class ClassifyFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
 
     const val TYPE_VIDEO = 3
 
+    const val TYPE_IMAGE = 4
+
     @JvmStatic
     fun newInstance(
       type: Int,
@@ -47,6 +49,7 @@ class ClassifyFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
       TYPE_APK -> "安装包"
       TYPE_VIDEO -> "视频"
       TYPE_ZIP -> "压缩包"
+      TYPE_IMAGE -> "图片"
       else -> super.getFullPath()
     }
   }
@@ -82,6 +85,7 @@ class ClassifyFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
     return when (requireArguments().getInt(PARAM_TYPE, TYPE_ZIP)) {
       TYPE_APK, TYPE_ZIP -> MediaStore.Files.getContentUri("external")
       TYPE_VIDEO -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+      TYPE_IMAGE -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
       else -> MediaStore.Files.getContentUri("external")
     }
   }

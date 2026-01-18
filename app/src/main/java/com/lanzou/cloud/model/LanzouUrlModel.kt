@@ -2,9 +2,9 @@ package com.lanzou.cloud.model
 
 
 import com.lanzou.cloud.LanzouApplication
+import com.lanzou.cloud.network.Repository
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.net.URLEncoder
 
 @Serializable
 data class LanzouUrlModel(
@@ -40,10 +40,6 @@ data class LanzouUrlModel(
 
   val downloadUrl: String
     get() {
-      var str = "${LanzouApplication.DOWNLOAD_API_URL}/parser?url=${URLEncoder.encode(shareUrl)}"
-      if (hasPwd == 1) {
-        str += "&pwd=$pwd"
-      }
-      return str
+      return Repository.getInstance().getDownloadUrl(shareUrl, if (hasPwd == 1) pwd else null)
     }
 }

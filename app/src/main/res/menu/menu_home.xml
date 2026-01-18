@@ -25,10 +25,16 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/detail"
+        android:visible="false"
+        android:title="文件夹详情"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/sort"
         android:icon="@drawable/baseline_sort_24"
         android:title="@string/sort"
-        app:showAsAction="always">
+        app:showAsAction="ifRoom">
 
         <menu>
             <item

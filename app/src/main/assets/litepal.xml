@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <litepal>
     <dbname value="lanzou" />
-    <version value="5" />
+    <version value="6" />
     <list>
         <mapping class="com.lanzou.cloud.data.User"/>
         <mapping class="com.lanzou.cloud.data.Download"/>
         <mapping class="com.lanzou.cloud.data.Upload"/>
         <mapping class="com.lanzou.cloud.data.SplitFile" />
         <mapping class="com.lanzou.cloud.data.LanzouPage" />
+        <mapping class="com.lanzou.cloud.model.FileFavoritesModel" />
+        <mapping class="com.lanzou.cloud.model.FavoriteItem" />
     </list>
 </litepal>

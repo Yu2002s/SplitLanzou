@@ -1,7 +1,5 @@
 package com.lanzou.cloud.config
 
-import com.lanzou.cloud.LanzouApplication
-
 /**
  * 接口管理
  */
@@ -17,7 +15,7 @@ object Api {
   /**
    * 获取分享文件夹
    */
-  const val GET_SHARE_FOLDERS = "${LanzouApplication.DOWNLOAD_API_URL}/v2/getFileList"
+  const val GET_SHARE_FOLDERS = "/v2/getFileList"
 
   /**
    * 操作文件相关

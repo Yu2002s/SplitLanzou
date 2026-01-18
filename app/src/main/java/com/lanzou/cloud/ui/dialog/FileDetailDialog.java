@@ -122,7 +122,7 @@ public class FileDetailDialog extends BottomSheetDialog {
             };
 
             new MaterialAlertDialogBuilder(context)
-                    .setItems(new CharSequence[]{"自定义分享地址", "原始分享地址"}, clickListener)
+                    .setItems(new CharSequence[]{"自定义分享地址(废弃)", "原始分享地址"}, clickListener)
                     .setPositiveButton("关闭", null)
                     .show();
         });
@@ -157,10 +157,8 @@ public class FileDetailDialog extends BottomSheetDialog {
 
         binding.btnShareDownload.setOnClickListener(v -> {
             String url = binding.editUrl.getText().toString();
-            if (binding.swPwd.isChecked()) {
-                url += "&pwd=" + binding.editPwd.getText().toString();
-            }
-            String downloadUrl = "http://api.jdynb.xyz:6400/parser?url=" + url;
+            String pwd = binding.swPwd.isChecked() ? binding.editPwd.getText().toString() : null;
+            String downloadUrl = Repository.getInstance().getDownloadUrl(url, pwd);
             clipboardManager.setPrimaryClip(ClipData.newPlainText("url", downloadUrl));
             Toast.makeText(context, "下载直链已复制到剪切板", Toast.LENGTH_SHORT).show();
         });

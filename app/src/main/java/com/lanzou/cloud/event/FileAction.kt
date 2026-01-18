@@ -2,6 +2,7 @@ package com.lanzou.cloud.event
 
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.FilterSortModel
+import okio.IOException
 
 /**
  * 一些文件操作的接口
@@ -136,7 +137,9 @@ interface FileAction : Searchable {
    * @param current 当前文件
    * @param targetPath 目标路径
    * @return 新文件
+   * @throws IOException 如果移动失败则抛出异常
    */
+  @Throws(IOException::class)
   suspend fun moveFile(position: Int, current: FileInfoModel, targetPath: String?): FileInfoModel?
 
   /**
@@ -145,9 +148,11 @@ interface FileAction : Searchable {
    * @param current 当前文件
    * @param targetPath 目标路径
    *
-   * @return 新文件
+   * @return 新文件，如果为空则表示失败
+   * @throws IOException 如果复制失败则抛出异常
    */
-  fun copyFile(position: Int, current: FileInfoModel, targetPath: String?): FileInfoModel?
+  @Throws(IOException::class)
+  suspend fun copyFile(position: Int, current: FileInfoModel, targetPath: String?): FileInfoModel?
 
   /**
    * 分享文件

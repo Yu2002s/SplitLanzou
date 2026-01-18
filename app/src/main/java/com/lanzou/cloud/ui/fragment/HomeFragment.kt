@@ -51,6 +51,7 @@ import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
 import com.lanzou.cloud.ui.dialog.FileActionDialog
+import com.lanzou.cloud.ui.dialog.FileDetailDialog
 import com.lanzou.cloud.ui.dialog.FileMkdirDialog
 import com.lanzou.cloud.ui.dialog.FileSearchDialog
 import com.lanzou.cloud.utils.getWindowWidth
@@ -94,6 +95,22 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       fragment = LanzouFileFragment.newInstance(position = LayoutPosition.RIGHT, name = "根目录")
     ),
     LocalPathModel(name = "软件", fragment = AppFileFragment()),
+    LocalPathModel(
+      name = "压缩包",
+      fragment = ClassifyFileFragment.newInstance(ClassifyFileFragment.TYPE_ZIP)
+    ),
+    LocalPathModel(
+      name = "安装包",
+      fragment = ClassifyFileFragment.newInstance(ClassifyFileFragment.TYPE_APK)
+    ),
+    LocalPathModel(
+      name = "视频",
+      fragment = ClassifyFileFragment.newInstance(ClassifyFileFragment.TYPE_VIDEO)
+    ),
+    LocalPathModel(
+      name = "图片",
+      fragment = ClassifyFileFragment.newInstance(ClassifyFileFragment.TYPE_IMAGE)
+    ),
   )
 
   /**
@@ -575,7 +592,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     var currentFolderName = ""
     if (isUpload) {
       currentFolderName = targetPathModel.name
-      message += "\n\n上传到: ${targetPathModel.path}"
+      message += "\n\n上传到: ${targetFileFragment.getFullPath()}"
     } else {
       message += "\n\n下载到: $currentPath"
     }
@@ -991,6 +1008,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     menu.findItem(R.id.sort).isVisible = currentFilePageType != FilePageType.REMOTE
     menu.findItem(R.id.copy).isVisible = currentFilePageType == FilePageType.LOCAL
         && currentFilePageType == targetFilePageType
+    menu.findItem(R.id.detail).isVisible = currentFilePageType == FilePageType.REMOTE
   }
 
   override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -1011,6 +1029,17 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         true
       }
 
+      // 文件夹详情
+      R.id.detail -> {
+        val fileId = currentFileFragment.getCurrentPath()?.toLongOrNull() ?: return true
+        if (fileId == -1L) {
+          toast("根目录无法查看详情")
+          return true
+        }
+        FileDetailDialog(requireContext(), fileId, false)
+        true
+      }
+
       // 是否显示系统App
       R.id.show_system_app -> {
         menuItem.isChecked = !menuItem.isChecked
@@ -1022,7 +1051,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
       // 添加标签选项卡
       R.id.add_tab -> {
         // TODO: 这里应该有一层映射关系，这里暂且写死
-        val items = arrayOf("远程", "本地", "软件", "压缩包", "安装包", "视频")
+        val items = arrayOf("远程", "本地", "软件", "压缩包", "安装包", "视频", "图片")
         var currentPosition = 0
         MaterialAlertDialogBuilder(requireActivity())
           .setTitle("添加选项卡到当前聚焦位置")
@@ -1047,6 +1076,11 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
 
               5 -> ClassifyFileFragment.newInstance(
                 ClassifyFileFragment.TYPE_VIDEO,
+                currentFocusedPosition
+              )
+
+              6 -> ClassifyFileFragment.newInstance(
+                ClassifyFileFragment.TYPE_IMAGE,
                 currentFocusedPosition
               )
 
