@@ -12,6 +12,8 @@ object Api {
    */
   const val DISK_PHP = "/mydisk.php"
 
+  const val AJAX_PHP = "ajaxm.php"
+
   /**
    * 获取分享文件夹
    */

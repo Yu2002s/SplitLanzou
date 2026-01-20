@@ -40,10 +40,10 @@ import com.lanzou.cloud.databinding.ActivityMainBinding
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
-import com.lanzou.cloud.ui.activity.ResolveFileActivity
 import com.lanzou.cloud.ui.cloud.file.FileFragment
 import com.lanzou.cloud.ui.cloud.selector.FileSelectorActivity
 import com.lanzou.cloud.ui.cloud.selector.PhoneFileActivity
+import com.lanzou.cloud.ui.dialog.FileResolveDialog
 import com.lanzou.cloud.ui.dialog.FileResolveViewModel
 import com.lanzou.cloud.utils.SpJavaUtils
 import com.lanzou.cloud.utils.UpdateUtils
@@ -151,12 +151,17 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     }
 
     lifecycleScope.launch {
-      fileResolveViewModel.fileShareUrl.collect { url ->
-        if (url.isBlank()) {
-          return@collect
+      fileResolveViewModel.lanzouResolveFile.collect { result ->
+        result ?: return@collect
+        val fragment = supportFragmentManager.findFragmentByTag("FileResolveDialog")
+        if (fragment == null) {
+          if (result.fileName.isEmpty()) {
+            toast("解析文件失败，可能密码错误，请修改密码后解析")
+          } else {
+            toast("发现文件分享链接: ${result.url}")
+          }
+          FileResolveDialog(downloadService).show(supportFragmentManager, "FileResolveDialog")
         }
-        toast("发现文件分享链接: $url")
-        ResolveFileActivity.actionStart(url)
       }
     }
   }

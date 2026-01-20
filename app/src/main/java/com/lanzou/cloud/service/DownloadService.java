@@ -344,7 +344,7 @@ public class DownloadService extends Service {
             return;
         }
 
-        String showName = name == null ? url : name;
+        String showName = TextUtils.isEmpty(name) ? url : name;
 
         downloadMap.put(url, executorService.submit(() -> {
             Download download = createDownload(url, showName, pwd, path, true);

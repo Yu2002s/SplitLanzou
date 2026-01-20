@@ -1,5 +1,6 @@
 package com.lanzou.cloud.network
 
+import android.util.Log
 import com.drake.net.Get
 import com.drake.net.Post
 import com.lanzou.cloud.LanzouApplication
@@ -8,6 +9,8 @@ import com.lanzou.cloud.config.Api
 import com.lanzou.cloud.config.SPConfig
 import com.lanzou.cloud.model.BaseLanzouResponse
 import com.lanzou.cloud.model.FileInfoModel
+import com.lanzou.cloud.model.LanzouDownloadModel
+import com.lanzou.cloud.model.LanzouResolveFileModel
 import com.lanzou.cloud.model.LanzouShareFolderModel
 import com.lanzou.cloud.model.LanzouUrlModel
 import com.lanzou.cloud.model.ProfileModel
@@ -257,9 +260,63 @@ object LanzouRepository {
    *
    * @param url 文件地址
    */
-  fun parseFile(url: String) {
-    val document = Jsoup.connect(url).userAgent(Repository.USER_AGENT).get()
-
+  suspend fun parseFile(url: String, pwd: String? = null): Result<LanzouResolveFileModel> {
+    return coroutineScope {
+      runCatching {
+        // TODO: 解析文件夹待完成
+        val document = Jsoup.connect(url).userAgent(Repository.USER_AGENT).get()
+        val passwordDiv = document.selectFirst("#file")
+        if (passwordDiv != null) {
+          // 这是有密码的文件
+          val file = document.selectFirst("#file") ?: throw NullPointerException("解析文件失败")
+          val href = file.selectFirst("a.n_login")?.attr("href")
+            ?: throw NullPointerException("获取文件id失败")
+          val idRegex = "f=(\\d+)".toRegex()
+          val fileId = idRegex.find(href)?.destructured?.component1()
+            ?: throw NullPointerException("获取文件id失败")
+          val signRegex = "'sign':'(.*?)',".toRegex()
+          val sign =
+            signRegex.findAll(document.html()).toList().getOrNull(1)?.destructured?.component1()
+              ?: throw NullPointerException("获取 sign 失败")
+          val result =
+            Post<LanzouDownloadModel>(LanzouApplication.LANZOU_SHARE_BASE_URL + Api.AJAX_PHP) {
+              converter = SerializationConverter(rawData = true)
+              addHeader("Referer", url)
+              addQuery("file", fileId)
+              param("action", "downprocess")
+              param("sign", sign)
+              param("kd", 1)
+              param("p", pwd)
+            }.await()
+          if (result.status != 1) {
+            throw kotlin.IllegalStateException("解析文件失败")
+          }
+          val shareTime = file.selectFirst(".n_file_info .n_file_infos")?.text() ?: ""
+          val fileSize = file.selectFirst(".n_filesize")?.text() ?: ""
+          LanzouResolveFileModel(
+            url = url,
+            pwd = pwd,
+            downloadUrl = result.dom + "/file/" + result.url,
+            fileName = result.inf,
+            fileSize = fileSize.replace("大小：", ""),
+            shareTime = shareTime
+          )
+        } else {
+          // 没有密码的文件
+          val fileName = document.selectFirst(".d>div")?.text()
+          val nodes = document.selectFirst(".d2 table td")?.textNodes()
+          Log.i("jdy", "nodes: $nodes")
+          LanzouResolveFileModel(
+            url,
+            pwd,
+            fileName = fileName ?: "",
+            fileSize = nodes?.getOrNull(1)?.toString() ?: "",
+            shareTime = nodes?.getOrNull(3)?.toString() ?: "",
+            remark = nodes?.getOrNull(7)?.toString()?.replace("\n", "") ?: "",
+          )
+        }
+      }
+    }
   }
 
   private fun getFileRealName(fileInfoModel: FileInfoModel) {

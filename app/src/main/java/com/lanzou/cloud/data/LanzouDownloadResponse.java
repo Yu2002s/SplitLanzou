@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 
+import kotlinx.serialization.Serializable;
+
+@Serializable
 public class LanzouDownloadResponse {
 
     @SerializedName("zt")
@@ -13,7 +16,7 @@ public class LanzouDownloadResponse {
 
     private String url;
 
-    private String info;
+    private String inf;
 
     public int getStatus() {
         return status;
@@ -39,12 +42,12 @@ public class LanzouDownloadResponse {
         this.url = url;
     }
 
-    public String getInfo() {
-        return info;
+    public String getInf() {
+        return inf;
     }
 
-    public void setInfo(String info) {
-        this.info = info;
+    public void setInf(String inf) {
+        this.inf = inf;
     }
 
     @NonNull
@@ -54,7 +57,7 @@ public class LanzouDownloadResponse {
                 "status=" + status +
                 ", dom='" + dom + '\'' +
                 ", url='" + url + '\'' +
-                ", info='" + info + '\'' +
+                ", inf='" + inf + '\'' +
                 '}';
     }
 }

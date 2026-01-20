@@ -27,7 +27,8 @@ class SerializationConverter(
   val success: Array<String> = arrayOf("1", "2"), // 成功的状态码
   val code: String = "zt", // code 字段名
   val message: String = "info", // message 字段名
-  val data: String = "text"
+  val data: String = "text",
+  val rawData: Boolean = false,
 ) : NetConverter {
 
   companion object {
@@ -50,6 +51,9 @@ class SerializationConverter(
             val srvCode = json.getString(this.code)
             when {
               success.contains(srvCode) -> {
+                if (rawData) {
+                  return bodyString.parseBody(kType)
+                }
                 if (!json.has(data)) {
                   return null
                 }

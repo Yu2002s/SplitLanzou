@@ -55,7 +55,6 @@
             app:icon="@drawable/baseline_content_cut_24"
             app:iconSpaceReserved="false"
             app:isPreferenceVisible="false"
-            app:key="upload_file_size"
             app:min="52428800"
             app:seekBarIncrement="10485760"
             app:showSeekBarValue="true"
