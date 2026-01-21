@@ -50,13 +50,12 @@ class FileFavoriteDialog(private val lanzouResolveFileModel: LanzouResolveFileMo
 
     viewLifecycleOwner.lifecycleScope.launch {
       val fileFavoritesModels = withIO {
-        LitePal.findAll<FileFavoritesModel>().also {
-          if (it.isEmpty()) {
-            val model = FileFavoritesModel("默认")
-            model.save()
-            favoritesModels.add(model)
-          }
+        val count = LitePal.count(FileFavoritesModel::class.java)
+        if (count == 0) {
+          val model = FileFavoritesModel("默认")
+          model.save()
         }
+        LitePal.findAll<FileFavoritesModel>()
       }
       favoritesModels.addAll(fileFavoritesModels)
       binding.spinner.adapter = ArrayAdapter(

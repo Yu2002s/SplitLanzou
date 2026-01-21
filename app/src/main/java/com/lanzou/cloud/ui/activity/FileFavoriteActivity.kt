@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.view.View
+import com.drake.brv.item.ItemExpand
 import com.drake.brv.utils.setup
 import com.drake.engine.utils.ClipboardUtils
 import com.drake.net.utils.scope
@@ -104,8 +105,7 @@ class FileFavoriteActivity :
                 LitePal.deleteAll<FavoriteItem>("filefavoritesmodel_id = ?", model.id.toString())
               }
               toast("删除成功")
-              mutable.removeAt(modelPosition)
-              notifyItemRemoved(modelPosition)
+              binding.page.refresh()
             }
           }
           .setNegativeButton("取消", null)
@@ -120,8 +120,14 @@ class FileFavoriteActivity :
             model.delete()
           }
           toast("删除成功")
-          mutable.removeAt(modelPosition)
-          notifyItemRemoved(modelPosition)
+          val parentPosition = findParentPosition()
+          if (parentPosition != -1) {
+            // 删除父item的嵌套分组数据
+            (getModel<ItemExpand>(parentPosition).getItemSublist() as MutableList).remove(model)
+            mutable.removeAt(layoutPosition)
+            notifyItemRemoved(layoutPosition)
+          }
+          // binding.page.refresh()
         }
       }
 
