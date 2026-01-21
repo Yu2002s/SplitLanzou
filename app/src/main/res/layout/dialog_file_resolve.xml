@@ -68,6 +68,7 @@
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputLayout
+                gone="@{m.fileSize.length() > 0}"
                 android:hint="大小"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -81,6 +82,7 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                gone="@{m.shareTime.length() > 0}"
                 android:layout_marginStart="8dp"
                 android:hint="日期"
                 android:layout_weight="1"
@@ -131,6 +133,7 @@
                 android:layout_height="wrap_content" />
 
             <com.google.android.material.button.MaterialButton
+                gone="@{m.isFile}"
                 android:id="@+id/btn_download"
                 android:text="下载"
                 android:layout_weight="1"

@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <data>
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.model.LanzouResolveFileModel" />
+
+    </data>
+
     <LinearLayout
         android:padding="16dp"
         android:orientation="vertical"
@@ -13,39 +21,46 @@
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:text="@={m.fileName}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginTop="8dp"
             android:hint="地址"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:text="@={m.url}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginTop="8dp"
             android:hint="密码"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:text="@={m.pwd}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginTop="8dp"
             android:hint="备注"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:text="@={m.remark}"
                 android:minLines="3"
                 android:inputType="text|textMultiLine"
                 android:layout_width="match_parent"
@@ -53,28 +68,34 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:hint="收藏在"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+        <Spinner
+            android:layout_marginTop="8dp"
+            android:id="@+id/spinner"
+            android:layout_width="match_parent"
+            android:layout_height="48dp" />
+
+        <LinearLayout
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_favorite"
+                android:text="收藏"
+                android:layout_weight="1"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.button.MaterialButton
+                android:layout_marginStart="8dp"
+                android:id="@+id/btn_close"
+                android:text="关闭"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
 
-        <com.google.android.material.button.MaterialButton
-            android:layout_marginTop="16dp"
-            android:text="收藏"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <com.google.android.material.button.MaterialButton
-            android:text="关闭"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        </LinearLayout>
 
     </LinearLayout>
 

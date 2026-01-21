@@ -29,6 +29,7 @@ import com.lanzou.cloud.model.UserInfoModel
 import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.AboutAppActivity
+import com.lanzou.cloud.ui.activity.FileFavoriteActivity
 import com.lanzou.cloud.ui.activity.QRCodeScanActivity
 import com.lanzou.cloud.ui.activity.QuestionActivity
 import com.lanzou.cloud.ui.activity.RecycleFileActivity
@@ -99,21 +100,23 @@ class MeFragment : EngineNavFragment<FragmentMeBinding>(R.layout.fragment_me), M
   private fun handleOptionItemClick(position: Int) {
     when (position) {
       0 -> startActivity<ResolveFileActivity>()
-      1 -> startActivity<RecycleFileActivity>()
-      2 -> WebActivity.actionStart(LanzouApplication.GITHUB_HOME)
-      3 -> ResolveFolderActivity.resolve(
+      1 -> startActivity<FileFavoriteActivity>()
+      2 -> startActivity<RecycleFileActivity>()
+      3 -> WebActivity.actionStart(LanzouApplication.GITHUB_HOME)
+      4 -> ResolveFolderActivity.resolve(
         LanzouApplication.APP_SHARE_URL,
         LanzouApplication.APP_SHARE_PWD
       )
 
-      4 -> startActivity<QuestionActivity>()
-      5 -> startActivity<AboutAppActivity>()
-      6 -> startActivity<SettingActivity>()
+      5 -> startActivity<QuestionActivity>()
+      6 -> startActivity<AboutAppActivity>()
+      7 -> startActivity<SettingActivity>()
     }
   }
 
   private fun getModels() = listOf(
     OptionItem(R.drawable.baseline_file_open_24, "解析文件"),
+    OptionItem(R.drawable.baseline_favorite_24, "我的收藏"),
     OptionItem(R.drawable.baseline_recycling_24, "回收站"),
     OptionItem(R.drawable.baseline_download_for_offline_24, "获取更新"),
     OptionItem(R.drawable.baseline_history_24, "历史版本"),

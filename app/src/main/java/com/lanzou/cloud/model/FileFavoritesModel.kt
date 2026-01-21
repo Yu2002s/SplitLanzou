@@ -1,5 +1,9 @@
 package com.lanzou.cloud.model
 
+import androidx.databinding.PropertyChangeRegistry
+import com.drake.brv.item.ItemExpand
+import com.drake.engine.databinding.ObservableImpl
+import com.lanzou.cloud.R
 import org.litepal.annotation.Column
 import org.litepal.crud.LitePalSupport
 
@@ -15,7 +19,7 @@ data class FileFavoritesModel(
   /**
    * 收藏项列表
    */
-  val items: List<FavoriteItem> = emptyList(),
+  val items: MutableList<FavoriteItem> = mutableListOf(),
 
   /**
    * 备注
@@ -26,9 +30,26 @@ data class FileFavoritesModel(
    * 创建时间
    */
   val createAt: Long = System.currentTimeMillis(),
-) : LitePalSupport() {
+) : LitePalSupport(), ItemExpand, ObservableImpl {
+
+  override val registry: PropertyChangeRegistry = PropertyChangeRegistry()
 
   val id: Long = 0L
+
+  @Column(ignore = true)
+  override var itemGroupPosition: Int = 0
+
+  @Column(ignore = true)
+  override var itemExpand: Boolean = false
+    set(value) {
+      field = value
+      notifyChange()
+    }
+
+  override fun getItemSublist() = items
+
+  val expandIcon get() = if (itemExpand) R.drawable.baseline_expand_more_24 else R.drawable.baseline_chevron_right_24
+
 }
 
 /**
@@ -81,8 +102,11 @@ data class FavoriteItem(
   val createAt: Long = System.currentTimeMillis(),
   val updateAt: Long = System.currentTimeMillis(),
   val favoritesModel: FileFavoritesModel = FileFavoritesModel(),
-) : LitePalSupport() {
+) : LitePalSupport(), ObservableImpl {
+
+  override val registry: PropertyChangeRegistry = PropertyChangeRegistry()
 
   val id: Long = 0L
 
+  val fileDesc get() = if (isFile) "$size $time" else "$pwd"
 }

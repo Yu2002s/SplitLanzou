@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="m"
+            type="com.lanzou.cloud.model.FavoriteItem" />
+
+        <import type="com.lanzou.cloud.utils.databinding.CommonDataBindingAdapter" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:paddingStart="36dp"
+        android:paddingEnd="10dp"
+        android:paddingVertical="10dp"
+        android:id="@+id/item_favorite"
+        android:background="?attr/selectableItemBackground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:scaleType="centerCrop"
+            tools:src="@drawable/baseline_folder_24"
+            android:id="@+id/iv_icon"
+            favoriteFileIcon="@{m.extension}"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+            android:id="@+id/tv_name"
+            android:layout_marginStart="4dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{m.name}"
+            app:layout_constraintEnd_toStartOf="@id/btn_delete_favorite"
+            app:layout_constraintBottom_toTopOf="@id/tv_desc"
+            app:layout_constraintStart_toEndOf="@id/iv_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/app_name" />
+
+        <TextView
+            gone="@{m.size.length() > 0}"
+            android:id="@+id/tv_desc"
+            app:layout_constraintBottom_toBottomOf="@id/iv_icon"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            app:layout_constraintEnd_toEndOf="@id/tv_name"
+            tools:text="100.22M 2024-12-12 12下载"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            app:layout_constraintStart_toStartOf="@id/tv_name"
+            android:text="@{m.fileDesc}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/btn_delete_favorite"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/baseline_delete_outline_24"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

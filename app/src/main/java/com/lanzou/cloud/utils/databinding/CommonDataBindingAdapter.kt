@@ -68,6 +68,12 @@ object CommonDataBindingAdapter {
   }
 
   @JvmStatic
+  @BindingAdapter("favoriteFileIcon")
+  fun setFavoriteFileIcon(view: ImageView, ext: String?) {
+    view.setImageResource(FileUtils.getIcon(ext))
+  }
+
+  @JvmStatic
   @BindingAdapter("android:textColor")
   fun setTextColor(view: TextView, @ColorRes color: Int) {
     val colorRes = ContextCompat.getColor(view.context, color)

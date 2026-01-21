@@ -58,6 +58,10 @@ class FileActionDialog(
       options.add(0, OptionItem(icon, "下载", 0))
     }
 
+    if (current == FilePageType.REMOTE) {
+      options.add(OptionItem(R.drawable.baseline_favorite_24, "收藏", 0))
+    }
+
     binding.actionRv.dividerSpace(20, DividerOrientation.GRID).setup {
       addType<OptionItem>(R.layout.item_list_option)
 

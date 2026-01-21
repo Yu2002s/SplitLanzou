@@ -185,4 +185,8 @@ abstract class LocalFileFragment(position: LayoutPosition = LayoutPosition.RIGHT
       return null
     }
   }
+
+  override fun favoriteFile(file: FileInfoModel) {
+    toast("本地文件不能收藏")
+  }
 }

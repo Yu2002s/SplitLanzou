@@ -1,6 +1,5 @@
 package com.lanzou.cloud.network
 
-import android.util.Log
 import com.drake.net.Get
 import com.drake.net.Post
 import com.lanzou.cloud.LanzouApplication
@@ -263,9 +262,16 @@ object LanzouRepository {
   suspend fun parseFile(url: String, pwd: String? = null): Result<LanzouResolveFileModel> {
     return coroutineScope {
       runCatching {
-        // TODO: 解析文件夹待完成
         val document = Jsoup.connect(url).userAgent(Repository.USER_AGENT).get()
         val passwordDiv = document.selectFirst("#file")
+        if (document.selectFirst("#infomores") != null) {
+          return@runCatching LanzouResolveFileModel(
+            url = url,
+            pwd = pwd,
+            fileName = document.title(),
+            isFile = false
+          )
+        }
         if (passwordDiv != null) {
           // 这是有密码的文件
           val file = document.selectFirst("#file") ?: throw NullPointerException("解析文件失败")
@@ -297,19 +303,19 @@ object LanzouRepository {
             url = url,
             pwd = pwd,
             downloadUrl = result.dom + "/file/" + result.url,
-            fileName = result.inf,
+            fileName = getFileRealName(result.inf),
             fileSize = fileSize.replace("大小：", ""),
-            shareTime = shareTime
+            shareTime = shareTime,
           )
         } else {
           // 没有密码的文件
           val fileName = document.selectFirst(".d>div")?.text()
           val nodes = document.selectFirst(".d2 table td")?.textNodes()
-          Log.i("jdy", "nodes: $nodes")
           LanzouResolveFileModel(
             url,
             pwd,
-            fileName = fileName ?: "",
+            downloadUrl = url,
+            fileName = getFileRealName(fileName ?: ""),
             fileSize = nodes?.getOrNull(1)?.toString() ?: "",
             shareTime = nodes?.getOrNull(3)?.toString() ?: "",
             remark = nodes?.getOrNull(7)?.toString()?.replace("\n", "") ?: "",
@@ -357,5 +363,15 @@ object LanzouRepository {
       lanzouShareFolderModel.size = matchResult.destructured.component3().toLong()
       lanzouShareFolderModel.sizeStr = lanzouShareFolderModel.size.formatBytes()
     }
+  }
+
+  private fun getFileRealName(name: String): String {
+    val ext = name.substringAfterLast(".")
+    val isApk = "apk" == ext
+    val regex = if (isApk) FILE_REGEX else SPLIT_FILE_REGEX
+
+    val matchResult = regex.find(name) ?: return name
+
+    return "${matchResult.destructured.component1()}.${matchResult.destructured.component2()}"
   }
 }

@@ -627,6 +627,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
         "删除" -> currentFileFragment.deleteFile(position, fileInfoModel)
         "重命名" -> currentFileFragment.renameFile(position, fileInfoModel)
         "详情" -> currentFileFragment.showFileDetail(position, fileInfoModel)
+        "收藏" -> currentFileFragment.favoriteFile(fileInfoModel)
       }
     }
   }

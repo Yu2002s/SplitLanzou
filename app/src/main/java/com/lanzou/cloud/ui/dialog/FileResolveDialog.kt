@@ -46,7 +46,8 @@ class FileResolveDialog(private val downloadService: DownloadService? = null) :
     }
 
     binding.btnFavorite.setOnClickListener {
-      // TODO: 收藏文件
+      FileFavoriteDialog(fileResolveViewModel.lanzouResolveFile.value!!)
+        .show(childFragmentManager, null)
     }
 
     binding.btnDownload.setOnClickListener {

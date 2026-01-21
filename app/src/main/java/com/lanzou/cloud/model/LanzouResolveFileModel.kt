@@ -10,4 +10,5 @@ data class LanzouResolveFileModel(
   var fileSize: String = "",
   var shareTime: String = "",
   var remark: String = "",
+  var isFile: Boolean = true
 ) : BaseObservable()

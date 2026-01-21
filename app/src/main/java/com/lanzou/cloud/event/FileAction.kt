@@ -161,4 +161,11 @@ interface FileAction : Searchable {
    * @param file 当前文件
    */
   fun shareFile(position: Int, file: FileInfoModel)
+
+  /**
+   * 收藏文件
+   *
+   * @param file 当前文件
+   */
+  fun favoriteFile(file: FileInfoModel)
 }

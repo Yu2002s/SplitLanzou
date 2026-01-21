@@ -127,6 +127,7 @@
         <activity android:name=".ui.activity.AboutAppActivity" />
         <activity android:name=".ui.activity.QRCodeScanActivity" />
         <activity android:name=".ui.activity.SwitchUserActivity" />
+        <activity android:name=".ui.activity.FileFavoriteActivity" />
 
         <service android:name=".service.DownloadService" />
         <service android:name=".service.UploadService" />
