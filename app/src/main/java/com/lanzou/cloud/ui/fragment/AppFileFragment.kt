@@ -59,6 +59,10 @@ class AppFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
     return "App"
   }
 
+
+  override fun mkdirFile(name: String, path: String) {
+    toast("这里不能新建文件")
+  }
   override fun deleteFiles(positions: List<Int>, files: List<FileInfoModel>) {
     toast("不支持多选删除App")
   }

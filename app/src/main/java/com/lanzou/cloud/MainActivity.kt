@@ -30,6 +30,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.drake.engine.utils.ClipboardUtils
+import com.drake.net.utils.scope
 import com.drake.tooltip.toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -37,6 +38,7 @@ import com.lanzou.cloud.adapter.MainPageAdapter
 import com.lanzou.cloud.config.SPConfig
 import com.lanzou.cloud.data.LanzouPage
 import com.lanzou.cloud.databinding.ActivityMainBinding
+import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.service.UploadService
@@ -46,6 +48,7 @@ import com.lanzou.cloud.ui.cloud.selector.PhoneFileActivity
 import com.lanzou.cloud.ui.dialog.FileResolveDialog
 import com.lanzou.cloud.ui.dialog.FileResolveViewModel
 import com.lanzou.cloud.utils.SpJavaUtils
+import com.lanzou.cloud.utils.SpUtils.put
 import com.lanzou.cloud.utils.UpdateUtils
 import kotlinx.coroutines.launch
 
@@ -148,6 +151,17 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
 
     if (SpJavaUtils.getBoolean(SPConfig.CHECK_UPDATE, true)) {
       UpdateUtils.checkUpdate(this)
+    }
+
+    scope {
+      val config = LanzouRepository.getConfig()
+      val primary = config.download.primary
+      Log.i(TAG, "config: $config")
+      if (!primary.isNullOrEmpty()) {
+        config.download.provider.find { it.id == primary }?.let {
+          SPConfig.DOWNLOAD_API_URL.put(it.url)
+        }
+      }
     }
 
     lifecycleScope.launch {

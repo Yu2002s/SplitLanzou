@@ -29,6 +29,7 @@ class SerializationConverter(
   val message: String = "info", // message 字段名
   val data: String = "text",
   val rawData: Boolean = false,
+  val ignoreCode: Boolean = false
 ) : NetConverter {
 
   companion object {
@@ -46,6 +47,9 @@ class SerializationConverter(
           val bodyString = response.body?.string() ?: return null
           val kType = response.request.kType
             ?: throw ConvertException(response, "Request does not contain KType")
+          if (ignoreCode) {
+            return bodyString.parseBody(kType)
+          }
           return try {
             val json = JSONObject(bodyString) // 获取JSON中后端定义的错误码和错误信息
             val srvCode = json.getString(this.code)

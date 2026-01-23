@@ -72,10 +72,10 @@ class LanzouFileFragment(
     return data != null && data.size >= 18
   }
 
-  override fun onMkdirFile(name: String, path: String) {
+  override fun mkdirFile(name: String, path: String) {
     scopeDialog {
       LanzouRepository.mkdirFolder(path, name)
-      super.onMkdirFile(name, path)
+      super.mkdirFile(name, path)
     }.catch {
       toast(it.message)
     }

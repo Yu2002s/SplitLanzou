@@ -7,7 +7,13 @@ import com.lanzou.cloud.ui.fragment.PhoneFileFragment
 import kotlin.random.Random
 
 sealed class PathModel(
+  /**
+   * 路径名称
+   */
   val name: String,
+  /**
+   * 文件 Fragment 实例
+   */
   val fragment: FileFragment,
   /**
    * 这个 path 可能为远程目录的 id，也可以是本地文件的路径
@@ -15,7 +21,15 @@ sealed class PathModel(
   val path: String? = null,
 ) {
 
+  /**
+   * 路径 ID, 用于标识唯一
+   */
   var id: Long = System.currentTimeMillis() + Random.nextLong(999999)
+
+  /**
+   * 获取当前路径在布局中的位置
+   */
+  val layoutPosition get() = fragment.layoutPosition
 }
 
 /**

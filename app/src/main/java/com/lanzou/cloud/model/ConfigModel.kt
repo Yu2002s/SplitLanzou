@@ -8,10 +8,10 @@ data class ConfigModel(
 ) {
 
   @Serializable
-  data class Download(val provider: List<Provider> = listOf()) {
+  data class Download(val primary: String? = "", val provider: List<Provider> = listOf()) {
 
     @Serializable
-    data class Provider(val id: String, val name: String, val url: String)
+    data class Provider(val id: String = "", val name: String = "", val url: String = "")
 
   }
 }

@@ -175,7 +175,7 @@ public class FileSelectorFragment extends Fragment implements Searchable {
     }
 
     @Override
-    public void onSearch(String keyWorld) {
+    public void search(String keyWorld) {
         if (searchWorld.equals(keyWorld)) {
             return;
         }

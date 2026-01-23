@@ -16,10 +16,6 @@ abstract class RemoteFileFragment(
   filePageType: FilePageType = FilePageType.REMOTE
 ) : FileFragment(position, filePageType) {
 
-  override fun onMkdirFile(name: String, path: String) {
-    super.onMkdirFile(name, path)
-  }
-
   override fun favoriteFile(file: FileInfoModel) {
     scopeDialog {
       val fileInfo = LanzouRepository.getFileInfo(file.id)

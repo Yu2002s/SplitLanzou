@@ -54,6 +54,10 @@ class ClassifyFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
     }
   }
 
+  override fun mkdirFile(name: String, path: String) {
+    toast("这里不能新建文件")
+  }
+
   override fun addFile(fileInfoModel: FileInfoModel) {
     toast("不能添加到这里")
   }

@@ -43,6 +43,7 @@ import com.lanzou.cloud.enums.FileSortRule
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.event.OnUploadListener
+import com.lanzou.cloud.manager.FilePageManager
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LocalPathModel
 import com.lanzou.cloud.model.PathModel
@@ -67,6 +68,8 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     private const val TAG = "HomeFragment"
 
   }
+
+  // private val filePageManager = FilePageManager()
 
   /**
    * 左侧路径列表
@@ -386,6 +389,14 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     leftLp.width = contentWidth
     rightLp.width = contentWidth
 
+    val onFilePageLayoutChangeListener = object : FilePageManager.OnFilePageLayoutChangeListener {
+      override fun onFilePageSelected(position: Int, layoutPosition: LayoutPosition) {
+        homeViewModel.focusPosition(layoutPosition)
+        requireActivity().invalidateMenu()
+        currentFileFragment.refreshPathSubTitle()
+      }
+    }
+
     initPage(binding.tabLeft, binding.vpLeft, leftPaths)
     initPage(binding.tabRight, binding.vpRight, rightPaths)
 
@@ -545,7 +556,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           currentPath
         }
 
-        currentFileFragment.onMkdirFile(it!!, path)
+        currentFileFragment.mkdirFile(it!!, path)
       }
       show()
     }
@@ -554,7 +565,7 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
   private fun showSearchDialog() {
     FileSearchDialog(requireContext()).apply {
       onConfirm = {
-        currentFileFragment.onSearch(it)
+        currentFileFragment.search(it)
       }
       show()
     }

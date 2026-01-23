@@ -24,6 +24,7 @@ import com.lanzou.cloud.service.DownloadService
 import com.lanzou.cloud.ui.dialog.FileFavoriteDialog
 import org.litepal.LitePal
 import org.litepal.extension.deleteAll
+import org.litepal.extension.find
 import org.litepal.extension.findAll
 
 class FileFavoriteActivity :
@@ -76,7 +77,12 @@ class FileFavoriteActivity :
     binding.page.onRefresh {
       scope {
         val models = withIO {
-          LitePal.findAll<FileFavoritesModel>(true)
+          LitePal.findAll<FileFavoritesModel>().onEach {
+            it.items.addAll(
+              LitePal.where("filefavoritesmodel_id = ?", it.id.toString()).order("updateAt desc")
+                .find<FavoriteItem>()
+            )
+          }
         }
         addData(models)
       }
@@ -137,7 +143,8 @@ class FileFavoriteActivity :
           "地址:" + model.url,
           "密码:${model.pwd}",
           "时间:${model.time}",
-          "大小:${model.size}"
+          "大小:${model.size}",
+          "备注:${model.remark}"
         )
         val positiveButton = if (model.isFile) "下载" else "打开"
         MaterialAlertDialogBuilder(this@FileFavoriteActivity)

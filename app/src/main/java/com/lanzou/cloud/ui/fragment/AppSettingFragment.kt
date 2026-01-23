@@ -3,7 +3,6 @@ package com.lanzou.cloud.ui.fragment
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
@@ -15,16 +14,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
 import com.lanzou.cloud.config.SPConfig
-import com.lanzou.cloud.model.ConfigModel
+import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.activity.FolderSelectorActivity
 import com.lanzou.cloud.utils.FileUtils
 import com.lanzou.cloud.utils.SpJavaUtils
 import com.lanzou.cloud.utils.SpUtils.getRequired
 import com.lanzou.cloud.utils.SpUtils.put
-import com.lanzou.cloud.utils.json
-import okhttp3.OkHttpClient
-import okhttp3.Request
 
 class AppSettingFragment : PreferenceFragmentCompat() {
 
@@ -89,7 +85,7 @@ class AppSettingFragment : PreferenceFragmentCompat() {
     findPreference<Preference>("download_api_url")?.onPreferenceClickListener =
       Preference.OnPreferenceClickListener {
         scopeDialog {
-          val okHttpClient = OkHttpClient()
+          /*val okHttpClient = OkHttpClient()
           val request = Request.Builder()
             .url(LanzouApplication.CONFIG_URL)
             .build()
@@ -98,7 +94,8 @@ class AppSettingFragment : PreferenceFragmentCompat() {
           }
           val responseBody = response.body?.string() ?: return@scopeDialog
           Log.i("AppSettingFragment", "responseBody: $responseBody")
-          val configModel = json.decodeFromString<ConfigModel>(responseBody)
+          val configModel = json.decodeFromString<ConfigModel>(responseBody)*/
+          val configModel = LanzouRepository.getConfig()
           val providers = configModel.download.provider
           val downloadApiUrl =
             SPConfig.DOWNLOAD_API_URL.getRequired<String>(LanzouApplication.DOWNLOAD_API_URL)

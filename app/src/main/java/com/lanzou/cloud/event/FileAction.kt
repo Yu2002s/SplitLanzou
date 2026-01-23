@@ -15,7 +15,7 @@ interface FileAction : Searchable {
    * @param name 文件名称
    * @param path 文件路径
    */
-  fun onMkdirFile(name: String, path: String)
+  fun mkdirFile(name: String, path: String)
 
   /**
    * 切换多选

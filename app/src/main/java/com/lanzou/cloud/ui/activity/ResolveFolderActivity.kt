@@ -15,9 +15,11 @@ import com.lanzou.cloud.LanzouApplication
 import com.lanzou.cloud.R
 import com.lanzou.cloud.base.BaseToolbarActivity
 import com.lanzou.cloud.databinding.ActivityResolveFolderBinding
+import com.lanzou.cloud.model.LanzouResolveFileModel
 import com.lanzou.cloud.model.LanzouShareFolderModel
 import com.lanzou.cloud.network.LanzouRepository
 import com.lanzou.cloud.service.DownloadService
+import com.lanzou.cloud.ui.dialog.FileFavoriteDialog
 import com.lanzou.cloud.utils.fitNavigationBar
 import com.lanzou.cloud.utils.startActivity
 
@@ -66,11 +68,22 @@ class ResolveFolderActivity :
 
       R.id.item_card.onClick {
         val model = getModel<LanzouShareFolderModel>()
+        val url = "${LanzouApplication.LANZOU_SHARE_BASE_URL}${model.fileId}"
         MaterialAlertDialogBuilder(this@ResolveFolderActivity)
           .setTitle("下载")
           .setMessage(model.fileName)
+          .setNeutralButton("收藏") { dialog, which ->
+            FileFavoriteDialog(
+              LanzouResolveFileModel(
+                url = url,
+                fileName = model.fileName,
+                shareTime = model.createTime,
+                fileSize = model.sizeStr,
+                downloadUrl = url,
+              )
+            ).show(supportFragmentManager, null)
+          }
           .setPositiveButton("确认") { _, _ ->
-            val url = "${LanzouApplication.LANZOU_SHARE_BASE_URL}${model.fileId}"
             _downloadService?.addDownload(url, model.fileName, null)
           }
           .setNegativeButton("关闭", null)

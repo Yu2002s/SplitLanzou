@@ -7,5 +7,5 @@ public interface Searchable {
      *
      * @param keyWorld 关键字
      */
-    void onSearch(String keyWorld);
+    void search(String keyWorld);
 }

@@ -7,6 +7,7 @@ import com.lanzou.cloud.R
 import com.lanzou.cloud.config.Api
 import com.lanzou.cloud.config.SPConfig
 import com.lanzou.cloud.model.BaseLanzouResponse
+import com.lanzou.cloud.model.ConfigModel
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LanzouDownloadModel
 import com.lanzou.cloud.model.LanzouResolveFileModel
@@ -323,6 +324,12 @@ object LanzouRepository {
         }
       }
     }
+  }
+
+  suspend fun getConfig() = coroutineScope {
+    Get<ConfigModel>(LanzouApplication.CONFIG_URL) {
+      converter = SerializationConverter(rawData = true, ignoreCode = true)
+    }.await()
   }
 
   private fun getFileRealName(fileInfoModel: FileInfoModel) {

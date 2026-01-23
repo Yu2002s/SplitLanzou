@@ -1,7 +1,6 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.annotation.SuppressLint
-import android.graphics.Canvas
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
@@ -120,8 +119,10 @@ abstract class FileFragment(
           return@collect
         }
         if (viewModel.focusedPositionFlow.value != layoutPosition) {
+          // 只对当前聚焦的位置有效
           return@collect
         }
+        // 执行排序指令
         sortFile(it)
       }
     }
@@ -198,17 +199,6 @@ abstract class FileFragment(
       }
 
       itemTouchHelper = ItemTouchHelper(object : DefaultItemTouchCallback() {
-        override fun onChildDraw(
-          c: Canvas,
-          recyclerView: RecyclerView,
-          viewHolder: RecyclerView.ViewHolder,
-          dX: Float,
-          dY: Float,
-          actionState: Int,
-          isCurrentlyActive: Boolean,
-        ) {
-          // Log.d("滑动触发多选", "onChildDraw调用")
-        }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
           //Log.d("滑动触发多选", direction.toString())
@@ -417,7 +407,7 @@ abstract class FileFragment(
     return data
   }
 
-  override fun onMkdirFile(name: String, path: String) {
+  override fun mkdirFile(name: String, path: String) {
     val file = FileInfoModel(name = name, folderId = path)
     val fileRv = binding.fileRv
     val position = getInsertPosition(name)
@@ -427,7 +417,7 @@ abstract class FileFragment(
     fileRv.scrollToPosition(position)
   }
 
-  override fun onSearch(keyWorld: String?) {
+  override fun search(keyWorld: String?) {
     if (keyWorld.isNullOrBlank()) {
       binding.fileRv.models = sourceData
     } else {
@@ -585,9 +575,6 @@ abstract class FileFragment(
     }
   }
 
-  /**
-   * 排序文件
-   */
   override fun sortFile(filterSortModel: FilterSortModel) {
     scope {
       val sortedData = coroutineScope {

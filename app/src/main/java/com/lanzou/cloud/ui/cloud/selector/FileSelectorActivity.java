@@ -92,7 +92,7 @@ public class FileSelectorActivity extends AppCompatActivity {
                 // 直接进行搜索
                 searchWorld = newText;
                 for (FileSelectorFragment fragment : fragmentList) {
-                    fragment.onSearch(newText);
+                    fragment.search(newText);
                 }
                 return false;
             }

@@ -78,14 +78,14 @@ class PhoneFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
     return if (index != -1) index else super.getInsertPosition(name)*/
   }
 
-  override fun onMkdirFile(name: String, path: String) {
+  override fun mkdirFile(name: String, path: String) {
     val file = File(path)
     if (file.exists()) {
       toast("文件已存在")
       return
     }
     if (file.mkdir()) {
-      super.onMkdirFile(name, path)
+      super.mkdirFile(name, path)
     } else {
       toast("创建失败，请检查App储存权限")
     }

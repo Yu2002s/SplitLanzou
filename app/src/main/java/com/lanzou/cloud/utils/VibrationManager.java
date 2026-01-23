@@ -1,5 +1,6 @@
 package com.lanzou.cloud.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.VibrationEffect;
@@ -15,9 +16,10 @@ import java.util.Arrays;
 // https://blog.csdn.net/m0_61840987/article/details/147536118
 // =======================================================
 public class VibrationManager {
+    @SuppressLint("StaticFieldLeak")
     private static VibrationManager instance;
-    private Vibrator vibrator;
-    private Context ctx;
+    private final Vibrator vibrator;
+    private final Context ctx;
 
     /** 初始化，建议在 Application.onCreate() 调用 */
     public static void init(Context context) {
