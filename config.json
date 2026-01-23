@@ -1,6 +1,7 @@
 {
   "download": {
     "comment": "部署下载服务参见:https://gitee.com/QAIU/netdisk-fast-download",
+    "primary": "custom",
     "provider": [
       {
         "id": "simple",
