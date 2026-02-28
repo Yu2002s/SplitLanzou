@@ -43,7 +43,6 @@ import com.lanzou.cloud.enums.FileSortRule
 import com.lanzou.cloud.enums.LayoutPosition
 import com.lanzou.cloud.event.OnFileNavigateListener
 import com.lanzou.cloud.event.OnUploadListener
-import com.lanzou.cloud.manager.FilePageManager
 import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.LocalPathModel
 import com.lanzou.cloud.model.PathModel
@@ -389,14 +388,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
     leftLp.width = contentWidth
     rightLp.width = contentWidth
 
-    val onFilePageLayoutChangeListener = object : FilePageManager.OnFilePageLayoutChangeListener {
-      override fun onFilePageSelected(position: Int, layoutPosition: LayoutPosition) {
-        homeViewModel.focusPosition(layoutPosition)
-        requireActivity().invalidateMenu()
-        currentFileFragment.refreshPathSubTitle()
-      }
-    }
-
     initPage(binding.tabLeft, binding.vpLeft, leftPaths)
     initPage(binding.tabRight, binding.vpRight, rightPaths)
 
@@ -520,24 +511,6 @@ class HomeFragment : EngineNavFragment<FragmentHomeBinding>(R.layout.fragment_ho
           downloadFiles(currentPath, currentFileFragment.getCheckedFiles())
         }
       }
-
-      /*R.id.fab_right -> {
-        val checkedFiles = currentFileFragment.getCheckedFiles()
-        if (checkedFiles.isEmpty()) {
-          toast("选中文件为空")
-          return
-        }
-        if (currentFilePageType == targetFilePageType) {
-          if (currentFilePageType == FilePageType.LOCAL) {
-            moveFiles(currentFileFragment.getCheckedFiles(false))
-          } else {
-            moveFiles(checkedFiles)
-          }
-          return
-        }
-        val currentPath = targetFileFragment.getCurrentPath()
-        downloadFiles(currentPath, checkedFiles)
-      }*/
     }
   }
 

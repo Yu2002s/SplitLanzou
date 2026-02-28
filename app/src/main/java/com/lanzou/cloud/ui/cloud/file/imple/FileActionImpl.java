@@ -459,4 +459,22 @@ public class FileActionImpl implements FileAction {
     public void moveFiles() {
         FolderSelectorActivity.moveFiles(mActivity, moveActivityResultLauncher);
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    @Override
+    public int selectAll() {
+        for (LanzouFile file : lanzouFiles) {
+            file.setSelected(true);
+        }
+        adapter.notifyDataSetChanged();
+        return lanzouFiles.size();
+    }
+
+    @Override
+    public void unSelectAll() {
+        for (LanzouFile file : lanzouFiles) {
+            file.setSelected(false);
+        }
+        adapter.notifyDataSetChanged();
+    }
 }

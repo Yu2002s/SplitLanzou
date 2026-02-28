@@ -125,11 +125,18 @@ public interface FileAction {
     void moveFiles();
 
     /**
+     * 选择所有文件
+     */
+    int selectAll();
+
+    /**
      * 订阅
      *
      * @param context fragment 实例
      */
     void observable(Fragment context);
+
+    void unSelectAll();
 
     /**
      * 操作回调

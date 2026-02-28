@@ -27,4 +27,14 @@
         android:title="@string/delete"
         android:visible="false"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/all_select"
+        android:title="@string/all_select"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/all_unselect"
+        android:title="@string/all_unselect"
+        android:visible="false" />
 </menu>

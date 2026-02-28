@@ -10,7 +10,7 @@ sealed class PathModel(
   /**
    * 路径名称
    */
-  val name: String,
+  val name: String = "",
   /**
    * 文件 Fragment 实例
    */
@@ -20,7 +20,6 @@ sealed class PathModel(
    */
   val path: String? = null,
 ) {
-
   /**
    * 路径 ID, 用于标识唯一
    */

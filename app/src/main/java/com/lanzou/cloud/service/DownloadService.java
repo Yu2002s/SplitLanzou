@@ -555,7 +555,7 @@ public class DownloadService extends Service {
                 download.setUploadJson(json);
             }
         } catch (Exception e) {
-            Log.e(TAG, "获取上传信息失败，尝试写入文本文件");
+            Log.e(TAG, "获取上传信息失败，尝试写入文本文件: " + e);
             // 如果读取上传文件出错了，就直接下载文本内容到本地
             writeTextFileToLocal(download, json);
         }

@@ -389,6 +389,8 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
         menu.findItem(R.id.download).setVisible(multiMode);
         menu.findItem(R.id.move).setVisible(multiMode);
         menu.findItem(R.id.detail).setVisible(!multiMode && getCurrentPage().getFolderId() > 0);
+        menu.findItem(R.id.all_select).setVisible(multiMode);
+        menu.findItem(R.id.all_unselect).setVisible(multiMode);
     }
 
     @Override
@@ -440,6 +442,13 @@ public class FileFragment extends Fragment implements ServiceConnection, FileAct
             // 显示详情对话框
             new FileDetailDialog(requireContext(), getCurrentPage().getFolderId())
                     .setFileName(getCurrentPage().getName());
+        } else if (item.getItemId() == R.id.all_select) {
+            selectCount = fileAction.selectAll();
+            changeSelect();
+        } else if (item.getItemId() == R.id.all_unselect) {
+            selectCount = 0;
+            changeSelect();
+            fileAction.unSelectAll();
         }
         return true;
     }

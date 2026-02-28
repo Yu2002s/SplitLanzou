@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.Since;
 import com.lanzou.cloud.event.OnUploadListener;
 import com.lanzou.cloud.utils.FileJavaUtils;
@@ -75,7 +76,8 @@ public class Upload extends LitePalSupport implements Parcelable, Comparable<Upl
     private final String comment = "如需完整下载此文件，请下载app（https://github.com/Yu2002s/SplitLanzou）";
 
     @Column(ignore = true)
-    private OnUploadListener listener;
+    @Expose(serialize = false, deserialize = false)
+    private transient OnUploadListener listener;
 
     public Upload() {
     }
