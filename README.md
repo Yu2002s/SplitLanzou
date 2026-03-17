@@ -4,7 +4,7 @@
 
 - QQ 群
 
-<img src="./screenshots/qrcode_1773500386502.jpg" alt="Logo" width="500" style="display:block;margin:auto;">
+<img src="./screenshots/qrcode_1773500386502.jpg" alt="Logo" width="250" style="display:block;margin:auto;">
 
 - 公众号
 
