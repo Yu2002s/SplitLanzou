@@ -1,6 +1,14 @@
 # SplitLanzou
 
-> 恢复迭代中...
+## 交流/反馈
+
+- QQ 群
+
+<img src="./screenshots/qrcode_1773500386502.jpg" alt="Logo" width="500" style="display:block;margin:auto;">
+
+- 公众号
+
+<img src="./screenshots/qrcode_mp.jpg" alt="Logo" width="258" style="display:block;margin:auto;">
 
 **第三方蓝奏云**
 
