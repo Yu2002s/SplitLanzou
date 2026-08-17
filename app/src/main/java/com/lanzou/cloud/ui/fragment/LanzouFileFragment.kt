@@ -14,6 +14,7 @@ import com.lanzou.cloud.model.FileInfoModel
 import com.lanzou.cloud.model.FilePathModel
 import com.lanzou.cloud.model.FilterSortModel
 import com.lanzou.cloud.network.LanzouRepository
+import com.lanzou.cloud.network.Repository
 import com.lanzou.cloud.ui.dialog.FileDetailDialog
 import com.lanzou.cloud.utils.removeModel
 import com.lanzou.cloud.utils.removeModelsSuspend
@@ -70,6 +71,15 @@ class LanzouFileFragment(
 
   override fun isLoadMore(data: List<FileInfoModel>?): Boolean {
     return data != null && data.size >= 18
+  }
+
+  override fun onLoadError(throwable: Throwable) {
+    if (throwable.message?.contains("login not") == true) {
+      Repository.getInstance().logout()
+      toast("请重新登录")
+    } else {
+      super.onLoadError(throwable)
+    }
   }
 
   override fun mkdirFile(name: String, path: String) {

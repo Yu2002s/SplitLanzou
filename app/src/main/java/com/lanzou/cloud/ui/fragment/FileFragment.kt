@@ -257,6 +257,8 @@ abstract class FileFragment(
           isLoadMore(data)
         }
         onLoadEnd(data, page)
+      }.catch {
+        onLoadError(it)
       }
     }
 
@@ -391,6 +393,14 @@ abstract class FileFragment(
     if (firstVisiblePosition != scrollPosition) {
       scrollToPosition(scrollPosition)
     }
+  }
+
+  /**
+   * 加载出错了
+   */
+  protected open fun onLoadError(throwable: Throwable) {
+    Log.e(TAG, "getData error: " + throwable.message, throwable)
+    toast(throwable.message)
   }
 
   /**

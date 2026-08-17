@@ -120,6 +120,7 @@
         app:title="推广">
 
         <Preference
+            app:isPreferenceVisible="false"
             app:iconSpaceReserved="false"
             app:summary="一个影视聚合App"
             app:title="冬雨影视">
@@ -146,7 +147,7 @@
 
             <intent
                 android:action="android.intent.action.VIEW"
-                android:data="https://gitee.com/jdy2002/DongYuTvWeb"></intent>
+                android:data="http://app.jdynb.xyz/download/"></intent>
 
         </Preference>
 

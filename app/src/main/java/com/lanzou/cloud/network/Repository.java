@@ -318,10 +318,11 @@ public class Repository {
         if (downloadApiUrl.isEmpty()) {
             downloadApiUrl = LanzouApplication.DOWNLOAD_API_URL;
         }
-        String downloadUrl = downloadApiUrl + "/lz" + key;
+        String downloadUrl = downloadApiUrl + "/parser?url=" + url;
         if (!TextUtils.isEmpty(pwd)) {
-            downloadUrl += "@" + pwd;
+            downloadUrl += "&pwd=" + pwd;
         }
+        Log.i(TAG, "downloadUrl: " + downloadUrl);
         return downloadUrl;
     }
 

@@ -96,9 +96,9 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     setSupportActionBar(binding.header.toolBar)
 
     val viewPager2: ViewPager2 = binding.viewpager2
-    viewPager2.setUserInputEnabled(false)
-    viewPager2.setOffscreenPageLimit(5)
-    viewPager2.setAdapter(MainPageAdapter(supportFragmentManager, lifecycle))
+    viewPager2.isUserInputEnabled = false
+    viewPager2.offscreenPageLimit = 5
+    viewPager2.adapter = MainPageAdapter(supportFragmentManager, lifecycle)
 
     viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
       override fun onPageSelected(position: Int) {
@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         val data: Intent? = result.data
         if (data != null && result.resultCode == RESULT_OK) {
           val files: ArrayList<CharSequence>? = data.getCharSequenceArrayListExtra("files")
-          if (files == null || files.isEmpty()) {
+          if (files.isNullOrEmpty()) {
             // 选择的文件为空时
             return@ActivityResultCallback
           }

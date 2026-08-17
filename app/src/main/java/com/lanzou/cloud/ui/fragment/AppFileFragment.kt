@@ -1,7 +1,6 @@
 package com.lanzou.cloud.ui.fragment
 
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import com.drake.engine.utils.AppUtils
 import com.drake.engine.utils.FileUtils
 import com.drake.net.utils.scopeDialog
@@ -27,7 +26,7 @@ class AppFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
   override suspend fun getData(path: String?, page: Int): List<FileInfoModel>? {
     val pm = requireContext().packageManager
     var packageInfoList =
-      requireContext().packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)
+      requireContext().packageManager.getInstalledPackages(0)
     if (!viewModel.filterSortModel.value.showSystemApp) {
       packageInfoList =
         packageInfoList.filter { (it.applicationInfo!!.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }

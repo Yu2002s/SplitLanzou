@@ -45,6 +45,8 @@ class PhoneFileFragment(position: LayoutPosition = LayoutPosition.RIGHT) :
   private fun getFiles(path: String): List<FileInfoModel>? {
     val simpleDataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA)
 
+    // if (path.startsWith("/"))
+
     return FileUtils.listFilesInDir(path)?.map {
       val time = simpleDataFormat.format(it.lastModified()).substring(2)
       val ext = if (it.isFile) FileUtils.getFileExtension(it.path) else null
