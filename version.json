@@ -1,7 +1,7 @@
 {
-  "version": "1.8.9",
-  "versionCode": 28,
-  "content": "1.修复下载失败问题，【请在设置中下载服务选择->lz.qaiu.top】\n\n【如有问题可前往github/gitee首页反馈】",
-  "url": "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/isTKV42xlfcd",
-  "date": "2026-08-17"
+  "version": "1.9.0",
+  "versionCode": 29,
+  "content": "1.支持访问 /Android/data/ 目录\n2.修复下载失败问题，【请在设置中下载服务选择->lz.qaiu.top】\n\n【如有问题可前往github/gitee首页反馈】",
+  "url": "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/irIWx4332kxg",
+  "date": "2026-08-18"
 }
